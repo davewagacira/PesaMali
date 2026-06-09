@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
+import { SettingsSkeleton } from '@/components/SettingsSkeleton'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -28,6 +29,7 @@ export default function SettingsPage() {
   const [profileLoading, setProfileLoading] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   // MFA state
   const [mfaEnabled, setMfaEnabled] = useState(false)
@@ -55,6 +57,7 @@ export default function SettingsPage() {
         if (d.email) setEmail(d.email)
       })
       .catch(() => {})
+      .finally(() => setIsLoading(false))
   }, [])
 
   const save = async () => {
@@ -208,6 +211,8 @@ export default function SettingsPage() {
     setMfaSecret('')
     setSecretVisible(false)
   }
+
+  if (isLoading) return <SettingsSkeleton />
 
   return (
     <div>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
 import { SuccessModal } from '@/components/SuccessModal'
+import { LogSkeleton } from '@/components/LogSkeleton'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -61,6 +62,7 @@ export default function LogPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   const ping = (msg: string) => {
     setToast(msg)
@@ -84,6 +86,7 @@ export default function LogPage() {
         }
       })
       .catch(() => {})
+      .finally(() => setIsLoading(false))
   }, [])
 
   const add = async () => {
@@ -129,6 +132,8 @@ export default function LogPage() {
   ]
 
   const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
+
+  if (isLoading) return <LogSkeleton />
 
   return (
     <div>

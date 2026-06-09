@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
 import { useMetrics, fmt, fmtN, catOf, MetricExpense } from '@/lib/metrics'
+import { DashboardSkeleton } from '@/components/DashboardSkeleton'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -40,32 +41,35 @@ export default function DashboardPage() {
   const [budget, setBudget] = useState(15000)
   const [goal, setGoal] = useState(2000)
   const [userName, setUserName] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/user')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.name) setUserName(d.name)
-        if (d.monthlyBudget) setBudget(d.monthlyBudget)
-        if (d.savingsGoal) setGoal(d.savingsGoal)
-      })
-      .catch(() => {})
-    fetch('/api/expenses')
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d)) {
-          setExpenses(
-            d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
-              id: e.id,
-              date: e.date,
-              cat: e.category,
-              item: e.item,
-              amt: e.amount,
-            }))
-          )
-        }
-      })
-      .catch(() => {})
+    Promise.all([
+      fetch('/api/user')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.name) setUserName(d.name)
+          if (d.monthlyBudget) setBudget(d.monthlyBudget)
+          if (d.savingsGoal) setGoal(d.savingsGoal)
+        })
+        .catch(() => {}),
+      fetch('/api/expenses')
+        .then((r) => r.json())
+        .then((d) => {
+          if (Array.isArray(d)) {
+            setExpenses(
+              d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
+                id: e.id,
+                date: e.date,
+                cat: e.category,
+                item: e.item,
+                amt: e.amount,
+              }))
+            )
+          }
+        })
+        .catch(() => {}),
+    ]).finally(() => setIsLoading(false))
   }, [])
 
   const now = new Date()
@@ -75,6 +79,8 @@ export default function DashboardPage() {
   const h = now.getHours()
   const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
   const statusTxt = m.status === 'ok' ? 'On track' : m.status === 'warn' ? 'Slow down' : 'Danger zone'
+
+  if (isLoading) return <DashboardSkeleton />
 
   return (
     <div>

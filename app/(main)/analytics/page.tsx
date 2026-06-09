@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { Donut } from '@/components/Charts'
 import { useMetrics, fmt, fmtN, MetricExpense } from '@/lib/metrics'
+import { AnalyticsSkeleton } from '@/components/AnalyticsSkeleton'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -17,30 +18,35 @@ const full = (s: string) =>
 export default function AnalyticsPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
   const [budget, setBudget] = useState(15000)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/user')
-      .then((r) => r.json())
-      .then((d) => { if (d.monthlyBudget) setBudget(d.monthlyBudget) })
-      .catch(() => {})
-    fetch('/api/expenses')
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d)) {
-          setExpenses(
-            d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
-              id: e.id, date: e.date, cat: e.category, item: e.item, amt: e.amount,
-            }))
-          )
-        }
-      })
-      .catch(() => {})
+    Promise.all([
+      fetch('/api/user')
+        .then((r) => r.json())
+        .then((d) => { if (d.monthlyBudget) setBudget(d.monthlyBudget) })
+        .catch(() => {}),
+      fetch('/api/expenses')
+        .then((r) => r.json())
+        .then((d) => {
+          if (Array.isArray(d)) {
+            setExpenses(
+              d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
+                id: e.id, date: e.date, cat: e.category, item: e.item, amt: e.amount,
+              }))
+            )
+          }
+        })
+        .catch(() => {}),
+    ]).finally(() => setIsLoading(false))
   }, [])
 
   const m = useMetrics(expenses, budget, 2000)
   const top = m.topItems[0]
   const topDay = [...m.dowOrdered].sort((a, b) => b.amt - a.amt)[0]
   const maxD = Math.max(...m.dowOrdered.map((o) => o.amt), 1)
+
+  if (isLoading) return <AnalyticsSkeleton />
 
   return (
     <div>
