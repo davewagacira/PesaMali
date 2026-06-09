@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
+import { SuccessModal } from '@/components/SuccessModal'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -58,6 +59,8 @@ export default function LogPage() {
   const [date, setDate] = useState(iso(new Date()))
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
   const [toast, setToast] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const ping = (msg: string) => {
     setToast(msg)
@@ -101,7 +104,8 @@ export default function LogPage() {
         ])
         setItem('')
         setAmt('')
-        ping('Expense logged — balances updated')
+        setSuccessMessage('Expense logged successfully. Your balances have been updated.')
+        setShowSuccessModal(true)
       }
     } catch {
       ping('Failed to save expense')
@@ -240,6 +244,13 @@ export default function LogPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Success!"
+        message={successMessage}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   )
 }

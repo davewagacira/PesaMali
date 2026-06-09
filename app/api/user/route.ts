@@ -20,6 +20,7 @@ export async function GET() {
       email: user.email,
       monthlyBudget: user.monthlyBudget,
       savingsGoal: user.savingsGoal,
+      mfaEnabled: user.mfaEnabled,
     })
   } catch (e) {
     console.error(e)
@@ -33,16 +34,46 @@ export async function PUT(req: NextRequest) {
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const { monthlyBudget, savingsGoal } = await req.json()
-    const user = await prisma.user.update({
+    const { monthlyBudget, savingsGoal, name, password, currentPassword } = await req.json()
+
+    const user = await prisma.user.findUnique({ where: { id: session.userId } })
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const bcrypt = await import('bcryptjs')
+
+    // Validate current password if changing password
+    if (password) {
+      if (!currentPassword) {
+        return NextResponse.json({ error: 'Current password required' }, { status: 400 })
+      }
+      const valid = await bcrypt.default.compare(currentPassword, user.password)
+      if (!valid) {
+        return NextResponse.json({ error: 'Current password is incorrect' }, { status: 401 })
+      }
+    }
+
+    const updateData: any = {}
+    if (monthlyBudget !== undefined) updateData.monthlyBudget = monthlyBudget
+    if (savingsGoal !== undefined) updateData.savingsGoal = savingsGoal
+    if (name) updateData.name = name
+    if (password) {
+      const hashedPassword = await bcrypt.default.hash(password, 10)
+      updateData.password = hashedPassword
+    }
+
+    const updatedUser = await prisma.user.update({
       where: { id: session.userId },
-      data: { monthlyBudget, savingsGoal },
+      data: updateData,
     })
+
     return NextResponse.json({
-      id: user.id,
-      name: user.name,
-      monthlyBudget: user.monthlyBudget,
-      savingsGoal: user.savingsGoal,
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      monthlyBudget: updatedUser.monthlyBudget,
+      savingsGoal: updatedUser.savingsGoal,
     })
   } catch (e) {
     console.error(e)

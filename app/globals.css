@@ -199,6 +199,10 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 
 .toast{position:fixed;bottom:26px;left:50%;background:var(--text);color:var(--bg);font-weight:500;font-size:13px;padding:12px 20px;border-radius:12px;z-index:99;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px}
 
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;backdrop-filter:blur(2px)}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg)}
+.modal-content{padding:32px;min-width:360px}
+
 @media (max-width:1020px){
   .auth{flex-direction:column}.auth-left{padding:34px}.auth-hero h1{font-size:32px}
   .shell{flex-direction:column}
