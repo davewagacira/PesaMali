@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  monthlyBudget Float     @default(15000)
+  savingsGoal   Float     @default(2000)
+  createdAt     DateTime  @default(now())
+  expenses      Expense[]
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String
+  category  String
+  item      String
+  amount    Float
+  createdAt DateTime @default(now())
+}
