@@ -39,14 +39,24 @@ function TypingDots() {
         <motion.span
           key={i}
           style={{
-            width: 7,
-            height: 7,
+            width: 8,
+            height: 8,
             borderRadius: '50%',
             background: 'var(--primary)',
             display: 'block',
+            boxShadow: '0 0 0 0 var(--primary)',
           }}
-          animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.18, ease: 'easeInOut' }}
+          animate={{
+            y: [0, -8, 0],
+            opacity: [0.4, 1, 0.4],
+            scale: [0.9, 1.1, 0.9],
+          }}
+          transition={{
+            duration: 0.8,
+            repeat: Infinity,
+            delay: i * 0.15,
+            ease: 'easeInOut',
+          }}
         />
       ))}
     </div>
@@ -339,33 +349,59 @@ export default function AIPage() {
 
                 if (isCompressed) {
                   return (
-                    <motion.button
+                    <motion.div
                       key={`compressed-${i}`}
-                      onClick={() => setExpandedCompressed(!expandedCompressed)}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        margin: '12px 0',
-                        borderRadius: 12,
-                        background: 'var(--card-2)',
-                        border: '1px solid var(--line)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontSize: 12,
-                        color: 'var(--muted)',
-                        lineHeight: 1.6,
-                      }}
+                      initial={{ opacity: 0, height: 0, y: 20 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                        <span style={{ fontSize: 16 }}>📦</span>
-                        <span style={{ fontWeight: 600 }}>{(item as CompressedSection).messageCount} earlier messages compressed</span>
-                        <span style={{ marginLeft: 'auto' }}>{expandedCompressed ? '▼' : '▶'}</span>
-                      </div>
-                      <div style={{ opacity: 0.8 }}>{(item as CompressedSection).summary}</div>
-                    </motion.button>
+                      <motion.button
+                        onClick={() => setExpandedCompressed(!expandedCompressed)}
+                        whileHover={{ scale: 1.01, backgroundColor: 'var(--primary-soft)' }}
+                        whileTap={{ scale: 0.99 }}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          margin: '12px 0',
+                          borderRadius: 12,
+                          background: 'var(--card-2)',
+                          border: '1px solid var(--line)',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontSize: 12,
+                          color: 'var(--muted)',
+                          lineHeight: 1.6,
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <motion.span
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
+                            style={{ fontSize: 16, display: 'inline-block' }}
+                          >
+                            📦
+                          </motion.span>
+                          <span style={{ fontWeight: 600 }}>
+                            {(item as CompressedSection).messageCount} earlier messages compressed
+                          </span>
+                          <motion.span
+                            animate={{ rotate: expandedCompressed ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                            style={{ marginLeft: 'auto', display: 'inline-block' }}
+                          >
+                            ▶
+                          </motion.span>
+                        </div>
+                        <motion.div
+                          initial={false}
+                          animate={{ opacity: expandedCompressed ? 0.5 : 0.8 }}
+                          style={{ opacity: 0.8 }}
+                        >
+                          {(item as CompressedSection).summary}
+                        </motion.div>
+                      </motion.button>
+                    </motion.div>
                   )
                 }
 
@@ -374,9 +410,16 @@ export default function AIPage() {
                   <motion.div
                     key={i}
                     className={'msg ' + msg.who}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      duration: 0.3,
+                      ease: 'easeOut',
+                      type: 'spring',
+                      stiffness: 200,
+                      damping: 20,
+                    }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   >
                     {render(msg.text)}
                   </motion.div>
@@ -384,37 +427,62 @@ export default function AIPage() {
               })}
             </AnimatePresence>
 
-            {busy && (
-              <motion.div
-                className="msg ai"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ padding: '14px 18px' }}
-              >
-                <TypingDots />
-              </motion.div>
-            )}
+            <AnimatePresence>
+              {busy && (
+                <motion.div
+                  className="msg ai"
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{
+                    duration: 0.3,
+                    type: 'spring',
+                    stiffness: 200,
+                    damping: 20,
+                  }}
+                  style={{ padding: '14px 18px' }}
+                >
+                  <TypingDots />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Input */}
-          <div className="chat-input">
-            <input
+          <motion.div
+            className="chat-input"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <motion.input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about your spending…"
               onKeyDown={(e) => e.key === 'Enter' && !busy && ask()}
               disabled={busy}
+              whileFocus={{
+                boxShadow: '0 0 0 3px var(--primary-soft)',
+              }}
+              style={{ transition: 'all 0.2s ease' }}
             />
             <motion.button
               className="send-btn"
               whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.05 }}
               onClick={() => ask()}
               disabled={busy}
               aria-label="Send"
+              animate={{ opacity: busy ? 0.6 : 1 }}
             >
-              <I n="send" size={16} />
+              <motion.span
+                animate={{ rotate: busy ? 0 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <I n="send" size={16} />
+              </motion.span>
             </motion.button>
-          </div>
+          </motion.div>
         </div>
       </div>
 
