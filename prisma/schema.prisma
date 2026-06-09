@@ -14,8 +14,12 @@ model User {
   password      String
   monthlyBudget Float     @default(15000)
   savingsGoal   Float     @default(2000)
+  mfaEnabled    Boolean   @default(false)
+  mfaSecret     String?
+  aiMemoryEnabled Boolean @default(true)
   createdAt     DateTime  @default(now())
   expenses      Expense[]
+  conversations Conversation[]
 }
 
 model Expense {
@@ -27,4 +31,23 @@ model Expense {
   item      String
   amount    Float
   createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  messages  Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String   // "user" or "ai"
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
 }

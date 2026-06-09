@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest) {
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const { monthlyBudget, savingsGoal, name, password, currentPassword } = await req.json()
+    const { monthlyBudget, savingsGoal, name, password, currentPassword, aiMemoryEnabled } = await req.json()
 
     const user = await prisma.user.findUnique({ where: { id: session.userId } })
     if (!user) {
@@ -58,6 +58,7 @@ export async function PUT(req: NextRequest) {
     if (monthlyBudget !== undefined) updateData.monthlyBudget = monthlyBudget
     if (savingsGoal !== undefined) updateData.savingsGoal = savingsGoal
     if (name) updateData.name = name
+    if (aiMemoryEnabled !== undefined) updateData.aiMemoryEnabled = aiMemoryEnabled
     if (password) {
       const hashedPassword = await bcrypt.default.hash(password, 10)
       updateData.password = hashedPassword
