@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Akiba — Know your money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/framer-motion/10.16.4/framer-motion.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root, [data-theme="light"]{
+  --bg:#F6F7FB;
+  --card:#FFFFFF;
+  --card-2:#F1F3F9;
+  --line:#E7EAF3;
+  --text:#0F172A;
+  --muted:#64748B;
+  --faint:#94A3B8;
+  --primary:#4F46E5;
+  --primary-soft:#EEF0FE;
+  --primary-grad:linear-gradient(135deg,#4F46E5,#7C3AED);
+  --green:#16A34A; --green-soft:#EAF7EF;
+  --amber:#D97706; --amber-soft:#FDF3E3;
+  --red:#DC2626;   --red-soft:#FCEAEA;
+  --shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+  --shadow-lg:0 12px 40px rgba(79,70,229,.14);
+}
+[data-theme="dark"]{
+  --bg:#0B0F1A;
+  --card:#111827;
+  --card-2:#1A2336;
+  --line:#1F2A3F;
+  --text:#F1F5F9;
+  --muted:#8E9BB3;
+  --faint:#5B6880;
+  --primary:#818CF8;
+  --primary-soft:rgba(99,102,241,.14);
+  --primary-grad:linear-gradient(135deg,#6366F1,#8B5CF6);
+  --green:#34D399; --green-soft:rgba(52,211,153,.12);
+  --amber:#FBBF24; --amber-soft:rgba(251,191,36,.12);
+  --red:#F87171;   --red-soft:rgba(248,113,113,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.45);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body,#root{min-height:100vh}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);font-size:14.5px;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+.mono{font-family:'IBM Plex Mono',monospace}
+::selection{background:var(--primary);color:#fff}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- shells ---------- */
+.auth{min-height:100vh;display:flex}
+.auth-left{flex:1.05;padding:52px;display:flex;flex-direction:column;justify-content:space-between;background:var(--primary-grad);color:#fff;position:relative;overflow:hidden}
+.auth-left::after{content:'';position:absolute;width:560px;height:560px;border-radius:50%;background:rgba(255,255,255,.07);top:-180px;right:-180px}
+.auth-left::before{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:rgba(255,255,255,.06);bottom:-140px;left:-100px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:19px;letter-spacing:.3px;z-index:1}
+.logo{width:36px;height:36px;border-radius:11px;background:#fff;color:#4F46E5;display:grid;place-items:center;font-weight:800;font-size:17px}
+[data-theme="dark"] .sidebar .logo{background:var(--primary-grad);color:#fff}
+.auth-hero{z-index:1}
+.auth-hero h1{font-size:46px;line-height:1.12;font-weight:700;letter-spacing:-1px;max-width:520px}
+.auth-hero p{margin-top:16px;opacity:.85;max-width:430px;line-height:1.75;font-weight:300;font-size:15px}
+.auth-points{display:flex;gap:14px;z-index:1;flex-wrap:wrap}
+.auth-points div{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.12);padding:10px 16px;border-radius:99px;font-size:12.5px;font-weight:500;backdrop-filter:blur(4px)}
+.auth-right{flex:.95;display:grid;place-items:center;padding:40px;background:var(--bg)}
+.auth-card{width:100%;max-width:392px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px;box-shadow:var(--shadow)}
+.auth-card h2{font-size:23px;font-weight:600}
+.auth-card .sub{color:var(--muted);font-size:13px;margin:5px 0 24px}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:12px 14px;border-radius:11px;font-size:14px;transition:border .2s, box-shadow .2s}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);outline:none}
+.btn{width:100%;padding:13px;border-radius:11px;font-weight:600;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--primary-grad);color:#fff;box-shadow:var(--shadow-lg)}
+.auth-toggle{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.auth-toggle a{color:var(--primary);cursor:pointer;font-weight:600;text-decoration:none}
+
+.shell{display:flex;min-height:100vh}
+.sidebar{width:248px;background:var(--card);border-right:1px solid var(--line);padding:24px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:background .3s}
+.sidebar .brand{color:var(--text);padding:0 10px;margin-bottom:30px}
+.nav{display:flex;flex-direction:column;gap:3px;flex:1}
+.nav-item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;font-size:13.5px;font-weight:500;color:var(--muted);text-align:left;width:100%;transition:color .2s;z-index:0}
+.nav-item:hover{color:var(--text)}
+.nav-item.active{color:var(--primary)}
+.nav-pill{position:absolute;inset:0;background:var(--primary-soft);border-radius:11px;z-index:-1}
+.theme-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
+.theme-row span{font-size:12.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:8px}
+.switch{width:42px;height:24px;border-radius:99px;background:var(--card-2);border:1px solid var(--line);position:relative;transition:background .25s}
+.switch.on{background:var(--primary)}
+.knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.user{display:flex;align-items:center;gap:11px;padding:12px 10px;border-top:1px solid var(--line)}
+.avatar{width:36px;height:36px;border-radius:11px;background:var(--primary-grad);display:grid;place-items:center;font-weight:700;color:#fff;font-size:14px}
+.user b{display:block;font-size:13px}
+.user span{font-size:11px;color:var(--muted)}
+
+.main{flex:1;padding:32px 40px;max-width:1220px;width:100%;margin:0 auto}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;gap:18px;flex-wrap:wrap}
+.page-head h1{font-size:23px;font-weight:600;letter-spacing:-.3px}
+.page-head p{color:var(--muted);font-size:13px;margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:99px;font-size:12.5px;font-weight:600}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--green-soft);color:var(--green)}
+.pill.warn{background:var(--amber-soft);color:var(--amber)}
+.pill.danger{background:var(--red-soft);color:var(--red)}
+
+.grid{display:grid;gap:16px}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+.cols-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);transition:background .3s}
+.card h3{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.1px;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.kpi{font-family:'IBM Plex Mono',monospace;font-size:25px;font-weight:600;letter-spacing:-.5px}
+.delta{font-size:12px;margin-top:6px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.delta.up{color:var(--red)} .delta.down{color:var(--green)} .delta.okc{color:var(--green)} .delta.warnc{color:var(--amber)}
+
+/* hero */
+.hero{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;display:grid;grid-template-columns:1.15fr 1fr;gap:30px;margin-bottom:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:var(--primary-soft);filter:blur(60px);top:-140px;right:-80px;pointer-events:none}
+.sts-label{font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}
+.sts-amount{font-family:'IBM Plex Mono',monospace;font-size:52px;font-weight:600;line-height:1.15;margin:6px 0 4px;background:var(--primary-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sts-amount .cur{font-size:20px}
+.sts-note{color:var(--muted);font-size:12.5px;max-width:380px;line-height:1.7}
+.pace{display:flex;flex-direction:column;gap:18px;justify-content:center;z-index:1}
+.pace-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px;font-weight:500}
+.bar{height:9px;background:var(--card-2);border-radius:99px;overflow:hidden}
+.bar .fill{display:block;height:100%;border-radius:99px}
+.f-month{background:var(--faint)}
+.f-ok{background:var(--green)} .f-warn{background:var(--amber)} .f-danger{background:var(--red)} .f-primary{background:var(--primary-grad)}
+
+.tx{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border:none}
+.tx .l{display:flex;align-items:center;gap:12px;min-width:0}
+.cat-ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--card-2);color:var(--muted);flex:none}
+.tx b{font-size:13.5px;font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx .l span{font-size:11px;color:var(--muted)}
+.tx .amt{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;flex:none;margin-left:10px}
+
+/* log */
+.log-grid{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+.cat-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:15px}
+.cat-btn{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 6px;color:var(--muted);font-size:11.5px;font-weight:500;display:flex;flex-direction:column;gap:7px;align-items:center;transition:.15s}
+.cat-btn.sel{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.quick{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.quick button{background:var(--card-2);border:1px solid var(--line);color:var(--muted);font-size:11.5px;font-weight:500;padding:7px 12px;border-radius:99px;display:flex;align-items:center;gap:6px}
+.quick button:hover{color:var(--primary);border-color:var(--primary)}
+.scroll{max-height:540px;overflow-y:auto}
+
+/* charts */
+.bar-chart{display:flex;align-items:flex-end;gap:12px;height:165px;padding-top:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}
+.bar-col .v{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)}
+.stick{width:100%;max-width:40px;border-radius:7px 7px 3px 3px;background:var(--primary-grad);min-height:4px}
+.bar-col.dim .stick{background:var(--card-2)}
+.bar-col .d{font-size:11px;color:var(--muted);font-weight:500}
+.cat-row{margin-bottom:13px}
+.cat-row .t{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;align-items:center}
+.cat-row .t b{font-weight:500;display:flex;align-items:center;gap:8px}
+.cat-row .t span{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11.5px}
+.legend{display:flex;flex-direction:column;gap:11px}
+.legend .li{display:flex;align-items:center;gap:10px;font-size:12.5px}
+.legend .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.legend .li span{color:var(--muted);margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.chart-note{color:var(--muted);font-size:12px;margin-top:12px;line-height:1.6}
+.area-wrap{margin-top:4px}
+.ax{font-size:10px;fill:var(--muted);font-family:'Poppins'}
+
+/* achievements */
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.ach{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;position:relative;box-shadow:var(--shadow)}
+.ach .ic-wrap{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:13px}
+.ach.unlocked .ic-wrap{background:var(--primary-soft);color:var(--primary)}
+.ach.locked .ic-wrap{background:var(--card-2);color:var(--faint)}
+.ach b{display:block;font-size:13.5px;font-weight:600;margin-bottom:4px}
+.ach p{font-size:12px;color:var(--muted);line-height:1.6}
+.ach .tag{position:absolute;top:15px;right:15px;font-size:9px;letter-spacing:1px;font-weight:700;padding:4px 9px;border-radius:99px}
+.ach.unlocked .tag{color:var(--green);background:var(--green-soft)}
+.ach.locked .tag{color:var(--faint);background:var(--card-2)}
+.ach.locked b,.ach.locked p{opacity:.55}
+
+/* AI */
+.chat-shell{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.chat-card{background:var(--card);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;height:600px;box-shadow:var(--shadow)}
+.chat-log{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:80%;padding:12px 16px;border-radius:15px;font-size:13.5px;line-height:1.7;white-space:pre-wrap}
+.msg.user{align-self:flex-end;background:var(--primary-grad);color:#fff;border-bottom-right-radius:5px;font-weight:400}
+.msg.ai{align-self:flex-start;background:var(--card-2);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg.ai b{color:var(--primary)}
+.typing{color:var(--muted);font-size:12px;padding:0 22px 8px;display:flex;align-items:center;gap:8px}
+.chat-input{display:flex;gap:9px;padding:14px;border-top:1px solid var(--line)}
+.chat-input input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:12px 15px;color:var(--text);font-size:13.5px}
+.chat-input input:focus{border-color:var(--primary);outline:none}
+.send-btn{background:var(--primary-grad);color:#fff;border-radius:11px;width:46px;display:grid;place-items:center}
+.prompt-chip{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:500;padding:11px 13px;border-radius:12px;margin-bottom:8px;line-height:1.4;transition:.15s}
+.prompt-chip:hover{color:var(--primary);border-color:var(--primary)}
+.prompt-chip svg.ic{width:15px;height:15px;color:var(--primary)}
+
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.thr{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.thr:last-child{border:none}
+.thr .sw2{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}
+.thr b{font-size:13px;display:block;margin-bottom:2px}
+.thr p{font-size:12px;color:var(--muted);line-height:1.5}
+
+.toast{position:fixed;bottom:26px;left:50%;background:var(--text);color:var(--bg);font-weight:500;font-size:13px;padding:12px 20px;border-radius:12px;z-index:99;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px}
+
+@media (max-width:1020px){
+  .auth{flex-direction:column}.auth-left{padding:34px}.auth-hero h1{font-size:32px}
+  .shell{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto;padding:12px;gap:6px}
+  .sidebar .brand{margin:0 10px 0 0}
+  .nav{flex-direction:row}
+  .nav-item span.txt{display:none}
+  .theme-row span span{display:none}
+  .user,.theme-row span{display:none}
+  .theme-row{border:none;margin:0;padding:6px}
+  .main{padding:20px}
+  .cols-3,.cols-2,.ach-grid,.settings-grid,.log-grid,.chat-shell{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr}
+  .sts-amount{font-size:40px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const {useState, useEffect, useRef, useMemo} = React;
+
+/* ---- framer motion (with graceful fallback) ---- */
+const FM = window.Motion || null;
+const stripped = p => { const c={...p}; ['initial','animate','exit','transition','whileHover','whileTap','layout','layoutId','variants'].forEach(k=>delete c[k]); return c; };
+const motion = FM ? FM.motion : new Proxy({}, {get:(_,tag)=> React.forwardRef((p,ref)=>React.createElement(tag,{...stripped(p),ref},p.children))});
+const AnimatePresence = FM ? FM.AnimatePresence : ({children})=><React.Fragment>{children}</React.Fragment>;
+
+/* ---- Lucide icon set (inline, offline-safe) ---- */
+const PATHS = {
+  dashboard:<g><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></g>,
+  plusCircle:<g><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></g>,
+  chart:<g><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 14l4-4 3 3 5-6"/></g>,
+  barChart:<g><path d="M4 20V10M10 20V4M16 20v-7"/><path d="M2 20h20"/></g>,
+  trophy:<g><path d="M8 21h8M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0z"/><path d="M7 6H4a2 2 0 0 0 2 4h1M17 6h3a2 2 0 0 1-2 4h-1"/></g>,
+  sparkles:<g><path d="M12 3l1.9 4.8L18.7 9.7l-4.8 1.9L12 16.4l-1.9-4.8L5.3 9.7l4.8-1.9z"/><path d="M19 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></g>,
+  settings:<g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></g>,
+  wallet:<g><path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M22 8h-6a2 2 0 0 0 0 8h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z"/><circle cx="17" cy="12" r=".6" fill="currentColor"/></g>,
+  sun:<g><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g>,
+  moon:<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>,
+  trendUp:<g><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></g>,
+  trendDown:<g><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></g>,
+  calendar:<g><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></g>,
+  utensils:<g><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10"/><path d="M17 3c-1.7 0-3 2-3 5 0 2 1 3 2 3v10"/><path d="M16 11h1"/></g>,
+  bus:<g><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 9h16M8 21l1-4M16 21l-1-4"/><circle cx="8.5" cy="13.5" r=".6" fill="currentColor"/><circle cx="15.5" cy="13.5" r=".6" fill="currentColor"/></g>,
+  home:<g><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></g>,
+  phone:<g><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></g>,
+  film:<g><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M16 4v16M3 9h5M3 15h5M16 9h5M16 15h5"/></g>,
+  receipt:<g><path d="M5 3h14v18l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21z"/><path d="M9 8h6M9 12h6"/></g>,
+  send:<g><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></g>,
+  bulb:<g><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.7 1 1.5 1 2.5h6c0-1 .2-1.8 1-2.5A6 6 0 0 0 12 3z"/></g>,
+  scissors:<g><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 7.8 20 19M8.1 16.2 20 5"/></g>,
+  target:<g><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></g>,
+  search:<g><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></g>,
+  check:<path d="M4 12.5l5 5L20 7"/>,
+  lock:<g><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g>,
+  flame:<path d="M12 22c4 0 7-2.7 7-7 0-3-2-5.5-3.5-7C14 6.5 13 4.5 13 2c-3 2-4.5 4.6-4.5 7C7 8 6.3 7 6 5.5 4.8 7.4 4 9.8 4 12c0 6 4 10 8 10z"/>,
+  piggy:<g><path d="M19 9.5c.8 0 2-.5 2-2M5 11H3v4h2"/><path d="M5 12.5C5 8.9 8.1 6 12 6s7 2.4 7 6-3.1 6.5-7 6.5c-1 0-2-.2-2.8-.5L8 20v-2.6C6.2 16.3 5 14.5 5 12.5z"/><circle cx="15" cy="11" r=".6" fill="currentColor"/><path d="M10 6.2V4.5a1.5 1.5 0 0 1 3 0"/></g>,
+  shield:<g><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/></g>,
+  crown:<g><path d="M3 17l-1-9 5.5 4L12 5l4.5 7L22 8l-1 9z"/><path d="M3 21h18"/></g>,
+  flag:<g><path d="M5 21V4"/><path d="M5 4h13l-2.5 4L18 12H5"/></g>,
+  alert:<g><path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17.5v.5"/></g>,
+  user:<g><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></g>,
+  coins:<g><circle cx="9" cy="9" r="6"/><path d="M14.3 5.2A6 6 0 1 1 18.8 14.3"/><path d="M7 9h4M9 7v4"/></g>,
+  sprout:<g><path d="M12 21v-8"/><path d="M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 11c0-3.5 2.5-5 6-5 0 3.5-2.5 5-6 5z"/></g>,
+  book:<g><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></g>,
+  logout:<g><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></g>,
+  bot:<g><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="13" r=".7" fill="currentColor"/><circle cx="15" cy="13" r=".7" fill="currentColor"/><path d="M9 17h6"/></g>,
+  zap:<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>,
+};
+const I = ({n, size=18, style}) => <svg className="ic" style={{width:size,height:size,...style}} viewBox="0 0 24 24">{PATHS[n]||PATHS.receipt}</svg>;
+
+/* ---- domain ---- */
+const CATS = [
+  {id:'food', name:'Food', icon:'utensils', color:'#4F46E5'},
+  {id:'transport', name:'Transport', icon:'bus', color:'#0EA5E9'},
+  {id:'rent', name:'Rent', icon:'home', color:'#8B5CF6'},
+  {id:'airtime', name:'Airtime', icon:'phone', color:'#10B981'},
+  {id:'fun', name:'Leisure', icon:'film', color:'#F59E0B'},
+  {id:'other', name:'Other', icon:'receipt', color:'#94A3B8'},
+];
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const now = new Date();
+const Y=now.getFullYear(), M=now.getMonth();
+const daysInMonth = new Date(Y,M+1,0).getDate();
+const dayOfMonth = now.getDate();
+const iso = dt => dt.toISOString().slice(0,10);
+const dKey = day => iso(new Date(Y,M,Math.min(day,dayOfMonth)));
+const fmtN = n => Math.round(n).toLocaleString('en-KE');
+const fmt = n => 'KES ' + fmtN(n);
+const catOf = id => CATS.find(c=>c.id===id)||CATS[5];
+
+const SEED = [
+  [1,'rent','Hostel rent',5000],[1,'airtime','Safaricom airtime',100],
+  [2,'food','Tomatoes & onions',60],[2,'transport','Matatu fare',80],
+  [3,'food','Lunch, campus cafe',180],[3,'fun','Movie night',300],
+  [4,'food','Bread & milk',150],[4,'transport','Matatu fare',80],
+  [5,'food','Tomatoes',40],[5,'airtime','Data bundle',250],
+  [6,'food','Chips & soda',220],[6,'transport','Boda to town',150],
+  [7,'food','Groceries',430],
+  [8,'transport','Matatu fare',80],[8,'food','Lunch',150],
+  [9,'food','Tomatoes',50],[9,'fun','Game night snacks',180],
+  [10,'airtime','Airtime',100],[10,'food','Dinner out',350],
+  [11,'transport','Matatu fare',80],[11,'food','Eggs & bread',160],
+  [12,'food','Lunch',170],[12,'other','Printing notes',60],
+  [13,'food','Tomatoes & sukuma',70],[13,'transport','Boda',120],
+  [14,'fun','Weekend out',500],[14,'food','Snacks',130],
+].filter(([d])=>d<=dayOfMonth).map(([day,cat,item,amt],i)=>({id:i+1, date:dKey(day), cat, item, amt}));
+
+/* ---- derived metrics ---- */
+function useMetrics(expenses, budget, goal){
+  return useMemo(()=>{
+    const spent = expenses.reduce((s,e)=>s+e.amt,0);
+    const remaining = budget - spent;
+    const daysLeft = daysInMonth - dayOfMonth + 1;
+    const safe = Math.max(0,(remaining - goal)/daysLeft);
+    const today = iso(new Date());
+    const todaySpent = expenses.filter(e=>e.date===today).reduce((s,e)=>s+e.amt,0);
+    const spendPace = spent/budget, monthPace = dayOfMonth/daysInMonth;
+    const status = spendPace<=monthPace ? 'ok' : spendPace<=monthPace*1.15 ? 'warn' : 'danger';
+    const last7 = [];
+    for(let i=6;i>=0;i--){ const dt=new Date(); dt.setDate(dt.getDate()-i); const k=iso(dt);
+      last7.push({label:DOW[dt.getDay()], amt:expenses.filter(e=>e.date===k).reduce((s,e)=>s+e.amt,0), today:i===0}); }
+    const byCat = CATS.map(c=>({...c, amt:expenses.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amt,0)})).filter(c=>c.amt>0).sort((a,b)=>b.amt-a.amt);
+    const counts={}; expenses.forEach(e=>{const k=e.item.toLowerCase(); counts[k]=counts[k]||{n:0,amt:0,name:e.item}; counts[k].n++; counts[k].amt+=e.amt;});
+    const topItems = Object.values(counts).sort((a,b)=>b.n-a.n);
+    const byDow = DOW.map(l=>({label:l,amt:0}));
+    expenses.forEach(e=>{ byDow[new Date(e.date).getDay()].amt+=e.amt; });
+    const dowOrdered=[...byDow.slice(1),byDow[0]];
+    const cum=[]; let run=0;
+    for(let d=1;d<=dayOfMonth;d++){ run+=expenses.filter(e=>e.date===dKey(d)).reduce((s,e)=>s+e.amt,0); cum.push({day:d, spent:run, ideal:budget*d/daysInMonth}); }
+    const daysWithSpend = new Set(expenses.map(e=>e.date)).size||1;
+    const projected = spent/dayOfMonth*daysInMonth;
+    const recentTx = [...expenses].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).slice(0,6);
+    return {spent,remaining,daysLeft,safe,todaySpent,spendPace,monthPace,status,last7,byCat,topItems,dowOrdered,cum,daysWithSpend,projected,recentTx};
+  },[expenses,budget,goal]);
+}
+
+/* ---- shared anim ---- */
+const fadeUp = {initial:{opacity:0,y:14},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},transition:{duration:.32,ease:'easeOut'}};
+const stagger = i => ({initial:{opacity:0,y:16},animate:{opacity:1,y:0},transition:{duration:.4,delay:i*.07,ease:'easeOut'}});
+
+/* ============ AREA CHART (spend vs ideal pace) ============ */
+function AreaChart({cum, budget, status}){
+  const W=520,H=190,P=28;
+  const maxY = Math.max(budget, ...cum.map(c=>c.spent))*1.05;
+  const x = d => P + (d-1)/(Math.max(daysInMonth-1,1))*(W-P*2);
+  const y = v => H-P - v/maxY*(H-P*2);
+  const line = pts => pts.map((p,i)=>(i?'L':'M')+x(p.day).toFixed(1)+' '+y(p.v).toFixed(1)).join(' ');
+  const spentPath = line(cum.map(c=>({day:c.day,v:c.spent})));
+  const idealPts=[]; for(let d=1;d<=daysInMonth;d++) idealPts.push({day:d,v:budget*d/daysInMonth});
+  const idealPath = line(idealPts);
+  const last = cum[cum.length-1];
+  const area = spentPath + ` L ${x(last.day)} ${y(0)} L ${x(1)} ${y(0)} Z`;
+  const col = status==='ok'?'var(--green)':status==='warn'?'var(--amber)':'var(--red)';
+  return (
+    <div className="area-wrap">
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#6366F1" stopOpacity=".28"/>
+            <stop offset="100%" stopColor="#6366F1" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        {[0,.25,.5,.75,1].map((t,i)=>(
+          <g key={i}>
+            <line x1={P} x2={W-P} y1={y(maxY*t)} y2={y(maxY*t)} stroke="var(--line)" strokeWidth="1"/>
+            <text className="ax" x={P-6} y={y(maxY*t)+3} textAnchor="end">{Math.round(maxY*t/1000)}k</text>
+          </g>
+        ))}
+        <motion.path d={area} fill="url(#ag)" initial={{opacity:0}} animate={{opacity:1}} transition={{duration:.8}}/>
+        <motion.path d={idealPath} fill="none" stroke="var(--faint)" strokeWidth="1.6" strokeDasharray="5 5"
+          initial={{pathLength:0}} animate={{pathLength:1}} transition={{duration:1}}/>
+        <motion.path d={spentPath} fill="none" stroke="#6366F1" strokeWidth="2.4" strokeLinecap="round"
+          initial={{pathLength:0}} animate={{pathLength:1}} transition={{duration:1.1,ease:'easeOut'}}/>
+        <motion.circle cx={x(last.day)} cy={y(last.spent)} r="4.5" fill={col} stroke="var(--card)" strokeWidth="2"
+          initial={{scale:0}} animate={{scale:1}} transition={{delay:1,duration:.3}}/>
+        <text className="ax" x={P} y={H-8}>Day 1</text>
+        <text className="ax" x={W-P} y={H-8} textAnchor="end">Day {daysInMonth}</text>
+      </svg>
+      <div className="legend" style={{flexDirection:'row',gap:18,marginTop:8}}>
+        <div className="li"><span className="sw" style={{background:'#6366F1'}}></span>Actual spend</div>
+        <div className="li"><span className="sw" style={{background:'var(--faint)'}}></span>Ideal pace</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ DONUT ============ */
+function Donut({byCat, total}){
+  const R=58, C=2*Math.PI*R;
+  let acc=0;
+  return (
+    <div style={{display:'flex',gap:24,alignItems:'center',flexWrap:'wrap'}}>
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r={R} fill="none" stroke="var(--card-2)" strokeWidth="16"/>
+        {byCat.map((c,i)=>{
+          const frac=c.amt/total, dash=frac*C, off=-acc*C; acc+=frac;
+          return <motion.circle key={c.id} cx="75" cy="75" r={R} fill="none" stroke={c.color} strokeWidth="16"
+            strokeDasharray={`${dash} ${C-dash}`} strokeDashoffset={off} transform="rotate(-90 75 75)" strokeLinecap="butt"
+            initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.15*i,duration:.5}}/>;
+        })}
+        <text x="75" y="71" textAnchor="middle" style={{fontFamily:'IBM Plex Mono',fontSize:15,fontWeight:600,fill:'var(--text)'}}>{fmtN(total)}</text>
+        <text x="75" y="88" textAnchor="middle" style={{fontFamily:'Poppins',fontSize:9.5,fill:'var(--muted)'}}>KES SPENT</text>
+      </svg>
+      <div className="legend" style={{flex:1,minWidth:160}}>
+        {byCat.map(c=>(
+          <div className="li" key={c.id}><span className="sw" style={{background:c.color}}></span>{c.name}<span>{Math.round(c.amt/total*100)}%</span></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============ AI logic ============ */
+function summary(m, user, budget, goal){
+  return {user, currency:'KES', budget, goal, spent:m.spent, remaining:m.remaining,
+    dayOfMonth, daysInMonth, daysLeft:m.daysLeft,
+    spendPacePct:Math.round(m.spendPace*100), monthPacePct:Math.round(m.monthPace*100),
+    status:m.status, safeToSpendToday:Math.round(m.safe), projectedMonthEndSpend:Math.round(m.projected),
+    byCategory:m.byCat.map(c=>({name:c.name, amt:c.amt})),
+    last7Days:m.last7.map(o=>({day:o.label, amt:o.amt})),
+    topRepeatItems:m.topItems.slice(0,3).map(t=>`${t.name} (${t.n}x, KES ${t.amt})`)};
+}
+async function askClaude(question, ctx){
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+      messages:[{role:'user',content:
+`You are Akiba AI, a warm, direct personal-finance coach inside the Akiba app, talking to a Kenyan university student. Currency is KES. Keep answers under 160 words, conversational, specific to the data, with concrete actions. Use **bold** sparingly for key numbers. No emojis. No markdown headers.
+
+Live user data (this month): ${JSON.stringify(ctx)}
+
+User question: ${question}`}]})});
+  if(!res.ok) throw new Error('api');
+  const data = await res.json();
+  const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+  if(!txt) throw new Error('empty');
+  return txt;
+}
+function localCoach(q, c){
+  const top=c.byCategory[0]||{name:'—',amt:0};
+  const ql=q.toLowerCase();
+  const statusLine = c.status==='ok'
+    ? `You're **on track**: ${c.spendPacePct}% of budget used with ${c.monthPacePct}% of the month gone.`
+    : c.status==='warn'
+    ? `You're **slightly ahead of pace**: ${c.spendPacePct}% of budget used vs ${c.monthPacePct}% of the month. Ease off for a few days.`
+    : `You're in the **danger zone**: ${c.spendPacePct}% of budget gone but only ${c.monthPacePct}% of the month. At this rate money runs out early.`;
+  if(ql.includes('week')){
+    const wk=c.last7Days.reduce((s,o)=>s+o.amt,0);
+    const heavy=[...c.last7Days].sort((a,b)=>b.amt-a.amt)[0];
+    return `**Your week in review**\n\nYou spent **KES ${wk.toLocaleString()}** over the last 7 days, about KES ${Math.round(wk/7).toLocaleString()} per day. Heaviest day: **${heavy.day}** at KES ${heavy.amt.toLocaleString()}. Biggest category this month: **${top.name}** (KES ${top.amt.toLocaleString()}).\n\n${statusLine}\n\nSafe to spend today: **KES ${c.safeToSpendToday.toLocaleString()}**. Stay under it and your KES ${c.goal.toLocaleString()} savings goal is protected.`;
+  }
+  if(ql.includes('cut')||ql.includes('overspend')||ql.includes('stop')){
+    const second=c.byCategory[1];
+    return `Your money leaks from **${top.name}** first: KES ${top.amt.toLocaleString()} so far${second?`, then **${second.name}** at KES ${second.amt.toLocaleString()}`:''}.\n\nTry a soft weekly cap for ${top.name} of KES ${Math.round(top.amt/c.dayOfMonth*7*0.8).toLocaleString()} (20% under your current pace). Repeat purchases worth watching: ${c.topRepeatItems.join(', ')} — small amounts that compound.\n\n${statusLine}`;
+  }
+  if(ql.includes('track')||ql.includes('month')){
+    return `${statusLine}\n\nAt this pace you'd spend about **KES ${c.projectedMonthEndSpend.toLocaleString()}** by month end against a KES ${c.budget.toLocaleString()} budget, leaving **KES ${(c.budget-c.projectedMonthEndSpend).toLocaleString()}**. Treat **KES ${c.safeToSpendToday.toLocaleString()}** as your daily ceiling and the month takes care of itself.`;
+  }
+  if(ql.includes('tip')||ql.includes('save')){
+    return `Three things that will move the needle:\n\n1. **Daily ceiling** — spend at most KES ${c.safeToSpendToday.toLocaleString()} per day. One number, easy to obey.\n2. **Tame ${top.name}** — your biggest category at KES ${top.amt.toLocaleString()}. Cutting it 15% saves about KES ${Math.round(top.amt*0.15).toLocaleString()} this month.\n3. **Log before you buy** — entering the expense first makes you feel the cost; impulse buys usually drop by a third.\n\n${statusLine}`;
+  }
+  if(ql.includes('habit')||ql.includes('expensive')){
+    return `Your most repeated purchases: **${c.topRepeatItems.join(', ')}**. Individually small, together a habit with a price tag. Heaviest category: **${top.name}** at KES ${top.amt.toLocaleString()} (${Math.round(top.amt/Math.max(c.spent,1)*100)}% of all spending).\n\n${statusLine}`;
+  }
+  return `${statusLine}\n\nQuick numbers: spent **KES ${c.spent.toLocaleString()}**, remaining **KES ${c.remaining.toLocaleString()}**, safe to spend today **KES ${c.safeToSpendToday.toLocaleString()}**. Biggest category: **${top.name}**. Ask about your week, where to cut back, or tips to save more.`;
+}
+
+/* ============ APP ============ */
+function App(){
+  const [theme,setTheme]=useState('light');
+  const [authed,setAuthed]=useState(false);
+  const [signup,setSignup]=useState(false);
+  const [user,setUser]=useState('Dave');
+  const [budget,setBudget]=useState(15000);
+  const [goal,setGoal]=useState(2000);
+  const [expenses,setExpenses]=useState(SEED);
+  const [page,setPage]=useState('dashboard');
+  const [toast,setToast]=useState(null);
+  const m = useMetrics(expenses,budget,goal);
+
+  useEffect(()=>{ document.documentElement.setAttribute('data-theme',theme); },[theme]);
+  const ping = msg => { setToast(msg); setTimeout(()=>setToast(null),2800); };
+
+  if(!authed) return <Auth {...{signup,setSignup,setAuthed,setUser,setBudget,theme,setTheme}}/>;
+
+  const NAV = [
+    {id:'dashboard',label:'Dashboard',icon:'dashboard'},
+    {id:'log',label:'Log expense',icon:'plusCircle'},
+    {id:'analytics',label:'Analytics',icon:'chart'},
+    {id:'achievements',label:'Achievements',icon:'trophy'},
+    {id:'ai',label:'Akiba AI',icon:'sparkles'},
+    {id:'settings',label:'Budget & settings',icon:'settings'},
+  ];
+
+  return (
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="brand"><div className="logo">A</div> Akiba</div>
+        <nav className="nav">
+          {NAV.map(n=>(
+            <button key={n.id} className={'nav-item'+(page===n.id?' active':'')} onClick={()=>setPage(n.id)}>
+              {page===n.id && <motion.span layoutId="navpill" className="nav-pill" transition={{type:'spring',stiffness:420,damping:34}}/>}
+              <I n={n.icon}/><span className="txt">{n.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="theme-row">
+          <span><I n={theme==='light'?'sun':'moon'} size={15}/><span>{theme==='light'?'Light mode':'Dark mode'}</span></span>
+          <button className={'switch'+(theme==='dark'?' on':'')} onClick={()=>setTheme(t=>t==='light'?'dark':'light')} aria-label="Toggle theme">
+            <motion.span className="knob" animate={{x:theme==='dark'?18:0}} transition={{type:'spring',stiffness:500,damping:32}}/>
+          </button>
+        </div>
+        <div className="user">
+          <div className="avatar">{user[0].toUpperCase()}</div>
+          <div><b>{user}</b><span>Personal plan</span></div>
+          <button style={{marginLeft:'auto',color:'var(--muted)'}} onClick={()=>setAuthed(false)} aria-label="Sign out"><I n="logout" size={16}/></button>
+        </div>
+      </aside>
+
+      <main className="main">
+        <AnimatePresence mode="wait">
+          <motion.div key={page} {...fadeUp}>
+            {page==='dashboard' && <Dashboard m={m} user={user} budget={budget} goal={goal}/>}
+            {page==='log' && <Log m={m} expenses={expenses} setExpenses={setExpenses} ping={ping}/>}
+            {page==='analytics' && <Analytics m={m} budget={budget}/>}
+            {page==='achievements' && <Achievements m={m} expenses={expenses} budget={budget} goal={goal}/>}
+            {page==='ai' && <AIChat m={m} user={user} budget={budget} goal={goal}/>}
+            {page==='settings' && <Settings budget={budget} setBudget={setBudget} goal={goal} setGoal={setGoal} ping={ping}/>}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      <AnimatePresence>
+        {toast && <motion.div className="toast" initial={{opacity:0,y:16,x:'-50%'}} animate={{opacity:1,y:0,x:'-50%'}} exit={{opacity:0,y:10,x:'-50%'}}>
+          <I n="check" size={15}/>{toast}</motion.div>}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ---- Auth ---- */
+function Auth({signup,setSignup,setAuthed,setUser,setBudget,theme,setTheme}){
+  const nameRef=useRef(), budRef=useRef();
+  const enter = () => {
+    if(signup){
+      const n=nameRef.current.value.trim(); if(n) setUser(n);
+      const b=parseFloat(budRef.current.value); if(b>0) setBudget(b);
+    }
+    setAuthed(true);
+  };
+  return (
+    <div className="auth">
+      <div className="auth-left">
+        <div className="brand"><div className="logo">A</div> Akiba</div>
+        <motion.div className="auth-hero" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
+          <h1>End the month with money left.</h1>
+          <p>Akiba tracks every shilling, shows you one clear number that's safe to spend today, and an AI coach tells you the truth about your habits before the 20th catches you off guard.</p>
+        </motion.div>
+        <motion.div className="auth-points" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.3}}>
+          <div><I n="target" size={14}/> Safe-to-spend daily</div>
+          <div><I n="barChart" size={14}/> Live analytics</div>
+          <div><I n="sparkles" size={14}/> AI money coach</div>
+        </motion.div>
+      </div>
+      <div className="auth-right">
+        <motion.div className="auth-card" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:.45,delay:.1}}>
+          <h2>{signup?'Create your account':'Welcome back'}</h2>
+          <div className="sub">{signup?'Your own dashboard, your own money rules':'Sign in to your Akiba dashboard'}</div>
+          {signup && <div className="field"><label>Full name</label><input ref={nameRef} placeholder="Dave"/></div>}
+          <div className="field"><label>Email</label><input type="email" defaultValue="dave@email.com"/></div>
+          <div className="field"><label>Password</label><input type="password" defaultValue="password"/></div>
+          {signup && <div className="field"><label>Monthly budget (KES)</label><input ref={budRef} type="number" defaultValue="15000"/></div>}
+          <motion.button className="btn btn-primary" whileTap={{scale:.97}} onClick={enter}>
+            {signup?'Create account':'Sign in'}</motion.button>
+          <div className="auth-toggle">{signup?'Already have an account? ':'New to Akiba? '}
+            <a onClick={()=>setSignup(!signup)}>{signup?'Sign in':'Create an account'}</a></div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Dashboard ---- */
+function Dashboard({m,user,budget,goal}){
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const statusTxt = m.status==='ok'?'On track':m.status==='warn'?'Slow down':'Danger zone';
+  const maxWk = Math.max(...m.last7.map(o=>o.amt),1);
+  return (
+    <div>
+      <div className="page-head">
+        <div><h1>{greet}, {user}</h1><p>{new Date().toLocaleDateString('en-KE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div>
+        <span className={'pill '+m.status}><span className="dot"/>{statusTxt}</span>
+      </div>
+
+      <motion.div className="hero" {...stagger(0)}>
+        <div>
+          <div className="sts-label"><I n="target" size={14}/> Safe to spend today</div>
+          <div className="sts-amount"><span className="cur">KES </span>{fmtN(m.safe)}</div>
+          <div className="sts-note">{fmt(m.remaining)} remaining ÷ {m.daysLeft} days left, protecting your {fmt(goal)} savings goal.</div>
+        </div>
+        <div className="pace">
+          <div>
+            <div className="pace-top"><span>Month progress</span><span className="mono">{Math.round(m.monthPace*100)}%</span></div>
+            <div className="bar"><motion.span className="fill f-month" initial={{width:0}} animate={{width:(m.monthPace*100)+'%'}} transition={{duration:.7,ease:'easeOut'}}/></div>
+          </div>
+          <div>
+            <div className="pace-top"><span>Budget spent</span><span className="mono">{Math.round(m.spendPace*100)}%</span></div>
+            <div className="bar"><motion.span className={'fill f-'+m.status} initial={{width:0}} animate={{width:Math.min(100,m.spendPace*100)+'%'}} transition={{duration:.7,ease:'easeOut',delay:.15}}/></div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="grid cols-3" style={{marginBottom:16}}>
+        {[
+          {t:'Remaining',icon:'wallet',v:fmt(m.remaining),d:`of ${fmt(budget)} budget`,cls:''},
+          {t:'Spent this month',icon:'trendUp',v:fmt(m.spent),d:`${Math.round(m.spendPace*100)}% used · ${Math.round(m.monthPace*100)}% of month gone`,cls:''},
+          {t:'Spent today',icon:'calendar',v:fmt(m.todaySpent),d:m.todaySpent>m.safe?'Above today\'s safe amount':'Within today\'s safe amount',cls:m.todaySpent>m.safe?'warnc':'okc'},
+        ].map((k,i)=>(
+          <motion.div className="card" key={k.t} {...stagger(i+1)}>
+            <h3><I n={k.icon} size={14}/>{k.t}</h3>
+            <div className="kpi">{k.v}</div>
+            <div className={'delta '+k.cls}>{k.d}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid cols-2">
+        <motion.div className="card" {...stagger(4)}>
+          <h3><I n="chart" size={14}/>Spend pace vs ideal</h3>
+          <AreaChart cum={m.cum} budget={budget} status={m.status}/>
+        </motion.div>
+        <motion.div className="card" {...stagger(5)}>
+          <h3><I n="receipt" size={14}/>Recent expenses</h3>
+          <RecentList expenses={m.recentTx}/>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+function RecentList({expenses}){
+  if(!expenses || !expenses.length) return <p style={{color:'var(--muted)',fontSize:13,padding:'14px 0'}}>No expenses yet.</p>;
+  return <div>{expenses.map(e=><TxRow key={e.id} e={e}/>)}</div>;
+}
+
+/* ---- Log ---- */
+function Log({m,expenses,setExpenses,ping}){
+  const [cat,setCat]=useState('food');
+  const [item,setItem]=useState('');
+  const [amt,setAmt]=useState('');
+  const [date,setDate]=useState(iso(new Date()));
+  const quicks=[['Matatu fare',80,'transport','bus'],['Tomatoes',50,'food','utensils'],['Airtime',100,'airtime','phone'],['Lunch',150,'food','utensils']];
+  const add=()=>{
+    const a=parseFloat(amt);
+    if(!item.trim()) return ping('Add a name for the expense');
+    if(!a||a<=0) return ping('Enter a valid amount');
+    setExpenses(ex=>[...ex,{id:Date.now(),date,cat,item:item.trim(),amt:a}]);
+    setItem(''); setAmt('');
+    ping('Expense logged — balances updated');
+  };
+  const sorted=[...expenses].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  return (
+    <div>
+      <div className="page-head"><div><h1>Log an expense</h1><p>Every shilling counted. Balances update instantly.</p></div></div>
+      <div className="log-grid">
+        <motion.div className="card" {...stagger(0)}>
+          <h3><I n="plusCircle" size={14}/>New expense</h3>
+          <div className="quick">{quicks.map(q=>(
+            <button key={q[0]} onClick={()=>{setItem(q[0]);setAmt(String(q[1]));setCat(q[2]);}}>
+              <I n="zap" size={12}/>{q[0]} · {q[1]}</button>))}</div>
+          <div className="cat-pick">{CATS.map(c=>(
+            <motion.button key={c.id} whileTap={{scale:.94}} className={'cat-btn'+(cat===c.id?' sel':'')} onClick={()=>setCat(c.id)}>
+              <I n={c.icon} size={17}/>{c.name}</motion.button>))}</div>
+          <div className="field"><label>What did you buy?</label>
+            <input value={item} onChange={e=>setItem(e.target.value)} placeholder="e.g. Tomatoes, Matatu fare, Airtime"/></div>
+          <div className="field"><label>Amount (KES)</label>
+            <input value={amt} onChange={e=>setAmt(e.target.value)} type="number" min="1" placeholder="e.g. 50" onKeyDown={e=>e.key==='Enter'&&add()}/></div>
+          <div className="field"><label>Date</label>
+            <input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+          <motion.button className="btn btn-primary" whileTap={{scale:.97}} onClick={add}><I n="plusCircle" size={16}/>Add expense</motion.button>
+        </motion.div>
+        <motion.div className="card" {...stagger(1)}>
+          <h3><I n="receipt" size={14}/>All expenses this month
+            <span className="mono" style={{marginLeft:'auto',textTransform:'none',letterSpacing:0,color:'var(--muted)'}}>{sorted.length} logged</span></h3>
+          <div className="scroll">
+            <AnimatePresence initial={false}>
+              {sorted.map(e=><TxRow key={e.id} e={e} animate/>)}
+            </AnimatePresence>
+            {!sorted.length && <p style={{color:'var(--muted)',fontSize:13,padding:'18px 0'}}>No expenses yet. Log your first one to get started.</p>}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+function TxRow({e,animate}){
+  const c=catOf(e.cat);
+  const dt=new Date(e.date).toLocaleDateString('en-KE',{day:'numeric',month:'short'});
+  const inner=(
+    <div className="tx">
+      <div className="l"><div className="cat-ic" style={{color:c.color}}><I n={c.icon} size={17}/></div>
+        <div><b>{e.item}</b><span>{c.name} · {dt}</span></div></div>
+      <span className="amt">− {fmt(e.amt)}</span>
+    </div>);
+  if(!animate) return inner;
+  return <motion.div initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} exit={{opacity:0}} transition={{duration:.25}}>{inner}</motion.div>;
+}
+
+/* ---- Analytics ---- */
+function Analytics({m,budget}){
+  const top=m.topItems[0];
+  const topDay=[...m.dowOrdered].sort((a,b)=>b.amt-a.amt)[0];
+  const maxD=Math.max(...m.dowOrdered.map(o=>o.amt),1);
+  const full=s=>({Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'}[s]||s);
+  return (
+    <div>
+      <div className="page-head"><div><h1>Analytics</h1><p>Where your money actually goes</p></div></div>
+      <div className="grid cols-3" style={{marginBottom:16}}>
+        <motion.div className="card" {...stagger(0)}><h3><I n="coins" size={14}/>Daily average</h3>
+          <div className="kpi">{fmt(m.spent/m.daysWithSpend)}</div><div className="delta">across days with spending</div></motion.div>
+        <motion.div className="card" {...stagger(1)}><h3><I n="search" size={14}/>Most bought item</h3>
+          <div className="kpi" style={{fontSize:19}}>{top?top.name:'—'}</div>
+          <div className="delta">{top?`${top.n} times · ${fmt(top.amt)} total`:''}</div></motion.div>
+        <motion.div className="card" {...stagger(2)}><h3><I n="flame" size={14}/>Heaviest day</h3>
+          <div className="kpi" style={{fontSize:19}}>{full(topDay.label)}</div>
+          <div className="delta">{fmt(topDay.amt)} spent on {full(topDay.label)}s</div></motion.div>
+      </div>
+      <div className="grid cols-2" style={{marginBottom:16}}>
+        <motion.div className="card" {...stagger(3)}>
+          <h3><I n="barChart" size={14}/>Spending by day of week</h3>
+          <div className="bar-chart">
+            {m.dowOrdered.map((o,i)=>(
+              <div className="bar-col" key={o.label}>
+                <span className="v">{o.amt?fmtN(o.amt):''}</span>
+                <motion.span className="stick" initial={{height:0}} animate={{height:Math.max(3,o.amt/maxD*100)+'%'}} transition={{duration:.5,delay:i*.05,ease:'easeOut'}}/>
+                <span className="d">{o.label}</span>
+              </div>))}
+          </div>
+        </motion.div>
+        <motion.div className="card" {...stagger(4)}>
+          <h3><I n="chart" size={14}/>Spending by category</h3>
+          {m.byCat.length ? <Donut byCat={m.byCat} total={m.spent}/> : <p className="chart-note">No data yet.</p>}
+        </motion.div>
+      </div>
+      <motion.div className="card" {...stagger(5)}>
+        <h3><I n="receipt" size={14}/>Category breakdown</h3>
+        {m.byCat.map(c=>(
+          <div className="cat-row" key={c.id}>
+            <div className="t"><b><I n={c.icon} size={14} style={{color:c.color}}/>{c.name}</b><span>{fmt(c.amt)} · {Math.round(c.amt/m.spent*100)}%</span></div>
+            <div className="bar"><motion.span className="fill" style={{background:c.color}} initial={{width:0}} animate={{width:(c.amt/m.spent*100)+'%'}} transition={{duration:.6,ease:'easeOut'}}/></div>
+          </div>))}
+        <p className="chart-note">Projected month-end spend at current pace: <b className="mono" style={{color:'var(--text)'}}>{fmt(m.projected)}</b> against a {fmt(budget)} budget.</p>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ---- Achievements ---- */
+function Achievements({m,expenses,budget,goal}){
+  const daysLogged=new Set(expenses.map(e=>e.date)).size;
+  const wkTotal=m.last7.reduce((s,o)=>s+o.amt,0);
+  const weeklyBudget=budget/daysInMonth*7;
+  const byDay={}; expenses.forEach(e=>{byDay[e.date]=(byDay[e.date]||0)+e.amt});
+  const cheapDay=Object.values(byDay).some(v=>v>0&&v<100);
+  const achs=[
+    {icon:'sprout',t:'First shilling tracked',p:'Log your very first expense.',ok:expenses.length>=1},
+    {icon:'book',t:'Bookkeeper',p:'Log expenses on 7 different days.',ok:daysLogged>=7},
+    {icon:'flame',t:'Two-week streak',p:'Log expenses on 14 different days.',ok:daysLogged>=14},
+    {icon:'shield',t:'Under-budget week',p:'Spend less in 7 days than your weekly budget share.',ok:wkTotal>0&&wkTotal<=weeklyBudget},
+    {icon:'check',t:'Green keeper',p:'Hold the on-track status right now.',ok:m.status==='ok'},
+    {icon:'piggy',t:'Saver in the making',p:'Keep your remaining balance above your savings goal.',ok:m.remaining>=goal},
+    {icon:'coins',t:'Cheap day champion',p:'Have a day where you spend under KES 100.',ok:cheapDay},
+    {icon:'flag',t:'Month finisher',p:'End a month with money left over.',ok:false},
+    {icon:'crown',t:'Akiba master',p:'Finish 3 months in a row under budget.',ok:false},
+  ];
+  const n=achs.filter(a=>a.ok).length;
+  return (
+    <div>
+      <div className="page-head">
+        <div><h1>Achievements</h1><p>Discipline, rewarded</p></div>
+        <span className="pill ok"><I n="trophy" size={13}/>{n} / {achs.length} unlocked</span>
+      </div>
+      <div className="ach-grid">
+        {achs.map((a,i)=>(
+          <motion.div key={a.t} className={'ach '+(a.ok?'unlocked':'locked')} {...stagger(i)} whileHover={a.ok?{y:-4}:{}}>
+            <div className="ic-wrap"><I n={a.ok?a.icon:'lock'} size={20}/></div>
+            <b>{a.t}</b><p>{a.p}</p>
+            <span className="tag">{a.ok?'UNLOCKED':'LOCKED'}</span>
+          </motion.div>))}
+      </div>
+    </div>
+  );
+}
+
+/* ---- AI ---- */
+function AIChat({m,user,budget,goal}){
+  const [msgs,setMsgs]=useState([{who:'ai',text:`Habari ${user}. I'm **Akiba AI**, your money coach. I read your live spending data for this month, so my answers are about your money, not generic advice. Ask how your week went, where you're overspending, or what to change — or use a quick question on the right.`}]);
+  const [input,setInput]=useState('');
+  const [busy,setBusy]=useState(false);
+  const logRef=useRef();
+  useEffect(()=>{ if(logRef.current) logRef.current.scrollTop=logRef.current.scrollHeight; },[msgs,busy]);
+  const ask=async q=>{
+    const question=(q??input).trim(); if(!question||busy) return;
+    setInput(''); setMsgs(ms=>[...ms,{who:'user',text:question}]); setBusy(true);
+    const ctx=summary(m,user,budget,goal);
+    let reply;
+    try{ reply=await askClaude(question,ctx); }catch(e){ reply=localCoach(question,ctx); }
+    setBusy(false); setMsgs(ms=>[...ms,{who:'ai',text:reply}]);
+  };
+  const chips=[
+    ['barChart','How was my week? Give me a full weekly report.'],
+    ['scissors','Where am I overspending and what should I stop?'],
+    ['target','Am I on track to finish the month with money left?'],
+    ['bulb','Give me 3 practical tips to save more next week.'],
+    ['search','What is my most expensive habit?'],
+  ];
+  const render=t=>t.split(/(\*\*[^*]+\*\*)/g).map((s,i)=>s.startsWith('**')?<b key={i}>{s.slice(2,-2)}</b>:s);
+  return (
+    <div>
+      <div className="page-head"><div><h1>Akiba AI</h1><p>Your personal money coach — it reads your real spending data</p></div></div>
+      <div className="chat-shell">
+        <div className="chat-card">
+          <div className="chat-log" ref={logRef}>
+            <AnimatePresence initial={false}>
+              {msgs.map((mm,i)=>(
+                <motion.div key={i} className={'msg '+mm.who} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{duration:.25}}>
+                  {render(mm.text)}
+                </motion.div>))}
+            </AnimatePresence>
+          </div>
+          {busy && <div className="typing"><I n="sparkles" size={13}/>Akiba AI is thinking…</div>}
+          <div className="chat-input">
+            <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Ask about your spending…" onKeyDown={e=>e.key==='Enter'&&ask()}/>
+            <motion.button className="send-btn" whileTap={{scale:.92}} onClick={()=>ask()} aria-label="Send"><I n="send" size={16}/></motion.button>
+          </div>
+        </div>
+        <div>
+          <div className="card" style={{marginBottom:14}}>
+            <h3><I n="zap" size={14}/>Quick questions</h3>
+            {chips.map(([ic,q])=>(
+              <motion.button key={q} className="prompt-chip" whileTap={{scale:.97}} onClick={()=>ask(q)}>
+                <I n={ic}/>{q}</motion.button>))}
+          </div>
+          <div className="card">
+            <h3><I n="bot" size={14}/>How it works</h3>
+            <p style={{fontSize:12,color:'var(--muted)',lineHeight:1.75}}>Every question is sent with a live summary of your budget, pace, categories and daily totals — so the advice is about <b style={{color:'var(--text)'}}>your</b> money, not generic tips.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Settings ---- */
+function Settings({budget,setBudget,goal,setGoal,ping}){
+  const [b,setB]=useState(budget),[g,setG]=useState(goal);
+  return (
+    <div>
+      <div className="page-head"><div><h1>Budget & settings</h1><p>Your money rules</p></div></div>
+      <div className="settings-grid">
+        <motion.div className="card" {...stagger(0)}>
+          <h3><I n="wallet" size={14}/>Monthly budget</h3>
+          <div className="field"><label>Budget for this month (KES)</label>
+            <input type="number" value={b} onChange={e=>setB(e.target.value)}/></div>
+          <div className="field"><label>Savings goal (KES to have left at month end)</label>
+            <input type="number" value={g} onChange={e=>setG(e.target.value)}/></div>
+          <motion.button className="btn btn-primary" whileTap={{scale:.97}} onClick={()=>{
+            const nb=parseFloat(b),ng=parseFloat(g);
+            if(nb>0) setBudget(nb); if(ng>=0) setGoal(ng);
+            ping('Budget updated');
+          }}>Save changes</motion.button>
+        </motion.div>
+        <motion.div className="card" {...stagger(1)}>
+          <h3><I n="alert" size={14}/>Alert thresholds</h3>
+          <p style={{fontSize:12.5,color:'var(--muted)',lineHeight:1.7,marginBottom:10}}>Akiba compares your spending pace against the month's progress.</p>
+          {[
+            ['var(--green)','var(--green-soft)','check','On track','Spending pace at or below month pace'],
+            ['var(--amber)','var(--amber-soft)','alert','Slow down','Spending up to 15% ahead of pace'],
+            ['var(--red)','var(--red-soft)','flame','Danger zone','More than 15% ahead — money may run out early'],
+          ].map(([c,bg,ic,t,p])=>(
+            <div className="thr" key={t}>
+              <div className="sw2" style={{background:bg,color:c}}><I n={ic} size={16}/></div>
+              <div><b>{t}</b><p>{p}</p></div>
+            </div>))}
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
