@@ -275,7 +275,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { question, conversationId } = await req.json()
+    const { question, conversationId, compressedContext } = await req.json()
     if (!question?.trim()) {
       return NextResponse.json({ error: 'Question required' }, { status: 400 })
     }
@@ -337,7 +337,8 @@ For valid finance questions:
 - Use **bold** sparingly for key figures only
 - No emojis, no markdown headers, no bullet lists longer than 3 items
 - End with one concrete action the user can take today
-${conversationHistory ? `\n\nPrevious conversation context:\n${conversationHistory}\n` : ''}
+${compressedContext ? `\n\n${compressedContext}\n` : ''}
+${conversationHistory ? `\n\nRecent conversation:\n${conversationHistory}\n` : ''}
 Live spending data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
 Budget: KES ${ctx.budget.toLocaleString()} | Savings goal: KES ${ctx.savingsGoal.toLocaleString()}
 Spent: KES ${ctx.spent.toLocaleString()} (${ctx.spendPacePct}% of budget) | Remaining: KES ${ctx.remaining.toLocaleString()}

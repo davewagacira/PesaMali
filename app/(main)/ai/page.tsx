@@ -4,10 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AISkeleton } from '@/components/AISkeleton'
 import { SuccessModal } from '@/components/SuccessModal'
+import { compressMessages, getCompressedContext } from '@/lib/messageCompression'
 
 interface Message {
   who: 'user' | 'ai'
   text: string
+}
+
+interface CompressedSection {
+  isCompressed: true
+  summary: string
+  messageCount: number
+  expanded: boolean
 }
 
 interface Conversation {
@@ -57,6 +65,7 @@ export default function AIPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [expandedCompressed, setExpandedCompressed] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
 
   // Load conversations and user settings
@@ -84,7 +93,17 @@ export default function AIPage() {
   // Auto-scroll to bottom
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
-  }, [msgs, busy])
+  }, [msgs, busy, expandedCompressed])
+
+  // Get displayed messages with compression applied
+  const getDisplayedMessages = () => {
+    if (expandedCompressed || msgs.length <= 9) {
+      return msgs.map((m) => ({ ...m, isCompressed: false }))
+    }
+    return compressMessages(msgs, 6)
+  }
+
+  const displayedMessages = getDisplayedMessages()
 
   const startNewChat = () => {
     setCurrentConversationId(null)
@@ -139,14 +158,20 @@ export default function AIPage() {
     const question = (q ?? input).trim()
     if (!question || busy) return
     setInput('')
-    setMsgs((ms) => [...ms, { who: 'user', text: question }])
+    const newMsgs: Message[] = [...msgs, { who: 'user' as const, text: question }]
+    setMsgs(newMsgs)
     setBusy(true)
 
     try {
+      const compressedContext = getCompressedContext(msgs, 6)
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, conversationId: currentConversationId }),
+        body: JSON.stringify({
+          question,
+          conversationId: currentConversationId,
+          compressedContext,
+        }),
       })
       const data = await res.json()
       if (data.conversationId && !currentConversationId) {
@@ -309,17 +334,54 @@ export default function AIPage() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div className="chat-log" ref={logRef}>
             <AnimatePresence initial={false}>
-              {msgs.map((mm, i) => (
-                <motion.div
-                  key={i}
-                  className={'msg ' + mm.who}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {render(mm.text)}
-                </motion.div>
-              ))}
+              {displayedMessages.map((item, i) => {
+                const isCompressed = 'isCompressed' in item && item.isCompressed
+
+                if (isCompressed) {
+                  return (
+                    <motion.button
+                      key={`compressed-${i}`}
+                      onClick={() => setExpandedCompressed(!expandedCompressed)}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25 }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        margin: '12px 0',
+                        borderRadius: 12,
+                        background: 'var(--card-2)',
+                        border: '1px solid var(--line)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontSize: 12,
+                        color: 'var(--muted)',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 16 }}>📦</span>
+                        <span style={{ fontWeight: 600 }}>{(item as CompressedSection).messageCount} earlier messages compressed</span>
+                        <span style={{ marginLeft: 'auto' }}>{expandedCompressed ? '▼' : '▶'}</span>
+                      </div>
+                      <div style={{ opacity: 0.8 }}>{(item as CompressedSection).summary}</div>
+                    </motion.button>
+                  )
+                }
+
+                const msg = item as Message
+                return (
+                  <motion.div
+                    key={i}
+                    className={'msg ' + msg.who}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    {render(msg.text)}
+                  </motion.div>
+                )
+              })}
             </AnimatePresence>
 
             {busy && (
