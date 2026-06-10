@@ -109,31 +109,35 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>
-            {greet}, {firstName}
-          </h1>
-          <p>
-            {now.toLocaleDateString('en-KE', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </p>
+      <motion.div 
+        className="rounded-2xl border border-[var(--line)] bg-gradient-to-r from-[var(--primary-soft)] to-transparent p-6 mb-6"
+        {...stagger(0)}
+      >
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex-1">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--primary-soft)] px-3 py-1.5 mb-4">
+              <I n="target" size={14} />
+              <span className="text-xs font-semibold text-[var(--primary)]">Monthly overview</span>
+            </div>
+            <h1 className="text-3xl font-bold text-[var(--text)] mb-2">
+              {greet}, {firstName}
+            </h1>
+            <p className="text-[var(--muted)]">
+              Track your spending, reach your goals, and stay on top of your budget.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {userId && <NotificationsBell userId={userId} />}
+            <AchievementsBadge />
+            <span className={'pill ' + m.status}>
+              <span className="dot" />
+              {statusTxt}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {userId && <NotificationsBell userId={userId} />}
-          <AchievementsBadge />
-          <span className={'pill ' + m.status}>
-            <span className="dot" />
-            {statusTxt}
-          </span>
-        </div>
-      </div>
+      </motion.div>
 
-      <motion.div className="hero" {...stagger(0)}>
+      <motion.div className="hero" {...stagger(1)}>
         <div>
           <div className="sts-label">
             <I n="target" size={14} /> Safe to spend today
@@ -206,7 +210,7 @@ export default function DashboardPage() {
             cls: m.todaySpent > m.safe ? 'warnc' : 'okc',
           },
         ].map((k, i) => (
-          <motion.div className="card" key={k.t} {...stagger(i + 1)}>
+          <motion.div className="card" key={k.t} {...stagger(i + 2)}>
             <h3>
               <I n={k.icon} size={14} />
               {k.t}
@@ -218,14 +222,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid cols-2">
-        <motion.div className="card" {...stagger(4)}>
+        <motion.div className="card" {...stagger(5)}>
           <h3>
             <I n="chart" size={14} />
             Spend pace vs ideal
           </h3>
           <AreaChart cum={m.cum} budget={budget} status={m.status} daysInMonth={daysInMonth} />
         </motion.div>
-        <motion.div className="card" {...stagger(5)}>
+        <motion.div className="card" {...stagger(6)}>
           <h3>
             <I n="receipt" size={14} />
             Recent expenses
