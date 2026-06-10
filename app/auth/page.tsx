@@ -119,14 +119,15 @@ export default function AuthPage() {
           )}
           <div className="field">
             <label>Email</label>
-            <input ref={emailRef} type="email" defaultValue="davidwagacira26@gmail.com" />
+            <input ref={emailRef} type="email" placeholder="you@example.com" autoComplete="email" />
           </div>
           <div className="field">
             <label>Password</label>
             <input
               ref={passwordRef}
               type="password"
-              defaultValue="Pdreams@4675"
+              placeholder="••••••••"
+              autoComplete={signup ? 'new-password' : 'current-password'}
               onKeyDown={(e) => e.key === 'Enter' && !loading && enter()}
             />
           </div>
