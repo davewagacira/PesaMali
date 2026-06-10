@@ -19,7 +19,7 @@ export function PageHeroCard({
   title,
   subtitle,
   children,
-  surface = 'gradient',
+  surface = 'card',
 }: PageHeroCardProps) {
   const surfaceClass =
     surface === 'card'
