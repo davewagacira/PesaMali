@@ -112,6 +112,7 @@ function SidebarContent({
           <motion.span
             className="knob"
             animate={{ x: theme === 'dark' ? 18 : 0 }}
+
             transition={{ type: 'spring', stiffness: 500, damping: 32 }}
           />
         </button>
@@ -119,20 +120,10 @@ function SidebarContent({
 
       <div className="user">
         {isLoading ? (
-          <>
-            <div className="h-10 w-10 rounded-lg bg-[var(--line)] animate-pulse" />
-            <div className="flex flex-col gap-1.5 flex-1">
-              <div className="h-4 w-20 rounded bg-[var(--line)] animate-pulse" />
-              <div className="h-3 w-16 rounded bg-[var(--line)] animate-pulse" />
-            </div>
-          </>
+          <div className="h-9 w-9 rounded-lg bg-[var(--line)] animate-pulse" />
         ) : (
           <>
             <div className="avatar">{userName[0].toUpperCase()}</div>
-            <div>
-              <b>{userName}</b>
-              <span>Personal plan</span>
-            </div>
             <button
               style={{ marginLeft: 'auto', color: 'var(--muted)' }}
               onClick={handleLogout}
