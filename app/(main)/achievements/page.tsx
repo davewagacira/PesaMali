@@ -5,12 +5,7 @@ import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, MetricExpense } from '@/lib/metrics'
 import { AchievementsSkeleton } from '@/components/AchievementsSkeleton'
-
-const stagger = (i: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
-})
+import { stagger } from '@/lib/motion'
 
 export default function AchievementsPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])

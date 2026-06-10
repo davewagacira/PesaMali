@@ -6,12 +6,7 @@ import { Donut } from '@/components/Charts'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, fmt, fmtN, MetricExpense } from '@/lib/metrics'
 import { AnalyticsSkeleton } from '@/components/AnalyticsSkeleton'
-
-const stagger = (i: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
-})
+import { stagger } from '@/lib/motion'
 
 const full = (s: string) =>
   ({ Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday' }[s] || s)
@@ -83,9 +78,10 @@ export default function AnalyticsPage() {
                 <span className="v">{o.amt ? fmtN(o.amt) : ''}</span>
                 <motion.span
                   className="stick"
-                  initial={{ height: 0 }}
-                  animate={{ height: Math.max(3, (o.amt / maxD) * 100) + '%' }}
-                  transition={{ duration: 0.5, delay: i * 0.05, ease: 'easeOut' }}
+                  style={{ height: Math.max(3, (o.amt / maxD) * 100) + '%', transformOrigin: 'bottom' }}
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ duration: 0.45, delay: Math.min(i, 6) * 0.04, ease: 'easeOut' }}
                 />
                 <span className="d">{o.label}</span>
               </div>
@@ -112,10 +108,10 @@ export default function AnalyticsPage() {
             <div className="bar">
               <motion.span
                 className="fill"
-                style={{ background: c.color }}
-                initial={{ width: 0 }}
-                animate={{ width: (c.amt / m.spent) * 100 + '%' }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                style={{ background: c.color, width: (c.amt / m.spent) * 100 + '%', transformOrigin: 'left' }}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.55, ease: 'easeOut' }}
               />
             </div>
           </div>

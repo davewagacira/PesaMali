@@ -9,12 +9,7 @@ import { DashboardSkeleton } from '@/components/DashboardSkeleton'
 import { NotificationsBell } from '@/components/NotificationsBell'
 import { AchievementsBadge } from '@/components/AchievementsBadge'
 import { useAblyExpenses } from '@/lib/useAbly'
-
-const stagger = (i: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
-})
+import { stagger } from '@/lib/motion'
 
 function TxRow({ e }: { e: MetricExpense }) {
   const c = catOf(e.cat)
@@ -148,9 +143,10 @@ export default function DashboardPage() {
             <div className="bar">
               <motion.span
                 className="fill f-month"
-                initial={{ width: 0 }}
-                animate={{ width: m.monthPace * 100 + '%' }}
-                transition={{ duration: 0.7, ease: 'easeOut' }}
+                style={{ width: m.monthPace * 100 + '%', transformOrigin: 'left' }}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
               />
             </div>
           </div>
@@ -162,9 +158,10 @@ export default function DashboardPage() {
             <div className="bar">
               <motion.span
                 className={'fill f-' + m.status}
-                initial={{ width: 0 }}
-                animate={{ width: Math.min(100, m.spendPace * 100) + '%' }}
-                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                style={{ width: Math.min(100, m.spendPace * 100) + '%', transformOrigin: 'left' }}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.6, ease: 'easeOut', delay: 0.12 }}
               />
             </div>
           </div>

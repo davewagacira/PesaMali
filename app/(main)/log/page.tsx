@@ -6,12 +6,7 @@ import { PageHeroCard } from '@/components/PageHeroCard'
 import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
 import { SuccessModal } from '@/components/SuccessModal'
 import { LogSkeleton } from '@/components/LogSkeleton'
-
-const stagger = (i: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
-})
+import { stagger } from '@/lib/motion'
 
 function TxRow({ e, onDelete }: { e: MetricExpense; onDelete?: (id: string) => void }) {
   const c = catOf(e.cat)
