@@ -30,20 +30,20 @@ export default function Header({ userName, userId }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm w-full">
-        <div className="flex h-16 w-full items-center justify-end px-6">
+        <div className="flex h-12 md:h-16 w-full items-center justify-end px-3 md:px-6">
           {/* Right: Notifications + Logout */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {userId && <NotificationsBell userId={userId} />}
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               {userName ? (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-sm">
+                <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs md:text-sm flex-shrink-0">
                   {userName[0].toUpperCase()}
                 </div>
               ) : (
-                <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse" />
+                <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
               )}
-              <div className="hidden sm:flex flex-col items-start">
+              <div className="hidden md:flex flex-col items-start">
                 {userName ? (
                   <>
                     <span className="text-sm font-semibold text-[var(--text)]">{userName}</span>
@@ -58,10 +58,10 @@ export default function Header({ userName, userId }: HeaderProps) {
               </div>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
-                className="ml-2 flex items-center justify-center rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)]"
+                className="ml-1 md:ml-2 flex items-center justify-center rounded-lg p-1 md:p-1.5 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)] active:text-[var(--red)] min-h-[44px] min-w-[44px]"
                 aria-label="Sign out"
               >
-                <I n="logout" size={18} />
+                <I n="logout" size={20} />
               </button>
             </div>
           </div>
