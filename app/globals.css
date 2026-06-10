@@ -300,7 +300,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 /* ========================================================== */
 /* ===================== LANDING PAGE ======================= */
 /* ========================================================== */
-.lp{min-height:100vh;background:var(--bg);color:var(--text);overflow-x:hidden}
+.lp{min-height:100vh;background:var(--bg);color:var(--text);overflow-x:clip}
 
 /* shared buttons */
 .lp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;border-radius:11px;padding:10px 16px;min-height:44px;transition:transform .12s,box-shadow .2s,background .2s,color .2s;white-space:nowrap}
