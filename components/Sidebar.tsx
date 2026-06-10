@@ -118,22 +118,10 @@ function SidebarContent({
         </button>
       </div>
 
-      <div className="user">
-        {isLoading ? (
-          <div className="h-4 w-24 rounded bg-[var(--line)] animate-pulse" />
-        ) : (
-          <>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', flex: 1 }}>{userName}</span>
-            <button
-              style={{ color: 'var(--muted)', fontSize: 12, fontWeight: 500 }}
-              onClick={handleLogout}
-              aria-label="Sign out"
-            >
-              Log out
-            </button>
-          </>
-        )}
-      </div>
+      <button className="nav-item" onClick={handleLogout}>
+        <I n="logout" />
+        <span className="txt">Log out</span>
+      </button>
     </>
   )
 }
