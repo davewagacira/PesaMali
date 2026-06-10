@@ -111,7 +111,12 @@ export default function AuthPage() {
           </div>
           <div className="field">
             <label>Password</label>
-            <input ref={passwordRef} type="password" defaultValue="Pdreams@4675" />
+            <input
+              ref={passwordRef}
+              type="password"
+              defaultValue="Pdreams@4675"
+              onKeyDown={(e) => e.key === 'Enter' && !loading && enter()}
+            />
           </div>
           {signup && (
             <div className="field">
