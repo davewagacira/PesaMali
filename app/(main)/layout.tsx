@@ -32,9 +32,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="shell">
       <Sidebar userName={userName} theme={theme} onThemeToggle={toggleTheme} />
-      <main className="main flex flex-col">
+      <div className="flex flex-col flex-1">
         <Header userName={userName} userId={userId} />
-        <div className="flex-1 overflow-hidden">
+        <main className="main flex-1 overflow-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -42,13 +42,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.32, ease: 'easeOut' }}
-              className="h-full overflow-auto"
             >
               {children}
             </motion.div>
           </AnimatePresence>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
