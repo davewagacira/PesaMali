@@ -9,6 +9,7 @@ This guide covers deploying Akiba to Vercel with all required environment variab
 1. **Vercel Account**: https://vercel.com
 2. **GitHub Repository**: Push your code to GitHub (public or private)
 3. **Environment Variables**: Gather all required API keys and secrets
+4. **Node.js Version**: Node.js 24.x (configured in package.json)
 
 ### Step 1: Database Setup (Neon PostgreSQL)
 
