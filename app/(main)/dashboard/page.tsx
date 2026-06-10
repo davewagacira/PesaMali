@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
+import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, fmt, fmtN, catOf, MetricExpense } from '@/lib/metrics'
 import { DashboardSkeleton } from '@/components/DashboardSkeleton'
 import { NotificationsBell } from '@/components/NotificationsBell'
@@ -109,32 +110,20 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <motion.div 
-        className="rounded-2xl border border-[var(--line)] bg-gradient-to-r from-[var(--primary-soft)] to-transparent p-6 mb-6"
-        {...stagger(0)}
+      <PageHeroCard
+        icon="target"
+        badge="Monthly overview"
+        title={`${greet}, ${firstName}`}
+        subtitle="Track your spending, reach your goals, and stay on top of your budget."
       >
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--primary-soft)] px-3 py-1.5 mb-4">
-              <I n="target" size={14} />
-              <span className="text-xs font-semibold text-[var(--primary)]">Monthly overview</span>
-            </div>
-            <h1 className="text-3xl font-extrabold text-[var(--text)] mb-2 leading-tight">
-              {greet}, {firstName}
-            </h1>
-            <p className="text-[var(--muted)]">
-              Track your spending, reach your goals, and stay on top of your budget.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <AchievementsBadge />
-            <span className={'pill ' + m.status}>
-              <span className="dot" />
-              {statusTxt}
-            </span>
-          </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <AchievementsBadge />
+          <span className={'pill ' + m.status}>
+            <span className="dot" />
+            {statusTxt}
+          </span>
         </div>
-      </motion.div>
+      </PageHeroCard>
 
       <motion.div className="hero" {...stagger(1)}>
         <div>

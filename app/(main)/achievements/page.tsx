@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
+import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, MetricExpense } from '@/lib/metrics'
 import { AchievementsSkeleton } from '@/components/AchievementsSkeleton'
 
@@ -69,16 +70,17 @@ export default function AchievementsPage() {
 
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>Achievements</h1>
-          <p>Discipline, rewarded</p>
-        </div>
+      <PageHeroCard
+        icon="trophy"
+        badge="Milestones"
+        title="Achievements"
+        subtitle="Discipline, rewarded"
+      >
         <span className="pill ok">
           <I n="trophy" size={13} />
           {n} / {achs.length} unlocked
         </span>
-      </div>
+      </PageHeroCard>
       <div className="ach-grid">
         {achs.map((a, i) => (
           <motion.div

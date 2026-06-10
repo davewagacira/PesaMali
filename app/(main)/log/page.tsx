@@ -1,10 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
-import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
+import { PageHeroCard } from '@/components/PageHeroCard'
 import { SuccessModal } from '@/components/SuccessModal'
-import { LogSkeleton } from '@/components/LogSkeleton'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -12,249 +12,142 @@ const stagger = (i: number) => ({
   transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
 })
 
-function TxRow({ e, onDelete }: { e: MetricExpense; onDelete?: (id: string) => void }) {
-  const c = catOf(e.cat)
-  const dt = new Date(e.date + 'T00:00:00').toLocaleDateString('en-KE', {
-    day: 'numeric',
-    month: 'short',
-  })
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-    >
-      <div className="tx">
-        <div className="l">
-          <div className="cat-ic" style={{ color: c.color }}>
-            <I n={c.icon} size={17} />
-          </div>
-          <div>
-            <b>{e.item}</b>
-            <span>
-              {c.name} · {dt}
-            </span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="amt">− {fmt(e.amt)}</span>
-          {onDelete && (
-            <button
-              onClick={() => onDelete(e.id)}
-              style={{ color: 'var(--faint)', fontSize: 11, padding: '2px 6px' }}
-            >
-              ×
-            </button>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  )
-}
+const CATEGORIES = [
+  { name: 'Food', icon: 'utensils', color: '#FF6B6B' },
+  { name: 'Transport', icon: 'bus', color: '#4ECDC4' },
+  { name: 'Rent', icon: 'home', color: '#45B7D1' },
+  { name: 'Entertainment', icon: 'film', color: '#FFA07A' },
+  { name: 'Utilities', icon: 'zap', color: '#FFD93D' },
+  { name: 'Health', icon: 'heart', color: '#6BCB77' },
+  { name: 'Airtime', icon: 'phone', color: '#A8DADC' },
+  { name: 'Shopping', icon: 'shopping-bag', color: '#F1FAEE' },
+  { name: 'Other', icon: 'plus', color: '#9D84B7' },
+]
 
 export default function LogPage() {
-  const [cat, setCat] = useState('food')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [item, setItem] = useState('')
-  const [amt, setAmt] = useState('')
-  const [date, setDate] = useState(iso(new Date()))
-  const [expenses, setExpenses] = useState<MetricExpense[]>([])
-  const [toast, setToast] = useState<string | null>(null)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [amount, setAmount] = useState('')
+  const [category, setCategory] = useState('Other')
+  const [showSuccess, setShowSuccess] = useState(false)
 
-  const ping = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2800)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!item || !amount) return
 
-  useEffect(() => {
-    fetch('/api/expenses')
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d)) {
-          setExpenses(
-            d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
-              id: e.id,
-              date: e.date,
-              cat: e.category,
-              item: e.item,
-              amt: e.amount,
-            }))
-          )
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsLoading(false))
-  }, [])
-
-  const add = async () => {
-    const a = parseFloat(amt)
-    if (!item.trim()) return ping('Add a name for the expense')
-    if (!a || a <= 0) return ping('Enter a valid amount')
     try {
-      const res = await fetch('/api/expenses', {
+      await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, category: cat, item: item.trim(), amount: a }),
+        body: JSON.stringify({
+          date,
+          category,
+          item,
+          amount: parseFloat(amount),
+        }),
       })
-      const data = await res.json()
-      if (res.ok) {
-        setExpenses((ex) => [
-          ...ex,
-          { id: data.id, date: data.date, cat: data.category, item: data.item, amt: data.amount },
-        ])
-        setItem('')
-        setAmt('')
-        setSuccessMessage('Expense logged successfully. Your balances have been updated.')
-        setShowSuccessModal(true)
-      }
-    } catch {
-      ping('Failed to save expense')
+
+      setItem('')
+      setAmount('')
+      setCategory('Other')
+      setShowSuccess(true)
+    } catch (error) {
+      console.error('Error logging expense:', error)
     }
   }
-
-  const deleteExpense = async (id: string) => {
-    try {
-      await fetch(`/api/expenses/${id}`, { method: 'DELETE' })
-      setExpenses((ex) => ex.filter((e) => e.id !== id))
-    } catch {
-      ping('Failed to delete')
-    }
-  }
-
-  const quicks: [string, number, string][] = [
-    ['Matatu fare', 80, 'transport'],
-    ['Tomatoes', 50, 'food'],
-    ['Airtime', 100, 'airtime'],
-    ['Lunch', 150, 'food'],
-  ]
-
-  const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
-
-  if (isLoading) return <LogSkeleton />
 
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>Log an expense</h1>
-          <p>Every shilling counted. Balances update instantly.</p>
-        </div>
-      </div>
+      <PageHeroCard
+        icon="plusCircle"
+        badge="New expense"
+        title="Log an expense"
+        subtitle="Every shilling counted. Balances update instantly."
+      />
+
       <div className="log-grid">
         <motion.div className="card" {...stagger(0)}>
           <h3>
-            <I n="plusCircle" size={14} />
-            New expense
+            <I n="calendar" size={14} />
+            When?
           </h3>
-          <div className="quick">
-            {quicks.map((q) => (
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 py-2 text-[var(--text)] outline-none focus:border-[var(--primary)]"
+          />
+        </motion.div>
+
+        <motion.div className="card" {...stagger(1)}>
+          <h3>
+            <I n="tag" size={14} />
+            Category
+          </h3>
+          <div className="grid cols-3 gap-2">
+            {CATEGORIES.map((cat) => (
               <button
-                key={q[0]}
-                onClick={() => {
-                  setItem(q[0])
-                  setAmt(String(q[1]))
-                  setCat(q[2])
-                }}
+                key={cat.name}
+                onClick={() => setCategory(cat.name)}
+                className={`flex flex-col items-center gap-2 rounded-lg p-3 transition ${
+                  category === cat.name
+                    ? 'border border-[var(--primary)] bg-[var(--primary-soft)]'
+                    : 'border border-[var(--line)] bg-[var(--card)]'
+                }`}
               >
-                <I n="zap" size={12} />
-                {q[0]} · {q[1]}
+                <div style={{ color: cat.color }}>
+                  <I n={cat.icon} size={20} />
+                </div>
+                <span className="text-xs font-semibold text-[var(--text)]">{cat.name}</span>
               </button>
             ))}
           </div>
-          <div className="cat-pick">
-            {CATS.map((c) => (
-              <motion.button
-                key={c.id}
-                whileTap={{ scale: 0.94 }}
-                className={'cat-btn' + (cat === c.id ? ' sel' : '')}
-                onClick={() => setCat(c.id)}
-              >
-                <I n={c.icon} size={17} />
-                {c.name}
-              </motion.button>
-            ))}
-          </div>
-          <div className="field">
-            <label>What did you buy?</label>
-            <input
-              value={item}
-              onChange={(e) => setItem(e.target.value)}
-              placeholder="e.g. Tomatoes, Matatu fare, Airtime"
-            />
-          </div>
-          <div className="field">
-            <label>Amount (KES)</label>
-            <input
-              value={amt}
-              onChange={(e) => setAmt(e.target.value)}
-              type="number"
-              min="1"
-              placeholder="e.g. 50"
-              onKeyDown={(e) => e.key === 'Enter' && add()}
-            />
-          </div>
-          <div className="field">
-            <label>Date</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-          <motion.button className="btn btn-primary" whileTap={{ scale: 0.97 }} onClick={add}>
-            <I n="plusCircle" size={16} />
-            Add expense
-          </motion.button>
         </motion.div>
-        <motion.div className="card" {...stagger(1)}>
+
+        <motion.div className="card" {...stagger(2)}>
           <h3>
             <I n="receipt" size={14} />
-            All expenses this month
-            <span
-              className="mono"
-              style={{
-                marginLeft: 'auto',
-                textTransform: 'none',
-                letterSpacing: 0,
-                color: 'var(--muted)',
-              }}
-            >
-              {sorted.length} logged
-            </span>
+            What did you buy?
           </h3>
-          <div className="scroll">
-            <AnimatePresence initial={false}>
-              {sorted.map((e) => (
-                <TxRow key={e.id} e={e} onDelete={deleteExpense} />
-              ))}
-            </AnimatePresence>
-            {!sorted.length && (
-              <p style={{ color: 'var(--muted)', fontSize: 13, padding: '18px 0' }}>
-                No expenses yet. Log your first one to get started.
-              </p>
-            )}
-          </div>
+          <input
+            type="text"
+            value={item}
+            onChange={(e) => setItem(e.target.value)}
+            placeholder="e.g., Lunch, Uber, Netflix"
+            className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 py-2 text-[var(--text)] outline-none focus:border-[var(--primary)]"
+          />
         </motion.div>
+
+        <motion.div className="card" {...stagger(3)}>
+          <h3>
+            <I n="wallet" size={14} />
+            How much? (KES)
+          </h3>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+            className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 py-2 text-[var(--text)] outline-none focus:border-[var(--primary)]"
+          />
+        </motion.div>
+
+        <motion.button
+          onClick={handleSubmit}
+          disabled={!item || !amount}
+          className="card flex items-center justify-center gap-2 rounded-lg [background:var(--primary-grad)] p-4 font-semibold text-white transition active:scale-95 disabled:opacity-50"
+          {...stagger(4)}
+        >
+          <I n="check" size={18} />
+          Log expense
+        </motion.button>
       </div>
 
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            className="toast"
-            initial={{ opacity: 0, y: 16, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: 10, x: '-50%' }}
-          >
-            <I n="check" size={15} />
-            {toast}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <SuccessModal
-        isOpen={showSuccessModal}
-        title="Success!"
-        message={successMessage}
-        onClose={() => setShowSuccessModal(false)}
+        isOpen={showSuccess}
+        title="Expense logged!"
+        message="Your expense has been added and your balance updated."
+        onClose={() => setShowSuccess(false)}
       />
     </div>
   )

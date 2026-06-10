@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
+import { PageHeroCard } from '@/components/PageHeroCard'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -183,16 +184,16 @@ export default function SettingsPage() {
 
   const categories = ['Food', 'Transport', 'Rent', 'Entertainment', 'Utilities', 'Health', 'Airtime', 'Shopping', 'Other']
 
-  if (isLoading) return <div className="page-head mb-8"><h1>Settings</h1></div>
+  if (isLoading) return <PageHeroCard icon="settings" badge="Configuration" title="Settings" subtitle="Manage your budget, notifications, and preferences" />
 
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>Settings</h1>
-          <p>Manage your budget, notifications, and preferences</p>
-        </div>
-      </div>
+      <PageHeroCard
+        icon="settings"
+        badge="Configuration"
+        title="Settings"
+        subtitle="Manage your budget, notifications, and preferences"
+      />
 
       {/* Notifications */}
       <motion.div className="grid cols-1 gap-6 mb-6" {...stagger(0)}>

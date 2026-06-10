@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { AISkeleton } from '@/components/AISkeleton'
 import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
+import { PageHeroCard } from '@/components/PageHeroCard'
 import { compressMessages, getCompressedContext } from '@/lib/messageCompression'
 import { MetricExpense, fmt, fmtN, useMetrics } from '@/lib/metrics'
 
@@ -485,21 +486,20 @@ export default function AIPage() {
       </div>
 
       <div className="mx-auto max-w-[1180px]">
-        <div className="page-head">
-          <div>
-            <h1>Akiba AI</h1>
-            <p>Personal financial intelligence built from your real spending behavior.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={toggleMemory}
-              className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
-            >
-              <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
-              Memory {memoryEnabled ? 'on' : 'off'}
-            </button>
-          </div>
-        </div>
+        <PageHeroCard
+          icon="sparkles"
+          badge="AI insights"
+          title="Akiba AI"
+          subtitle="Personal financial intelligence built from your real spending behavior."
+        >
+          <button
+            onClick={toggleMemory}
+            className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+          >
+            <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
+            Memory {memoryEnabled ? 'on' : 'off'}
+          </button>
+        </PageHeroCard>
 
         <motion.div
           className="mb-[26px] flex items-center gap-[26px] max-[1180px]:flex-col max-[1180px]:items-start max-[1180px]:gap-[18px]"

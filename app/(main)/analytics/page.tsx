@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { Donut } from '@/components/Charts'
+import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, fmt, fmtN, MetricExpense } from '@/lib/metrics'
 import { AnalyticsSkeleton } from '@/components/AnalyticsSkeleton'
 
@@ -50,12 +51,12 @@ export default function AnalyticsPage() {
 
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>Analytics</h1>
-          <p>Where your money actually goes</p>
-        </div>
-      </div>
+      <PageHeroCard
+        icon="barChart"
+        badge="Insights"
+        title="Analytics"
+        subtitle="Where your money actually goes"
+      />
       <div className="grid cols-3" style={{ marginBottom: 16 }}>
         <motion.div className="card" {...stagger(0)}>
           <h3><I n="coins" size={14} />Daily average</h3>

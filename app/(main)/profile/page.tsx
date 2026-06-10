@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
+import { PageHeroCard } from '@/components/PageHeroCard'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -50,16 +51,17 @@ export default function ProfilePage() {
   }
 
   if (isLoading || !profile) {
-    return <div className="page-head mb-8"><h1>Profile</h1></div>
+    return <PageHeroCard icon="user" badge="Account" title="Profile" subtitle="Manage your account information and preferences" />
   }
 
   return (
     <div>
-      <div className="page-head mb-8">
-        <div>
-          <h1>Profile</h1>
-          <p>Manage your account information and preferences</p>
-        </div>
+      <PageHeroCard
+        icon="user"
+        badge="Account"
+        title="Profile"
+        subtitle="Manage your account information and preferences"
+      >
         <button
           onClick={() => setEditMode(!editMode)}
           className="flex items-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--card)] px-4 py-2 font-semibold text-[var(--text)] transition hover:bg-[var(--bg)]"
@@ -67,7 +69,7 @@ export default function ProfilePage() {
           <I n={editMode ? 'check' : 'edit'} size={16} />
           {editMode ? 'Save' : 'Edit'}
         </button>
-      </div>
+      </PageHeroCard>
 
       <div className="grid cols-1 gap-6 max-w-2xl">
         <motion.div className="card" {...stagger(0)}>
