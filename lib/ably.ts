@@ -1,8 +1,10 @@
-import { Realtime } from 'ably'
+// Server-side publishing must use the REST client: Realtime opens a WebSocket,
+// which breaks under Next's server bundling (ws bufferUtil) and hangs API routes.
+import { Rest } from 'ably'
 
-let ablyClient: Realtime | null = null
+let ablyClient: Rest | null = null
 
-export function getAblyClient(): Realtime {
+export function getAblyClient(): Rest {
   if (ablyClient) return ablyClient
 
   const apiKey = process.env.ABLY_API_KEY
@@ -10,7 +12,7 @@ export function getAblyClient(): Realtime {
     throw new Error('ABLY_API_KEY not configured')
   }
 
-  ablyClient = new Realtime({ key: apiKey })
+  ablyClient = new Rest({ key: apiKey })
   return ablyClient
 }
 

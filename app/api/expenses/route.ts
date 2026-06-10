@@ -59,31 +59,29 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Publish real-time event
-    await publishExpenseEvent(session.userId, 'add', expense)
-
-    // Check for budget overspend on this category
-    const categoryBudget = await prisma.categoryBudget.findUnique({
-      where: { userId_category: { userId: session.userId, category } },
-    })
-
     // Envelope status for this category (null when no budget is set)
-    let envelope: { limit: number; spent: number; remaining: number } | null = null
-
-    if (categoryBudget) {
-      const categorySpent = await prisma.expense.aggregate({
+    const userId = session.userId
+    const [categoryBudget, categorySpent] = await Promise.all([
+      prisma.categoryBudget.findUnique({
+        where: { userId_category: { userId, category } },
+      }),
+      prisma.expense.aggregate({
         where: {
-          userId: session.userId,
+          userId,
           category,
           date: { startsWith: date.slice(0, 7) },
         },
         _sum: { amount: true },
-      })
+      }),
+    ])
 
+    let envelope: { limit: number; spent: number; remaining: number } | null = null
+
+    if (categoryBudget) {
       const total = categorySpent._sum.amount || 0
       envelope = { limit: categoryBudget.limit, spent: total, remaining: categoryBudget.limit - total }
       if (total > categoryBudget.limit) {
-        await createNotification(session.userId, {
+        await createNotification(userId, {
           type: 'budget_warning',
           title: '⚠️ Category Budget Exceeded',
           message: `You've exceeded your ${category} budget (${total.toLocaleString()} / ${categoryBudget.limit.toLocaleString()})`,
@@ -92,42 +90,43 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check daily safe spend
-    const today = new Date().toISOString().slice(0, 10)
-    const todaySpent = await prisma.expense.aggregate({
-      where: {
-        userId: session.userId,
-        date: today,
-      },
-      _sum: { amount: true },
-    })
+    // Non-critical side work runs after the response so logging feels instant
+    const sideWork = async () => {
+      await publishExpenseEvent(userId, 'add', expense)
 
-    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
-    const monthExpenses = await prisma.expense.aggregate({
-      where: {
-        userId: session.userId,
-        date: { gte: monthStart },
-      },
-      _sum: { amount: true },
-    })
+      // Check daily safe spend
+      const today = new Date().toISOString().slice(0, 10)
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+      const [todaySpent, monthExpenses] = await Promise.all([
+        prisma.expense.aggregate({
+          where: { userId, date: today },
+          _sum: { amount: true },
+        }),
+        prisma.expense.aggregate({
+          where: { userId, date: { gte: monthStart } },
+          _sum: { amount: true },
+        }),
+      ])
 
-    const monthSpent = monthExpenses._sum.amount || 0
-    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
-    const daysLeft = daysInMonth - new Date().getDate()
-    const remaining = user.monthlyBudget - monthSpent
-    const safeDaily = daysLeft > 0 ? (remaining - user.savingsGoal) / daysLeft : 0
+      const monthSpent = monthExpenses._sum.amount || 0
+      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
+      const daysLeft = daysInMonth - new Date().getDate()
+      const remaining = user.monthlyBudget - monthSpent
+      const safeDaily = daysLeft > 0 ? (remaining - user.savingsGoal) / daysLeft : 0
 
-    if ((todaySpent._sum.amount || 0) > safeDaily && safeDaily > 0) {
-      await createNotification(session.userId, {
-        type: 'budget_warning',
-        title: '⏰ Daily Safe Spend Exceeded',
-        message: `Today's spending (KES ${(todaySpent._sum.amount || 0).toLocaleString()}) exceeds safe daily amount (KES ${safeDaily.toLocaleString()})`,
-        icon: 'alert',
-      })
+      if ((todaySpent._sum.amount || 0) > safeDaily && safeDaily > 0) {
+        await createNotification(userId, {
+          type: 'budget_warning',
+          title: '⏰ Daily Safe Spend Exceeded',
+          message: `Today's spending (KES ${(todaySpent._sum.amount || 0).toLocaleString()}) exceeds safe daily amount (KES ${safeDaily.toLocaleString()})`,
+          icon: 'alert',
+        })
+      }
+
+      // Check and award achievements
+      await checkAndAwardAchievements(userId)
     }
-
-    // Check and award achievements
-    await checkAndAwardAchievements(session.userId)
+    sideWork().catch((e) => console.error('[Expense side-work error]', e))
 
     return NextResponse.json({ ...expense, envelope })
   } catch (e) {

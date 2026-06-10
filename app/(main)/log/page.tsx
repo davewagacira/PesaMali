@@ -5,6 +5,7 @@ import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
 import { SuccessModal } from '@/components/SuccessModal'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { DatePicker } from '@/components/DatePicker'
 import { LogSkeleton } from '@/components/LogSkeleton'
 import { listContainer, listItem } from '@/lib/motion'
@@ -60,6 +61,7 @@ export default function LogPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [modalVariant, setModalVariant] = useState<'success' | 'warning'>('success')
+  const [confirmDelete, setConfirmDelete] = useState<MetricExpense | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const ping = (msg: string) => {
@@ -122,6 +124,8 @@ export default function LogPage() {
           setModalVariant('success')
         }
         setShowSuccessModal(true)
+      } else {
+        ping(data.error || 'Failed to save expense')
       }
     } catch {
       ping('Failed to save expense')
@@ -130,8 +134,12 @@ export default function LogPage() {
 
   const deleteExpense = async (id: string) => {
     try {
-      await fetch(`/api/expenses/${id}`, { method: 'DELETE' })
-      setExpenses((ex) => ex.filter((e) => e.id !== id))
+      const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setExpenses((ex) => ex.filter((e) => e.id !== id))
+      } else {
+        ping('Failed to delete')
+      }
     } catch {
       ping('Failed to delete')
     }
@@ -237,7 +245,7 @@ export default function LogPage() {
           <div className="scroll">
             <AnimatePresence initial={false}>
               {sorted.map((e) => (
-                <TxRow key={e.id} e={e} onDelete={deleteExpense} />
+                <TxRow key={e.id} e={e} onDelete={() => setConfirmDelete(e)} />
               ))}
             </AnimatePresence>
             {!sorted.length && (
@@ -269,6 +277,21 @@ export default function LogPage() {
         message={successMessage}
         variant={modalVariant}
         onClose={() => setShowSuccessModal(false)}
+      />
+
+      <ConfirmModal
+        isOpen={!!confirmDelete}
+        title="Remove this expense?"
+        message={
+          confirmDelete
+            ? `"${confirmDelete.item}" (${fmt(confirmDelete.amt)}) will be removed and your balances updated.`
+            : ''
+        }
+        onConfirm={() => {
+          if (confirmDelete) deleteExpense(confirmDelete.id)
+          setConfirmDelete(null)
+        }}
+        onCancel={() => setConfirmDelete(null)}
       />
     </motion.div>
   )
