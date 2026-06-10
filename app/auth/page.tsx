@@ -55,7 +55,7 @@ export default function AuthPage() {
   return (
     <div className="auth">
       <div className="auth-left">
-        <button className="auth-back" onClick={() => router.push('/')}>
+        <button className="auth-back" onClick={() => { window.location.href = '/' }}>
           <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
         </button>
         <div className="brand">
@@ -102,7 +102,7 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.1 }}
         >
-          <button className="auth-back auth-back-mobile" onClick={() => router.push('/')}>
+          <button className="auth-back auth-back-mobile" onClick={() => { window.location.href = '/' }}>
             <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
           </button>
           <h2>{signup ? 'Create your account' : 'Welcome back'}</h2>
