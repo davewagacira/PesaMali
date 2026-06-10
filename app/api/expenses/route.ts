@@ -67,6 +67,9 @@ export async function POST(req: NextRequest) {
       where: { userId_category: { userId: session.userId, category } },
     })
 
+    // Envelope status for this category (null when no budget is set)
+    let envelope: { limit: number; spent: number; remaining: number } | null = null
+
     if (categoryBudget) {
       const categorySpent = await prisma.expense.aggregate({
         where: {
@@ -78,6 +81,7 @@ export async function POST(req: NextRequest) {
       })
 
       const total = categorySpent._sum.amount || 0
+      envelope = { limit: categoryBudget.limit, spent: total, remaining: categoryBudget.limit - total }
       if (total > categoryBudget.limit) {
         await createNotification(session.userId, {
           type: 'budget_warning',
@@ -125,7 +129,7 @@ export async function POST(req: NextRequest) {
     // Check and award achievements
     await checkAndAwardAchievements(session.userId)
 
-    return NextResponse.json(expense)
+    return NextResponse.json({ ...expense, envelope })
   } catch (e) {
     console.error(e)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

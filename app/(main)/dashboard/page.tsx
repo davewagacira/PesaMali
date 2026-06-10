@@ -37,6 +37,7 @@ function TxRow({ e }: { e: MetricExpense }) {
 
 export default function DashboardPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
+  const [catBudgets, setCatBudgets] = useState<{ category: string; limit: number }[]>([])
   const [budget, setBudget] = useState(15000)
   const [goal, setGoal] = useState(2000)
   const [userName, setUserName] = useState('')
@@ -89,12 +90,27 @@ export default function DashboardPage() {
           }
         })
         .catch(() => {}),
+      fetch('/api/category-budgets')
+        .then((r) => r.json())
+        .then((d) => {
+          if (Array.isArray(d)) setCatBudgets(d)
+        })
+        .catch(() => {}),
     ]).finally(() => setIsLoading(false))
   }, [])
 
   const now = new Date()
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   const m = useMetrics(expenses, budget, goal)
+
+  // Envelope view: what's left of each allocation, most-depleted first
+  const envelopes = catBudgets
+    .map((b) => {
+      const c = catOf(b.category)
+      const spent = expenses.filter((e) => e.cat === b.category).reduce((s, e) => s + e.amt, 0)
+      return { ...b, c, spent, remaining: b.limit - spent, pct: spent / b.limit }
+    })
+    .sort((a, b) => b.pct - a.pct)
 
   const h = now.getHours()
   const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
@@ -205,6 +221,53 @@ export default function DashboardPage() {
           </motion.div>
         ))}
       </motion.div>
+
+      {envelopes.length > 0 && (
+        <motion.div className="card" style={{ marginBottom: 16 }} variants={listItem}>
+          <h3>
+            <I n="wallet" size={14} />
+            Category envelopes
+          </h3>
+          <p style={{ color: 'var(--muted)', fontSize: 12, marginBottom: 6 }}>
+            What&apos;s left of the money you allocated to each category this month.
+          </p>
+          {envelopes.map((env) => (
+            <div key={env.category} style={{ padding: '10px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ color: env.c.color, display: 'flex' }}>
+                    <I n={env.c.icon} size={15} />
+                  </span>
+                  <b style={{ fontSize: 13 }}>{env.c.name}</b>
+                </div>
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: env.remaining < 0 ? 700 : 500,
+                    color: env.remaining < 0 ? 'var(--red)' : 'var(--muted)',
+                  }}
+                >
+                  {env.remaining < 0
+                    ? `Depleted · −${fmt(-env.remaining)} over`
+                    : `${fmt(env.remaining)} left`}
+                </span>
+              </div>
+              <div className="bar">
+                <span
+                  className={
+                    'fill ' + (env.pct >= 1 ? 'f-danger' : env.pct >= 0.8 ? 'f-warn' : 'f-ok')
+                  }
+                  style={{ width: Math.min(100, env.pct * 100) + '%' }}
+                />
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
+                {fmt(env.spent)} spent of {fmt(env.limit)} allocated
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
 
       <motion.div className="grid cols-2" variants={listContainer}>
         <motion.div className="card" variants={listItem}>

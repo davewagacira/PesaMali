@@ -5,10 +5,11 @@ interface SuccessModalProps {
   isOpen: boolean
   title: string
   message?: string
+  variant?: 'success' | 'warning'
   onClose: () => void
 }
 
-export function SuccessModal({ isOpen, title, message, onClose }: SuccessModalProps) {
+export function SuccessModal({ isOpen, title, message, variant = 'success', onClose }: SuccessModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -51,15 +52,15 @@ export function SuccessModal({ isOpen, title, message, onClose }: SuccessModalPr
                   width: 60,
                   height: 60,
                   borderRadius: '50%',
-                  background: 'var(--green-soft)',
-                  color: 'var(--green)',
+                  background: variant === 'warning' ? 'var(--red-soft)' : 'var(--green-soft)',
+                  color: variant === 'warning' ? 'var(--red)' : 'var(--green)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 20px',
                 }}
               >
-                <I n="check" size={32} />
+                <I n={variant === 'warning' ? 'alert' : 'check'} size={32} />
               </div>
               <h2 style={{ marginBottom: 8, fontSize: 22, fontWeight: 700 }}>{title}</h2>
               {message && (

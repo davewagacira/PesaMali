@@ -40,6 +40,8 @@ export const PATHS: Record<string, React.ReactNode> = {
   logout: <g><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></g>,
   bot: <g><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="13" r=".7" fill="currentColor"/><circle cx="15" cy="13" r=".7" fill="currentColor"/><path d="M9 17h6"/></g>,
   zap: <path d="M13 2 4 14h6l-1 8 9-12h-6z"/>,
+  droplet: <path d="M12 2.7s6.5 7.1 6.5 11.8a6.5 6.5 0 0 1-13 0C5.5 9.8 12 2.7 12 2.7z"/>,
+  wifi: <g><path d="M2.5 9a14 14 0 0 1 19 0"/><path d="M5.5 12.5a9.5 9.5 0 0 1 13 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".8" fill="currentColor"/></g>,
   bell: <g><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></g>,
   chevronDown: <path d="M6 9l6 6 6-6"/>,
   edit: <g><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 3 21l.5-4.5L17 3z"/></g>,

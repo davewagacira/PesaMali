@@ -58,6 +58,7 @@ export default function LogPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [modalVariant, setModalVariant] = useState<'success' | 'warning'>('success')
   const [isLoading, setIsLoading] = useState(true)
 
   const ping = (msg: string) => {
@@ -103,7 +104,22 @@ export default function LogPage() {
         ])
         setItem('')
         setAmt('')
-        setSuccessMessage('Expense logged successfully. Your balances have been updated.')
+        const env = data.envelope as { limit: number; spent: number; remaining: number } | null
+        const cName = catOf(cat).name
+        if (env && env.remaining < 0) {
+          setSuccessMessage(
+            `The money you allocated for ${cName} is finished. You are now ${fmt(-env.remaining)} over your ${fmt(env.limit)} budget.`
+          )
+          setModalVariant('warning')
+        } else if (env) {
+          setSuccessMessage(
+            `Expense logged. ${fmt(env.remaining)} left of the ${fmt(env.limit)} you allocated for ${cName}.`
+          )
+          setModalVariant('success')
+        } else {
+          setSuccessMessage('Expense logged successfully. Your balances have been updated.')
+          setModalVariant('success')
+        }
         setShowSuccessModal(true)
       }
     } catch {
@@ -248,8 +264,9 @@ export default function LogPage() {
 
       <SuccessModal
         isOpen={showSuccessModal}
-        title="Success!"
+        title={modalVariant === 'warning' ? 'Budget depleted!' : 'Success!'}
         message={successMessage}
+        variant={modalVariant}
         onClose={() => setShowSuccessModal(false)}
       />
     </motion.div>

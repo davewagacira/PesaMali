@@ -7,6 +7,8 @@ export const CATS = [
   { id: 'rent', name: 'Rent', icon: 'home', color: '#8B5CF6' },
   { id: 'airtime', name: 'Airtime', icon: 'phone', color: '#10B981' },
   { id: 'internet', name: 'Internet', icon: 'wifi', color: '#06B6D4' },
+  { id: 'electricity', name: 'Electricity', icon: 'zap', color: '#EAB308' },
+  { id: 'water', name: 'Water', icon: 'droplet', color: '#3B82F6' },
   { id: 'fun', name: 'Leisure', icon: 'film', color: '#F59E0B' },
   { id: 'other', name: 'Other', icon: 'receipt', color: '#94A3B8' },
 ]
@@ -16,7 +18,7 @@ export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 export const iso = (dt: Date) => dt.toISOString().slice(0, 10)
 export const fmtN = (n: number) => Math.round(n).toLocaleString('en-KE')
 export const fmt = (n: number) => 'KES ' + fmtN(n)
-export const catOf = (id: string) => CATS.find((c) => c.id === id) || CATS[5]
+export const catOf = (id: string) => CATS.find((c) => c.id === id) || CATS[CATS.length - 1]
 
 export interface MetricExpense {
   id: string

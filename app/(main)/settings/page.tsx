@@ -6,6 +6,7 @@ import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { listContainer, listItem } from '@/lib/motion'
+import { CATS } from '@/lib/metrics'
 
 interface CategoryBudget {
   category: string
@@ -205,7 +206,9 @@ export default function SettingsPage() {
     window.location.href = url
   }
 
-  const categories = ['Food', 'Transport', 'Rent', 'Entertainment', 'Utilities', 'Health', 'Airtime', 'Internet', 'Shopping', 'Other']
+  // Categories are stored as CATS ids (e.g. 'food') so budgets and recurring
+  // expenses line up with logged expenses; legacy rows may hold display names.
+  const catName = (id: string) => CATS.find((c) => c.id === id)?.name ?? id
 
   if (isLoading) return <PageHeroCard icon="settings" badge="Configuration" title="Settings" subtitle="Manage your budget, notifications, and preferences" />
 
@@ -325,7 +328,7 @@ export default function SettingsPage() {
             {categoryBudgets.map((budget) => (
               <div key={budget.category} className="flex items-center justify-between rounded-lg bg-[var(--bg)] p-3">
                 <div>
-                  <h4 className="font-semibold text-sm">{budget.category}</h4>
+                  <h4 className="font-semibold text-sm">{catName(budget.category)}</h4>
                   <p className="text-xs text-[var(--muted)]">KES {budget.limit.toLocaleString()}</p>
                 </div>
                 <button
@@ -345,9 +348,9 @@ export default function SettingsPage() {
               className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="">Select category...</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {CATS.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -387,7 +390,7 @@ export default function SettingsPage() {
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm">{recurring.item}</h4>
                   <p className="text-xs text-[var(--muted)]">
-                    {recurring.category} • KES {recurring.amount.toLocaleString()} • {recurring.frequency}
+                    {catName(recurring.category)} • KES {recurring.amount.toLocaleString()} • {recurring.frequency}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -419,9 +422,9 @@ export default function SettingsPage() {
               className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="">Select category...</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {CATS.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
