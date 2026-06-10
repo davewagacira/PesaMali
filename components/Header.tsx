@@ -12,44 +12,30 @@ interface HeaderProps {
 }
 
 export default function Header({ userName, userId }: HeaderProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/auth')
+    setIsLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/auth')
+    } catch (error) {
+      console.error('Logout failed:', error)
+      setIsLoggingOut(false)
+    }
   }
 
-  const profileMenuItems = [
-    {
-      icon: 'user',
-      label: 'Profile',
-      action: () => router.push('/profile'),
-    },
-    {
-      icon: 'settings',
-      label: 'Settings',
-      action: () => router.push('/settings'),
-    },
-    {
-      icon: 'helpCircle',
-      label: 'Help & Support',
-      action: () => alert('Help & Support coming soon'),
-    },
-  ]
-
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm w-full">
-      <div className="flex h-16 w-full items-center justify-end px-6">
-        {/* Right: Notifications + Profile */}
-        <div className="flex items-center gap-4">
-          {userId && <NotificationsBell userId={userId} />}
+    <>
+      <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm w-full">
+        <div className="flex h-16 w-full items-center justify-end px-6">
+          {/* Right: Notifications + Logout */}
+          <div className="flex items-center gap-4">
+            {userId && <NotificationsBell userId={userId} />}
 
-          <div className="relative">
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[var(--bg)]"
-            >
+            <div className="flex items-center gap-3">
               {userName ? (
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-sm">
                   {userName[0].toUpperCase()}
@@ -70,73 +56,65 @@ export default function Header({ userName, userId }: HeaderProps) {
                   </div>
                 )}
               </div>
-            </button>
-
-            <AnimatePresence>
-              {isProfileOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsProfileOpen(false)}
-                  />
-                  <motion.div
-                    className="absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow-lg)]"
-                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {/* Profile Header */}
-                    <div className="border-b border-[var(--line)] px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold">
-                          {userName ? userName[0].toUpperCase() : 'U'}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm text-[var(--text)]">{userName}</h3>
-                          <p className="text-xs text-[var(--muted)]">Personal plan</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Menu Items */}
-                    <div className="py-2">
-                      {profileMenuItems.map((item) => (
-                        <button
-                          key={item.label}
-                          onClick={() => {
-                            item.action()
-                            setIsProfileOpen(false)
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text)] transition hover:bg-[var(--bg)]"
-                        >
-                          <I n={item.icon} size={16} />
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-[var(--line)]" />
-
-                    {/* Logout */}
-                    <button
-                      onClick={() => {
-                        handleLogout()
-                        setIsProfileOpen(false)
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--red)] transition hover:bg-[var(--red-soft)]"
-                    >
-                      <I n="logout" size={16} />
-                      Sign out
-                    </button>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="ml-2 flex items-center justify-center rounded-lg p-1.5 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)]"
+                aria-label="Sign out"
+              >
+                <I n="logout" size={18} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm">
+            <motion.div
+              className="w-full max-w-sm rounded-2xl border border-[var(--line)] bg-[var(--card)] p-8 shadow-[var(--shadow-lg)]"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h2 className="text-lg font-bold text-[var(--text)] mb-2">Sign out?</h2>
+              <p className="text-sm text-[var(--muted)] mb-6">Are you sure you want to sign out from Akiba?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  disabled={isLoggingOut}
+                  className="flex-1 rounded-lg border border-[var(--line)] bg-[var(--card)] px-4 py-2.5 font-semibold text-[var(--text)] transition hover:bg-[var(--bg)] disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="flex-1 rounded-lg bg-[var(--red)] px-4 py-2.5 font-semibold text-white transition hover:bg-[var(--red-dark)] disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <motion.div
+                        className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      />
+                      Signing out…
+                    </>
+                  ) : (
+                    <>
+                      <I n="logout" size={16} />
+                      Sign out
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
