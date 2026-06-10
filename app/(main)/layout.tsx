@@ -3,16 +3,21 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
+import Header from '@/components/Header'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState('light')
   const [userName, setUserName] = useState('')
+  const [userId, setUserId] = useState('')
   const pathname = usePathname()
 
   useEffect(() => {
     fetch('/api/user')
       .then((r) => r.json())
-      .then((d) => { if (d.name) setUserName(d.name) })
+      .then((d) => { 
+        if (d.name) setUserName(d.name)
+        if (d.id) setUserId(d.id)
+      })
       .catch(() => {})
   }, [])
 
@@ -25,21 +30,24 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="shell">
-      <Sidebar userName={userName} theme={theme} onThemeToggle={toggleTheme} />
-      <main className="main">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.32, ease: 'easeOut' }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+    <div className="shell flex flex-col">
+      <Header userName={userName} userId={userId} />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar userName={userName} theme={theme} onThemeToggle={toggleTheme} />
+        <main className="main flex-1">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.32, ease: 'easeOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   )
 }
