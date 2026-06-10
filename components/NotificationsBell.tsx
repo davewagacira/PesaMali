@@ -87,7 +87,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute right-0 top-12 z-50 w-96 rounded-xl border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow-lg)]"
+            className="fixed left-3 right-3 top-16 z-50 w-auto md:absolute md:left-auto md:right-0 md:top-12 md:w-96 rounded-xl border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow-lg)]"
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
