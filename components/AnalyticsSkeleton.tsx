@@ -10,11 +10,10 @@ const stagger = (i: number) => ({
 export function AnalyticsSkeleton() {
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>Analytics</h1>
-          <p>Where your money actually goes</p>
-        </div>
+      <div className="rounded-2xl border border-[var(--line)] bg-gradient-to-r from-[var(--primary-soft)] to-transparent p-6 mb-6">
+        <Skeleton height={20} width={80} style={{ marginBottom: 12 }} />
+        <Skeleton height={32} width={200} style={{ marginBottom: 8 }} />
+        <Skeleton height={16} width={300} />
       </div>
 
       <div className="grid cols-2">
