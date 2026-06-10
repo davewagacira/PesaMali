@@ -15,3 +15,6 @@ tsconfig.tsbuildinfo
 
 # misc
 .DS_Store
+
+# Service account keys — never commit these
+keys/*.json

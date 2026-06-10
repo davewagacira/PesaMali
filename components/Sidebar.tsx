@@ -30,7 +30,12 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="logo">A</div> Akiba
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+        <div className="sidebar-brand-copy">
+          <span>Akiba</span>
+          <small>Smart money moves.</small>
+        </div>
       </div>
       <nav className="nav">
         {NAV.map((n) => {

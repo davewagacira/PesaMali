@@ -20,9 +20,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+
+    if (user.mfaEnabled) {
+      session.userId = user.id
+      session.userName = user.name
+      session.isLoggedIn = false
+      session.mfaPending = true
+      await session.save()
+      return NextResponse.json({ mfaRequired: true })
+    }
+
     session.userId = user.id
     session.userName = user.name
     session.isLoggedIn = true
+    session.mfaPending = false
     await session.save()
     return NextResponse.json({
       id: user.id,

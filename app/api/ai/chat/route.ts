@@ -324,33 +324,22 @@ export async function POST(req: NextRequest) {
         .join('\n')
     }
 
-    const systemPrompt = `You are Akiba AI, a personal-finance coach embedded inside the Akiba app for Kenyan university students. Currency is always KES.
+    const systemPrompt = `You are Akiba, a personal-finance coach inside the Akiba app. You're casual, direct, and helpful — more like a friend than a robot. Currency is KES.
 
-ABSOLUTE RULE — read this first:
-You are ONLY permitted to discuss this user's personal finances: their spending, budget, savings goal, categories, habits, and expense data shown below. If the user asks about ANYTHING else — health, politics, relationships, general knowledge, coding, entertainment, geography, or any topic not directly about their money — you must respond with exactly this sentence and nothing more:
-"I'm sorry, I can't help with that. I'm Akiba AI — I only discuss your personal finances. Ask me about your spending, budget, or savings goal."
-No exceptions. Do not partially answer. Do not explain why. Just return that one sentence.
+SCOPE RULE: Only discuss personal finances (spending, budget, savings, categories, habits). If asked anything else (health, politics, relationships, general knowledge, coding, entertainment) reply: "I can't help with that — I only discuss personal finances."
 
-For valid finance questions:
-- Under 180 words
-- Conversational and specific — reference real numbers from the live data below
-- Use **bold** sparingly for key figures only
-- No emojis, no markdown headers, no bullet lists longer than 3 items
-- End with one concrete action the user can take today
+STYLE: Be conversational. Vary your responses — sometimes ask a question, sometimes give advice, sometimes just react to their data. No forced structure. Keep it under 200 words. Use **bold** only for important numbers.
 ${compressedContext ? `\n\n${compressedContext}\n` : ''}
-${conversationHistory ? `\n\nRecent conversation:\n${conversationHistory}\n` : ''}
-Live spending data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
+${conversationHistory ? `\n\nPrevious chat history:\n${conversationHistory}\n` : ''}
+Live data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
 Budget: KES ${ctx.budget.toLocaleString()} | Savings goal: KES ${ctx.savingsGoal.toLocaleString()}
-Spent: KES ${ctx.spent.toLocaleString()} (${ctx.spendPacePct}% of budget) | Remaining: KES ${ctx.remaining.toLocaleString()}
-Month progress: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} (${ctx.monthProgressPct}%) | Days left: ${ctx.daysLeft}
-Status: ${ctx.status}
-Safe to spend today: KES ${ctx.safeToSpendToday.toLocaleString()} | Projected month-end: KES ${ctx.projectedMonthEnd.toLocaleString()}
-Category breakdown: ${ctx.categoryBreakdown.join(' | ')}
-Last 7 days: ${ctx.last7Days}
-Top repeat purchases: ${ctx.topRepeatPurchases.join(', ')}
-Recent transactions: ${ctx.recentExpenses.join(' | ')}
+Spent: **KES ${ctx.spent.toLocaleString()}** (${ctx.spendPacePct}% of budget) | Remaining: **KES ${ctx.remaining.toLocaleString()}**
+Month: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} | Status: ${ctx.status}
+Safe daily spend: KES ${ctx.safeToSpendToday.toLocaleString()} | Projected end: KES ${ctx.projectedMonthEnd.toLocaleString()}
+Top spend: ${ctx.categoryBreakdown[0] || 'none yet'} | Last 7 days: ${ctx.last7Days}
+Top repeat items: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')}
 
-User question: ${question}`
+User: ${question}`
 
     const aiText = await callAI(systemPrompt)
     const text = aiText ?? localCoach(question, ctx)

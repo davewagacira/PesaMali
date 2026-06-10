@@ -8,18 +8,24 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  password      String
-  monthlyBudget Float     @default(15000)
-  savingsGoal   Float     @default(2000)
-  mfaEnabled    Boolean   @default(false)
-  mfaSecret     String?
-  aiMemoryEnabled Boolean @default(true)
-  createdAt     DateTime  @default(now())
-  expenses      Expense[]
-  conversations Conversation[]
+  id                    String                @id @default(cuid())
+  name                  String
+  email                 String                @unique
+  password              String
+  monthlyBudget         Float                 @default(15000)
+  savingsGoal           Float                 @default(2000)
+  mfaEnabled            Boolean               @default(false)
+  mfaSecret             String?
+  aiMemoryEnabled       Boolean               @default(true)
+  notificationsEnabled  Boolean               @default(true)
+  pushNotificationsEnabled Boolean            @default(true)
+  createdAt             DateTime              @default(now())
+  expenses              Expense[]
+  conversations         Conversation[]
+  categoryBudgets       CategoryBudget[]
+  recurringExpenses     RecurringExpense[]
+  achievements          Achievement[]
+  notifications         Notification[]
 }
 
 model Expense {
@@ -50,4 +56,57 @@ model Message {
   role           String   // "user" or "ai"
   content        String   @db.Text
   createdAt      DateTime @default(now())
+}
+
+model CategoryBudget {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  limit     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, category])
+}
+
+model RecurringExpense {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    String
+  item        String
+  amount      Float
+  frequency   String   // "monthly", "weekly", "biweekly"
+  dayOfMonth  Int?     // for monthly: 1-31
+  dayOfWeek   Int?     // for weekly: 0-6 (Sunday-Saturday)
+  lastRunDate String?  // YYYY-MM-DD
+  nextRunDate String   // YYYY-MM-DD
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Achievement {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "savings_milestone", "budget_perfect_day", "no_overspend_week", "goal_reached"
+  title     String
+  description String
+  icon      String?
+  unlockedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "budget_warning", "achievement", "recurring_expense", "goal_milestone"
+  title     String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  actionUrl String?
+  createdAt DateTime @default(now())
 }

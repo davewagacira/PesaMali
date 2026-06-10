@@ -14,20 +14,38 @@ export function SuccessModal({ isOpen, title, message, onClose }: SuccessModalPr
       {isOpen && (
         <>
           <motion.div
-            className="modal-overlay"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(2px)',
+              zIndex: 99,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-          />
-          <motion.div
-            className="modal"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           >
-            <div className="modal-content" style={{ textAlign: 'center' }}>
+            <motion.div
+              style={{
+                zIndex: 100,
+                background: 'var(--card)',
+                border: '1px solid var(--line)',
+                borderRadius: 20,
+                boxShadow: 'var(--shadow-lg)',
+                padding: 32,
+                minWidth: 360,
+              }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ textAlign: 'center' }}>
               <div
                 style={{
                   width: 60,
@@ -57,7 +75,8 @@ export function SuccessModal({ isOpen, title, message, onClose }: SuccessModalPr
               >
                 Got it
               </motion.button>
-            </div>
+              </div>
+            </motion.div>
           </motion.div>
         </>
       )}

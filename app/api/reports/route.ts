@@ -1,0 +1,184 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getIronSession } from 'iron-session'
+import { cookies } from 'next/headers'
+import { SessionData, sessionOptions } from '@/lib/session'
+import { prisma } from '@/lib/prisma'
+import jsPDF from 'jspdf'
+import Papa from 'papaparse'
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { format = 'pdf', month, year } = Object.fromEntries(req.nextUrl.searchParams)
+    const now = new Date()
+    const queryYear = year ? parseInt(year) : now.getFullYear()
+    const queryMonth = month ? parseInt(month) : now.getMonth() + 1
+
+    const monthStart = `${queryYear}-${String(queryMonth).padStart(2, '0')}-01`
+    const monthEnd = new Date(queryYear, queryMonth, 0).toISOString().slice(0, 10)
+
+    const user = await prisma.user.findUnique({ where: { id: session.userId } })
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId: session.userId,
+        date: { gte: monthStart, lte: monthEnd },
+      },
+      orderBy: { date: 'desc' },
+    })
+
+    const categoryExpenses: Record<string, number> = {}
+    let totalSpent = 0
+
+    for (const expense of expenses) {
+      categoryExpenses[expense.category] = (categoryExpenses[expense.category] || 0) + expense.amount
+      totalSpent += expense.amount
+    }
+
+    if (format === 'csv') {
+      const rows = [
+        ['Akiba - Monthly Expense Report'],
+        [`Month: ${queryMonth}/${queryYear}`],
+        [`User: ${user.name} (${user.email})`],
+        [''],
+        ['Date', 'Category', 'Item', 'Amount (KES)'],
+        ...expenses.map((e) => [e.date, e.category, e.item, e.amount.toString()]),
+        [''],
+        ['Summary'],
+        ['Budget', user.monthlyBudget.toString()],
+        ['Total Spent', totalSpent.toString()],
+        ['Remaining', (user.monthlyBudget - totalSpent).toString()],
+        ['Savings Goal', user.savingsGoal.toString()],
+        [''],
+        ['By Category'],
+        ...Object.entries(categoryExpenses).map(([cat, amt]) => [cat, amt.toString()]),
+      ]
+
+      const csv = Papa.unparse(rows)
+      return new NextResponse(csv, {
+        headers: {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename="akiba-report-${queryYear}-${String(queryMonth).padStart(2, '0')}.csv"`,
+        },
+      })
+    } else {
+      // PDF format
+      const doc = new jsPDF()
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
+      let yPos = 20
+
+      // Title
+      doc.setFontSize(20)
+      doc.text('Akiba Monthly Report', 20, yPos)
+      yPos += 15
+
+      // Header info
+      doc.setFontSize(11)
+      doc.text(`Month: ${queryMonth}/${queryYear}`, 20, yPos)
+      yPos += 7
+      doc.text(`User: ${user.name}`, 20, yPos)
+      yPos += 7
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, yPos)
+      yPos += 15
+
+      // Summary section
+      doc.setFontSize(13)
+      doc.text('Summary', 20, yPos)
+      yPos += 10
+
+      doc.setFontSize(10)
+      const summary = [
+        `Budget: KES ${user.monthlyBudget.toLocaleString()}`,
+        `Total Spent: KES ${totalSpent.toLocaleString()}`,
+        `Remaining: KES ${(user.monthlyBudget - totalSpent).toLocaleString()}`,
+        `Savings Goal: KES ${user.savingsGoal.toLocaleString()}`,
+        `Status: ${totalSpent <= user.monthlyBudget ? '✓ On Track' : '✗ Over Budget'}`,
+      ]
+
+      for (const line of summary) {
+        if (yPos > pageHeight - 40) {
+          doc.addPage()
+          yPos = 20
+        }
+        doc.text(line, 20, yPos)
+        yPos += 7
+      }
+
+      yPos += 10
+
+      // Category breakdown
+      doc.setFontSize(13)
+      doc.text('Spending by Category', 20, yPos)
+      yPos += 10
+
+      doc.setFontSize(10)
+      for (const [cat, amt] of Object.entries(categoryExpenses)) {
+        if (yPos > pageHeight - 40) {
+          doc.addPage()
+          yPos = 20
+        }
+        const pct = ((amt / totalSpent) * 100).toFixed(1)
+        doc.text(`${cat}: KES ${amt.toLocaleString()} (${pct}%)`, 20, yPos)
+        yPos += 7
+      }
+
+      yPos += 10
+
+      // Expenses table
+      doc.setFontSize(13)
+      doc.text('All Expenses', 20, yPos)
+      yPos += 10
+
+      doc.setFontSize(9)
+      const colWidth = [30, 40, 55, 30]
+      const headers = ['Date', 'Category', 'Item', 'Amount']
+
+      // Draw headers
+      doc.setFont('helvetica', 'bold')
+      let xPos = 20
+      for (let i = 0; i < headers.length; i++) {
+        doc.text(headers[i], xPos, yPos)
+        xPos += colWidth[i]
+      }
+      doc.setFont('helvetica', 'normal')
+      yPos += 7
+
+      // Draw rows
+      for (const expense of expenses) {
+        if (yPos > pageHeight - 20) {
+          doc.addPage()
+          yPos = 20
+        }
+
+        xPos = 20
+        doc.text(expense.date, xPos, yPos)
+        xPos += colWidth[0]
+        doc.text(expense.category, xPos, yPos)
+        xPos += colWidth[1]
+        doc.text(expense.item.slice(0, 15), xPos, yPos)
+        xPos += colWidth[2]
+        doc.text(`KES ${expense.amount}`, xPos, yPos)
+        yPos += 6
+      }
+
+      const pdf = doc.output('arraybuffer')
+      return new NextResponse(pdf, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="akiba-report-${queryYear}-${String(queryMonth).padStart(2, '0')}.pdf"`,
+        },
+      })
+    }
+  } catch (e) {
+    console.error('[Reports error]', e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}

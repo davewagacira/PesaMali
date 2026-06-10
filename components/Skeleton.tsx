@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion'
-
 interface SkeletonProps {
   width?: string | number
   height?: string | number
@@ -16,7 +14,7 @@ export function Skeleton({
   style = {},
 }: SkeletonProps) {
   return (
-    <motion.div
+    <div
       className={className}
       style={{
         background: 'var(--card-2)',
@@ -25,8 +23,6 @@ export function Skeleton({
         height,
         ...style,
       }}
-      animate={{ opacity: [0.6, 1, 0.6] }}
-      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
     />
   )
 }

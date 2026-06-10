@@ -1,0 +1,70 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getIronSession } from 'iron-session'
+import { cookies } from 'next/headers'
+import { SessionData, sessionOptions } from '@/lib/session'
+import { prisma } from '@/lib/prisma'
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const notifications = await prisma.notification.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    })
+
+    const unread = await prisma.notification.count({
+      where: { userId: session.userId, read: false },
+    })
+
+    return NextResponse.json({ notifications, unread })
+  } catch (e) {
+    console.error('[Notifications GET error]', e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id, read } = await req.json()
+
+    const notification = await prisma.notification.update({
+      where: { id },
+      data: { read },
+    })
+
+    return NextResponse.json(notification)
+  } catch (e) {
+    console.error('[Notifications PATCH error]', e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await req.json()
+
+    await prisma.notification.delete({
+      where: { id },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (e) {
+    console.error('[Notifications DELETE error]', e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}

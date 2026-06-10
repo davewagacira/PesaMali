@@ -21,6 +21,9 @@ export async function GET() {
       monthlyBudget: user.monthlyBudget,
       savingsGoal: user.savingsGoal,
       mfaEnabled: user.mfaEnabled,
+      aiMemoryEnabled: user.aiMemoryEnabled,
+      notificationsEnabled: user.notificationsEnabled,
+      pushNotificationsEnabled: user.pushNotificationsEnabled,
     })
   } catch (e) {
     console.error(e)
@@ -34,7 +37,7 @@ export async function PUT(req: NextRequest) {
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const { monthlyBudget, savingsGoal, name, password, currentPassword, aiMemoryEnabled } = await req.json()
+    const { monthlyBudget, savingsGoal, name, password, currentPassword, aiMemoryEnabled, notificationsEnabled, pushNotificationsEnabled } = await req.json()
 
     const user = await prisma.user.findUnique({ where: { id: session.userId } })
     if (!user) {
@@ -59,6 +62,8 @@ export async function PUT(req: NextRequest) {
     if (savingsGoal !== undefined) updateData.savingsGoal = savingsGoal
     if (name) updateData.name = name
     if (aiMemoryEnabled !== undefined) updateData.aiMemoryEnabled = aiMemoryEnabled
+    if (notificationsEnabled !== undefined) updateData.notificationsEnabled = notificationsEnabled
+    if (pushNotificationsEnabled !== undefined) updateData.pushNotificationsEnabled = pushNotificationsEnabled
     if (password) {
       const hashedPassword = await bcrypt.default.hash(password, 10)
       updateData.password = hashedPassword

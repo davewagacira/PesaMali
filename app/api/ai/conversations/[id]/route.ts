@@ -35,6 +35,38 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    if (!session.isLoggedIn) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { title } = await req.json()
+    if (!title?.trim()) {
+      return NextResponse.json({ error: 'Title required' }, { status: 400 })
+    }
+
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: params.id },
+    })
+
+    if (!conversation || conversation.userId !== session.userId) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    const updated = await prisma.conversation.update({
+      where: { id: params.id },
+      data: { title: title.trim() },
+    })
+
+    return NextResponse.json({ success: true, title: updated.title })
+  } catch (e) {
+    console.error(e)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)

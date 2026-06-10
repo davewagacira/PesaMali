@@ -4,6 +4,9 @@ export interface SessionData {
   userId: string
   userName: string
   isLoggedIn: boolean
+  mfaVerified?: boolean
+  mfaPending?: boolean
+  mfaSetupSecret?: string
 }
 
 export const sessionOptions: SessionOptions = {

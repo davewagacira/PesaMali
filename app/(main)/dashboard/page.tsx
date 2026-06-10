@@ -1,10 +1,13 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
 import { useMetrics, fmt, fmtN, catOf, MetricExpense } from '@/lib/metrics'
 import { DashboardSkeleton } from '@/components/DashboardSkeleton'
+import { NotificationsBell } from '@/components/NotificationsBell'
+import { AchievementsBadge } from '@/components/AchievementsBadge'
+import { useAblyExpenses } from '@/lib/useAbly'
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 16 },
@@ -41,7 +44,27 @@ export default function DashboardPage() {
   const [budget, setBudget] = useState(15000)
   const [goal, setGoal] = useState(2000)
   const [userName, setUserName] = useState('')
+  const [userId, setUserId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+
+  const handleExpenseChange = useCallback((event: string, expense: any) => {
+    if (event === 'add') {
+      setExpenses((prev) => [
+        {
+          id: expense.id,
+          date: expense.date,
+          cat: expense.category,
+          item: expense.item,
+          amt: expense.amount,
+        },
+        ...prev,
+      ])
+    } else if (event === 'delete') {
+      setExpenses((prev) => prev.filter((e) => e.id !== expense.id))
+    }
+  }, [])
+
+  useAblyExpenses(userId, handleExpenseChange)
 
   useEffect(() => {
     Promise.all([
@@ -51,6 +74,7 @@ export default function DashboardPage() {
           if (d.name) setUserName(d.name)
           if (d.monthlyBudget) setBudget(d.monthlyBudget)
           if (d.savingsGoal) setGoal(d.savingsGoal)
+          if (d.id) setUserId(d.id)
         })
         .catch(() => {}),
       fetch('/api/expenses')
@@ -79,6 +103,7 @@ export default function DashboardPage() {
   const h = now.getHours()
   const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
   const statusTxt = m.status === 'ok' ? 'On track' : m.status === 'warn' ? 'Slow down' : 'Danger zone'
+  const firstName = userName.trim().split(/\s+/)[0] || userName
 
   if (isLoading) return <DashboardSkeleton />
 
@@ -87,7 +112,7 @@ export default function DashboardPage() {
       <div className="page-head">
         <div>
           <h1>
-            {greet}, {userName}
+            {greet}, {firstName}
           </h1>
           <p>
             {now.toLocaleDateString('en-KE', {
@@ -98,10 +123,14 @@ export default function DashboardPage() {
             })}
           </p>
         </div>
-        <span className={'pill ' + m.status}>
-          <span className="dot" />
-          {statusTxt}
-        </span>
+        <div className="flex items-center gap-3">
+          {userId && <NotificationsBell userId={userId} />}
+          <AchievementsBadge />
+          <span className={'pill ' + m.status}>
+            <span className="dot" />
+            {statusTxt}
+          </span>
+        </div>
       </div>
 
       <motion.div className="hero" {...stagger(0)}>

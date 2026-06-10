@@ -3,6 +3,7 @@ import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
+import { publishExpenseEvent } from '@/lib/ably'
 
 export async function DELETE(
   _req: NextRequest,
@@ -13,9 +14,19 @@ export async function DELETE(
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    await prisma.expense.deleteMany({
-      where: { id: params.id, userId: session.userId },
+
+    const expense = await prisma.expense.findUnique({ where: { id: params.id } })
+    if (!expense || expense.userId !== session.userId) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    await prisma.expense.delete({
+      where: { id: params.id },
     })
+
+    // Publish real-time event
+    await publishExpenseEvent(session.userId, 'delete', { id: params.id })
+
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error(e)
