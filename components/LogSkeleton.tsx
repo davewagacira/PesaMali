@@ -10,11 +10,10 @@ const stagger = (i: number) => ({
 export function LogSkeleton() {
   return (
     <div>
-      <div className="page-head">
-        <div>
-          <h1>Log an expense</h1>
-          <p>Every shilling counted. Balances update instantly.</p>
-        </div>
+      <div className="rounded-2xl border border-[var(--line)] bg-gradient-to-r from-[var(--primary-soft)] to-transparent p-6 mb-6">
+        <Skeleton height={20} width={80} style={{ marginBottom: 12 }} />
+        <Skeleton height={32} width={200} style={{ marginBottom: 8 }} />
+        <Skeleton height={16} width={300} />
       </div>
 
       <div className="log-grid">

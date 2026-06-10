@@ -66,14 +66,10 @@ export function AISkeleton() {
       </div>
 
       <div className="mx-auto max-w-[1180px]">
-        <div className="page-head">
-          <div>
-            <Skeleton width={110} height={24} style={{ marginBottom: 8 }} />
-            <Skeleton width={320} height={13} />
-          </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Skeleton width={118} height={38} />
-          </div>
+        <div className="rounded-2xl border border-[var(--line)] bg-gradient-to-r from-[var(--primary-soft)] to-transparent p-6 mb-6">
+          <Skeleton height={20} width={80} style={{ marginBottom: 12 }} />
+          <Skeleton height={32} width={200} style={{ marginBottom: 8 }} />
+          <Skeleton height={16} width={300} />
         </div>
 
         <motion.div
