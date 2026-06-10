@@ -31,7 +31,10 @@ export default function Landing() {
           <div className="lp-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Akiba" />
-            <span>Akiba</span>
+            <span className="lp-brand-copy">
+              <b>Akiba</b>
+              <small>Smart money moves.</small>
+            </span>
           </div>
           <div className="lp-nav-actions">
             <button className="lp-btn lp-btn-ghost" onClick={login}>Log in</button>

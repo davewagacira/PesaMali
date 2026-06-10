@@ -317,6 +317,9 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 .lp-nav-inner{max-width:1160px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .lp-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.2px}
 .lp-brand img{width:34px;height:34px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.lp-brand-copy{display:flex;flex-direction:column;gap:1px;line-height:1.1}
+.lp-brand-copy b{font-weight:800;font-size:18px}
+.lp-brand-copy small{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0}
 .lp-nav-actions{display:flex;align-items:center;gap:8px}
 .lp-nav-actions .lp-btn{padding:9px 14px;min-height:40px;font-size:13.5px}
 
