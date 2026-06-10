@@ -30,7 +30,7 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm w-full">
+      <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)] w-full">
         <div className="flex h-12 md:h-16 w-full items-center justify-between px-3 md:px-6">
           {/* Hamburger — mobile only */}
           <button
