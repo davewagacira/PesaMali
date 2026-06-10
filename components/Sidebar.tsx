@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { I } from './Icons'
+import { Skeleton } from './Skeleton'
 
 interface SidebarProps {
   userName: string
@@ -32,11 +33,24 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
   return (
     <aside className="sidebar relative z-50">
       <div className="brand">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+        {isLoading ? (
+          <Skeleton width={36} height={36} style={{ borderRadius: 11, flexShrink: 0 }} />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+        )}
         <div className="sidebar-brand-copy">
-          <span>Akiba</span>
-          <small>Smart money moves.</small>
+          {isLoading ? (
+            <div className="flex flex-col gap-1.5">
+              <Skeleton height={16} width={60} />
+              <Skeleton height={12} width={80} />
+            </div>
+          ) : (
+            <>
+              <span>Akiba</span>
+              <small>Smart money moves.</small>
+            </>
+          )}
         </div>
       </div>
       <nav className="nav">
