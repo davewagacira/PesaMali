@@ -1,25 +1,18 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { I } from '@/components/Icons'
-import { Skeleton } from '@/components/Skeleton'
 
 export default function AuthPage() {
   const [signup, setSignup] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState('')
   const router = useRouter()
   const nameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const budgetRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setPageLoading(false), 400)
-    return () => clearTimeout(timer)
-  }, [])
 
   const enter = async () => {
     setError('')
@@ -100,21 +93,12 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.1 }}
         >
-          {pageLoading ? (
-            <>
-              <Skeleton height={28} width="70%" style={{ marginBottom: 5, background: 'var(--line)' }} />
-              <Skeleton height={14} width="85%" style={{ marginBottom: 24, background: 'var(--line)' }} />
-            </>
-          ) : (
-            <>
-              <h2>{signup ? 'Create your account' : 'Welcome back'}</h2>
-              <div className="sub">
-                {signup
-                  ? 'Your own dashboard, your own money rules'
-                  : 'Sign in to your Akiba dashboard'}
-              </div>
-            </>
-          )}
+          <h2>{signup ? 'Create your account' : 'Welcome back'}</h2>
+          <div className="sub">
+            {signup
+              ? 'Your own dashboard, your own money rules'
+              : 'Sign in to your Akiba dashboard'}
+          </div>
           {signup && (
             <div className="field">
               <label>Full name</label>
