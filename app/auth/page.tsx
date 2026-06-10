@@ -55,15 +55,17 @@ export default function AuthPage() {
   return (
     <div className="auth">
       <div className="auth-left">
-        <button className="auth-back" onClick={() => { window.location.href = '/' }}>
-          <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
-        </button>
-        <div className="brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
-          <div className="sidebar-brand-copy">
-            <span>Akiba</span>
-            <small>Smart money moves.</small>
+        <div className="auth-left-top">
+          <button className="auth-back" onClick={() => { window.location.href = '/' }}>
+            <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
+          </button>
+          <div className="brand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+            <div className="sidebar-brand-copy">
+              <span>Akiba</span>
+              <small>Smart money moves.</small>
+            </div>
           </div>
         </div>
         <motion.div
