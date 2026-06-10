@@ -34,6 +34,8 @@ export default function AuthPage() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'Something went wrong')
+      } else if (data.mfaRequired) {
+        router.push('/auth/mfa')
       } else {
         router.push('/dashboard')
       }
@@ -48,7 +50,12 @@ export default function AuthPage() {
     <div className="auth">
       <div className="auth-left">
         <div className="brand">
-          <div className="logo">A</div> Akiba
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+          <div className="sidebar-brand-copy">
+            <span>Akiba</span>
+            <small>Smart money moves.</small>
+          </div>
         </div>
         <motion.div
           className="auth-hero"
@@ -56,11 +63,10 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1>End the month with money left.</h1>
+          <h1>Turn spending into financial intelligence.</h1>
           <p>
-            Akiba tracks every shilling, shows you one clear number that&apos;s safe to spend
-            today, and an AI coach tells you the truth about your habits before the 20th catches
-            you off guard.
+            Akiba transforms daily transactions into real-time insight, helping people understand
+            their money, adjust faster, and build stronger financial habits with AI-guided clarity.
           </p>
         </motion.div>
         <motion.div
@@ -101,11 +107,11 @@ export default function AuthPage() {
           )}
           <div className="field">
             <label>Email</label>
-            <input ref={emailRef} type="email" defaultValue="dave@email.com" />
+            <input ref={emailRef} type="email" defaultValue="davidwagacira26@gmail.com" />
           </div>
           <div className="field">
             <label>Password</label>
-            <input ref={passwordRef} type="password" defaultValue="password" />
+            <input ref={passwordRef} type="password" defaultValue="Pdreams@4675" />
           </div>
           {signup && (
             <div className="field">
