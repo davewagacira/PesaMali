@@ -9,6 +9,8 @@ interface PageHeroCardProps {
   title: string
   subtitle: string
   children?: React.ReactNode
+  /** 'gradient' (default) matches the primary-soft hero look; 'card' matches the sidebar surface */
+  surface?: 'gradient' | 'card'
 }
 
 export function PageHeroCard({
@@ -17,10 +19,16 @@ export function PageHeroCard({
   title,
   subtitle,
   children,
+  surface = 'card',
 }: PageHeroCardProps) {
+  const surfaceClass =
+    surface === 'card'
+      ? 'bg-[var(--card)] shadow-[var(--shadow)]'
+      : 'bg-gradient-to-r from-[var(--primary-soft)] to-transparent'
+
   return (
     <motion.div
-      className="rounded-2xl border border-[var(--line)] bg-gradient-to-r from-[var(--primary-soft)] to-transparent p-6 mb-6"
+      className={`rounded-2xl border border-[var(--line)] ${surfaceClass} p-6 mb-6`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}

@@ -9,13 +9,6 @@
       "maxDuration": 60
     }
   },
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/dashboard",
-      "permanent": false
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

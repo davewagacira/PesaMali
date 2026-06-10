@@ -1,11 +1,17 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { I } from '@/components/Icons'
 
 export default function AuthPage() {
   const [signup, setSignup] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('mode') === 'signup') setSignup(true)
+  }, [])
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -49,12 +55,17 @@ export default function AuthPage() {
   return (
     <div className="auth">
       <div className="auth-left">
-        <div className="brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
-          <div className="sidebar-brand-copy">
-            <span>Akiba</span>
-            <small>Smart money moves.</small>
+        <div className="auth-left-top">
+          <button className="auth-back" onClick={() => { window.location.href = '/' }}>
+            <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
+          </button>
+          <div className="brand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+            <div className="sidebar-brand-copy">
+              <span>Akiba</span>
+              <small>Smart money moves.</small>
+            </div>
           </div>
         </div>
         <motion.div
@@ -63,10 +74,11 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1>Turn spending into financial intelligence.</h1>
+          <h1>{signup ? 'Your money story starts here.' : 'Welcome back to smarter money.'}</h1>
           <p>
-            Akiba transforms daily transactions into real-time insight, helping people understand
-            their money, adjust faster, and build stronger financial habits with AI-guided clarity.
+            {signup
+              ? 'Create your account in seconds and let Akiba turn every shilling into clear, daily guidance built around your real spending.'
+              : 'Sign in to pick up right where you left off. Your safe-to-spend, live analytics and AI coach are ready and waiting.'}
           </p>
         </motion.div>
         <motion.div
@@ -93,6 +105,9 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.1 }}
         >
+          <button className="auth-back auth-back-mobile" onClick={() => { window.location.href = '/' }}>
+            <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
+          </button>
           <h2>{signup ? 'Create your account' : 'Welcome back'}</h2>
           <div className="sub">
             {signup
@@ -107,14 +122,15 @@ export default function AuthPage() {
           )}
           <div className="field">
             <label>Email</label>
-            <input ref={emailRef} type="email" defaultValue="davidwagacira26@gmail.com" />
+            <input ref={emailRef} type="email" placeholder="you@example.com" autoComplete="email" />
           </div>
           <div className="field">
             <label>Password</label>
             <input
               ref={passwordRef}
               type="password"
-              defaultValue="Pdreams@4675"
+              placeholder="••••••••"
+              autoComplete={signup ? 'new-password' : 'current-password'}
               onKeyDown={(e) => e.key === 'Enter' && !loading && enter()}
             />
           </div>

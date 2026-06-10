@@ -17,7 +17,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Akiba — Know your money',
+  title: 'Akiba · Know your money',
   description: 'Personal finance app for Kenyan students',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover',
   icons: {

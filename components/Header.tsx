@@ -9,9 +9,10 @@ import { NotificationsBell } from './NotificationsBell'
 interface HeaderProps {
   userName: string
   userId: string
+  onMenuClick?: () => void
 }
 
-export default function Header({ userName, userId }: HeaderProps) {
+export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
@@ -20,7 +21,9 @@ export default function Header({ userName, userId }: HeaderProps) {
     setIsLoggingOut(true)
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
-      router.push('/auth')
+      try { localStorage.clear() } catch {}
+      router.replace('/')
+      router.refresh()
     } catch (error) {
       console.error('Logout failed:', error)
       setIsLoggingOut(false)
@@ -29,41 +32,27 @@ export default function Header({ userName, userId }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm w-full">
-        <div className="flex h-12 md:h-16 w-full items-center justify-end px-3 md:px-6">
-          {/* Right: Notifications + Logout */}
-          <div className="flex items-center gap-2 md:gap-4">
+      <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)] w-full">
+        <div className="flex h-12 md:h-16 w-full items-center justify-between px-3 md:px-6">
+          {/* Hamburger — mobile only */}
+          <button
+            className="flex md:hidden items-center justify-center rounded-lg p-1 text-[var(--muted)] hover:bg-[var(--bg)] hover:text-[var(--text)] min-h-[44px] min-w-[44px]"
+            onClick={onMenuClick}
+            aria-label="Open menu"
+          >
+            <I n="menu" size={22} />
+          </button>
+          {/* Right: Notifications + profile avatar (always visible) */}
+          <div className="flex items-center gap-3 ml-auto">
             {userId && <NotificationsBell userId={userId} />}
 
-            <div className="flex items-center gap-2 md:gap-3">
-              {userName ? (
-                <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs md:text-sm flex-shrink-0">
-                  {userName[0].toUpperCase()}
-                </div>
-              ) : (
-                <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
-              )}
-              <div className="hidden md:flex flex-col items-start">
-                {userName ? (
-                  <>
-                    <span className="text-sm font-semibold text-[var(--text)]">{userName}</span>
-                    <span className="text-xs text-[var(--muted)]">Personal plan</span>
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="h-4 w-24 rounded bg-[var(--line)] animate-pulse" />
-                    <div className="h-3 w-20 rounded bg-[var(--line)] animate-pulse" />
-                  </div>
-                )}
+            {userName ? (
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                {userName[0].toUpperCase()}
               </div>
-              <button
-                onClick={() => setShowLogoutConfirm(true)}
-                className="ml-1 md:ml-2 flex items-center justify-center rounded-lg p-1 md:p-1.5 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)] active:text-[var(--red)] min-h-[44px] min-w-[44px]"
-                aria-label="Sign out"
-              >
-                <I n="logout" size={20} />
-              </button>
-            </div>
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
+            )}
           </div>
         </div>
       </header>
