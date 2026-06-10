@@ -22,6 +22,10 @@ export default function Landing() {
   const router = useRouter()
   const login = () => router.push('/auth')
   const signup = () => router.push('/auth?mode=signup')
+  const scrollTo = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <div className="lp">
@@ -36,6 +40,10 @@ export default function Landing() {
               <small>Smart money moves.</small>
             </span>
           </div>
+          <nav className="lp-nav-links">
+            <a href="#features" onClick={scrollTo('features')}>Why Akiba</a>
+            <a href="#how" onClick={scrollTo('how')}>How it works</a>
+          </nav>
           <div className="lp-nav-actions">
             <button className="lp-btn lp-btn-ghost" onClick={login}>Log in</button>
             <button className="lp-btn lp-btn-primary" onClick={signup}>Get started</button>
@@ -125,7 +133,7 @@ export default function Landing() {
       </section>
 
       {/* ===== Features ===== */}
-      <section className="lp-section">
+      <section id="features" className="lp-section">
         <div className="lp-section-head">
           <span className="lp-eyebrow">Why Akiba</span>
           <h2>Everything you need to master your money</h2>
@@ -150,7 +158,7 @@ export default function Landing() {
       </section>
 
       {/* ===== How it works ===== */}
-      <section className="lp-section lp-steps-section">
+      <section id="how" className="lp-section lp-steps-section">
         <div className="lp-section-head">
           <span className="lp-eyebrow">How it works</span>
           <h2>From spending to smart in three steps</h2>
@@ -194,7 +202,10 @@ export default function Landing() {
         <div className="lp-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="Akiba" />
-          <span>Akiba</span>
+          <span className="lp-brand-copy">
+            <b>Akiba</b>
+            <small>Smart money moves.</small>
+          </span>
         </div>
         <span className="lp-footer-copy">© {new Date().getFullYear()} Akiba · Smart money moves.</span>
       </footer>

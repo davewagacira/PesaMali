@@ -320,7 +320,11 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 .lp-brand-copy{display:flex;flex-direction:column;gap:1px;line-height:1.1}
 .lp-brand-copy b{font-weight:800;font-size:18px}
 .lp-brand-copy small{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0}
+.lp-nav-links{display:none;align-items:center;gap:26px;margin:0 auto}
+.lp-nav-links a{color:var(--muted);font-size:14px;font-weight:500;text-decoration:none;transition:color .2s;cursor:pointer}
+.lp-nav-links a:hover{color:var(--primary)}
 .lp-nav-actions{display:flex;align-items:center;gap:8px}
+.lp-section{scroll-margin-top:80px}
 .lp-nav-actions .lp-btn{padding:9px 14px;min-height:40px;font-size:13.5px}
 
 /* hero */
@@ -404,6 +408,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 /* ===== Landing tablet/desktop ===== */
 @media (min-width:769px){
   .lp-nav-inner{padding:14px 24px}
+  .lp-nav-links{display:flex}
   .lp-hero{flex-direction:row;align-items:center;gap:40px;padding:72px 24px 64px}
   .lp-hero-copy{flex:1.1}
   .lp-hero-copy h1{font-size:52px}
