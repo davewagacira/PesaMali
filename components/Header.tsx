@@ -9,9 +9,10 @@ import { NotificationsBell } from './NotificationsBell'
 interface HeaderProps {
   userName: string
   userId: string
+  onMenuClick: () => void
 }
 
-export default function Header({ userName, userId }: HeaderProps) {
+export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
@@ -30,7 +31,15 @@ export default function Header({ userName, userId }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm w-full">
-        <div className="flex h-12 md:h-16 w-full items-center justify-end px-3 md:px-6">
+        <div className="flex h-12 md:h-16 w-full items-center justify-between px-3 md:px-6">
+          {/* Hamburger — mobile only */}
+          <button
+            className="flex md:hidden items-center justify-center rounded-lg p-1 text-[var(--muted)] hover:bg-[var(--bg)] hover:text-[var(--text)] min-h-[44px] min-w-[44px]"
+            onClick={onMenuClick}
+            aria-label="Open menu"
+          >
+            <I n="menu" size={22} />
+          </button>
           {/* Right: Notifications + Logout */}
           <div className="flex items-center gap-2 md:gap-4">
             {userId && <NotificationsBell userId={userId} />}

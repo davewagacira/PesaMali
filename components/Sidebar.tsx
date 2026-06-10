@@ -8,6 +8,8 @@ interface SidebarProps {
   userName: string
   theme: string
   onThemeToggle: () => void
+  drawerOpen: boolean
+  onDrawerClose: () => void
 }
 
 const NAV = [
@@ -19,19 +21,28 @@ const NAV = [
   { id: 'settings', label: 'Budget & settings', icon: 'settings', href: '/settings' },
 ]
 
-export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps) {
+function SidebarContent({
+  userName,
+  theme,
+  onThemeToggle,
+  onNav,
+}: {
+  userName: string
+  theme: string
+  onThemeToggle: () => void
+  onNav: () => void
+}) {
   const router = useRouter()
   const pathname = usePathname()
+  const isLoading = !userName
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/auth')
   }
 
-  const isLoading = !userName
-
   return (
-    <aside className="sidebar relative z-50">
+    <>
       <div className="brand">
         {isLoading ? (
           <Skeleton width={36} height={36} style={{ borderRadius: 11, flexShrink: 0 }} />
@@ -53,9 +64,9 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
           )}
         </div>
       </div>
+
       <nav className="nav">
         {isLoading ? (
-          // Skeleton nav items
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="nav-item opacity-50 cursor-default">
               <div className="w-5 h-5 rounded bg-[var(--line)] animate-pulse" />
@@ -69,7 +80,7 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
               <button
                 key={n.id}
                 className={'nav-item' + (isActive ? ' active' : '')}
-                onClick={() => router.push(n.href)}
+                onClick={() => { router.push(n.href); onNav() }}
               >
                 <AnimatePresence>
                   {isActive && (
@@ -87,6 +98,7 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
           })
         )}
       </nav>
+
       <div className="theme-row">
         <span>
           <I n={theme === 'light' ? 'sun' : 'moon'} size={15} />
@@ -104,6 +116,7 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
           />
         </button>
       </div>
+
       <div className="user">
         {isLoading ? (
           <>
@@ -130,6 +143,57 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
           </>
         )}
       </div>
-    </aside>
+    </>
+  )
+}
+
+export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen, onDrawerClose }: SidebarProps) {
+  return (
+    <>
+      {/* Desktop sidebar — always visible at 769px+ */}
+      <aside className="sidebar">
+        <SidebarContent
+          userName={userName}
+          theme={theme}
+          onThemeToggle={onThemeToggle}
+          onNav={() => {}}
+        />
+      </aside>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {drawerOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="drawer-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={onDrawerClose}
+            />
+            {/* Drawer panel */}
+            <motion.aside
+              className="drawer"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+            >
+              <button className="drawer-close" onClick={onDrawerClose} aria-label="Close menu">
+                <I n="x" size={20} />
+              </button>
+              <SidebarContent
+                userName={userName}
+                theme={theme}
+                onThemeToggle={onThemeToggle}
+                onNav={onDrawerClose}
+              />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

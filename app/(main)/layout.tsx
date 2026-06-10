@@ -9,17 +9,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [theme, setTheme] = useState('light')
   const [userName, setUserName] = useState('')
   const [userId, setUserId] = useState('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
     fetch('/api/user')
       .then((r) => r.json())
-      .then((d) => { 
+      .then((d) => {
         if (d.name) setUserName(d.name)
         if (d.id) setUserId(d.id)
       })
       .catch(() => {})
   }, [])
+
+  // Close drawer on route change
+  useEffect(() => { setDrawerOpen(false) }, [pathname])
 
   const toggleTheme = () => {
     setTheme((t) => {
@@ -31,9 +35,19 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="shell">
-      <Sidebar userName={userName} theme={theme} onThemeToggle={toggleTheme} />
-      <div className="flex flex-col flex-1">
-        <Header userName={userName} userId={userId} />
+      <Sidebar
+        userName={userName}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        drawerOpen={drawerOpen}
+        onDrawerClose={() => setDrawerOpen(false)}
+      />
+      <div className="flex flex-col flex-1 min-w-0">
+        <Header
+          userName={userName}
+          userId={userId}
+          onMenuClick={() => setDrawerOpen(true)}
+        />
         <main className="main flex-1 overflow-auto">
           <AnimatePresence mode="wait">
             <motion.div
