@@ -5,7 +5,7 @@ import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, MetricExpense } from '@/lib/metrics'
 import { AchievementsSkeleton } from '@/components/AchievementsSkeleton'
-import { stagger } from '@/lib/motion'
+import { listContainer, listItem } from '@/lib/motion'
 
 export default function AchievementsPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
@@ -64,7 +64,7 @@ export default function AchievementsPage() {
   if (isLoading) return <AchievementsSkeleton />
 
   return (
-    <div>
+    <motion.div variants={listContainer} initial="hidden" animate="show">
       <PageHeroCard
         icon="trophy"
         badge="Milestones"
@@ -76,12 +76,12 @@ export default function AchievementsPage() {
           {n} / {achs.length} unlocked
         </span>
       </PageHeroCard>
-      <div className="ach-grid">
-        {achs.map((a, i) => (
+      <motion.div className="ach-grid" variants={listContainer}>
+        {achs.map((a) => (
           <motion.div
             key={a.t}
             className={'ach ' + (a.ok ? 'unlocked' : 'locked')}
-            {...stagger(i)}
+            variants={listItem}
             whileHover={a.ok ? { y: -4 } : {}}
           >
             <div className="ic-wrap">
@@ -92,7 +92,7 @@ export default function AchievementsPage() {
             <span className="tag">{a.ok ? 'UNLOCKED' : 'LOCKED'}</span>
           </motion.div>
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

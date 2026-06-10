@@ -6,7 +6,7 @@ import { PageHeroCard } from '@/components/PageHeroCard'
 import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
 import { SuccessModal } from '@/components/SuccessModal'
 import { LogSkeleton } from '@/components/LogSkeleton'
-import { stagger } from '@/lib/motion'
+import { listContainer, listItem } from '@/lib/motion'
 
 function TxRow({ e, onDelete }: { e: MetricExpense; onDelete?: (id: string) => void }) {
   const c = catOf(e.cat)
@@ -132,15 +132,15 @@ export default function LogPage() {
   if (isLoading) return <LogSkeleton />
 
   return (
-    <div>
+    <motion.div variants={listContainer} initial="hidden" animate="show">
       <PageHeroCard
         icon="plusCircle"
         badge="New expense"
         title="Log an expense"
         subtitle="Every shilling counted. Balances update instantly."
       />
-      <div className="log-grid">
-        <motion.div className="card" {...stagger(0)}>
+      <motion.div className="log-grid" variants={listContainer}>
+        <motion.div className="card" variants={listItem}>
           <h3>
             <I n="plusCircle" size={14} />
             New expense
@@ -201,7 +201,7 @@ export default function LogPage() {
             Add expense
           </motion.button>
         </motion.div>
-        <motion.div className="card" {...stagger(1)}>
+        <motion.div className="card" variants={listItem}>
           <h3>
             <I n="receipt" size={14} />
             All expenses this month
@@ -230,7 +230,7 @@ export default function LogPage() {
             )}
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {toast && (
@@ -252,6 +252,6 @@ export default function LogPage() {
         message={successMessage}
         onClose={() => setShowSuccessModal(false)}
       />
-    </div>
+    </motion.div>
   )
 }

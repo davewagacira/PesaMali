@@ -9,7 +9,7 @@ import { DashboardSkeleton } from '@/components/DashboardSkeleton'
 import { NotificationsBell } from '@/components/NotificationsBell'
 import { AchievementsBadge } from '@/components/AchievementsBadge'
 import { useAblyExpenses } from '@/lib/useAbly'
-import { stagger } from '@/lib/motion'
+import { listContainer, listItem } from '@/lib/motion'
 
 function TxRow({ e }: { e: MetricExpense }) {
   const c = catOf(e.cat)
@@ -104,7 +104,7 @@ export default function DashboardPage() {
   if (isLoading) return <DashboardSkeleton />
 
   return (
-    <div>
+    <motion.div variants={listContainer} initial="hidden" animate="show">
       <PageHeroCard
         icon="target"
         badge="Monthly overview"
@@ -120,7 +120,7 @@ export default function DashboardPage() {
         </div>
       </PageHeroCard>
 
-      <motion.div className="hero" {...stagger(1)}>
+      <motion.div className="hero" variants={listItem}>
         <div>
           <div className="sts-label">
             <I n="target" size={14} /> Safe to spend today
@@ -168,7 +168,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      <div className="grid cols-3" style={{ marginBottom: 16 }}>
+      <motion.div className="grid cols-3" style={{ marginBottom: 16 }} variants={listContainer}>
         {[
           {
             t: 'Remaining',
@@ -194,8 +194,8 @@ export default function DashboardPage() {
                 : "Within today's safe amount",
             cls: m.todaySpent > m.safe ? 'warnc' : 'okc',
           },
-        ].map((k, i) => (
-          <motion.div className="card" key={k.t} {...stagger(i + 2)}>
+        ].map((k) => (
+          <motion.div className="card" key={k.t} variants={listItem}>
             <h3>
               <I n={k.icon} size={14} />
               {k.t}
@@ -204,17 +204,17 @@ export default function DashboardPage() {
             <div className={'delta ' + k.cls}>{k.d}</div>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="grid cols-2">
-        <motion.div className="card" {...stagger(5)}>
+      <motion.div className="grid cols-2" variants={listContainer}>
+        <motion.div className="card" variants={listItem}>
           <h3>
             <I n="chart" size={14} />
             Spend pace vs ideal
           </h3>
           <AreaChart cum={m.cum} budget={budget} status={m.status} daysInMonth={daysInMonth} />
         </motion.div>
-        <motion.div className="card" {...stagger(6)}>
+        <motion.div className="card" variants={listItem}>
           <h3>
             <I n="receipt" size={14} />
             Recent expenses
@@ -231,7 +231,7 @@ export default function DashboardPage() {
             </div>
           )}
         </motion.div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
