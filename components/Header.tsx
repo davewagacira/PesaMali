@@ -40,34 +40,22 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
           >
             <I n="menu" size={22} />
           </button>
-          {/* Right: Notifications + Logout */}
-          <div className="flex items-center gap-2 md:gap-4">
+          {/* Right: Notifications (always) + user info & logout (mobile only — desktop has sidebar) */}
+          <div className="flex items-center gap-2 ml-auto">
             {userId && <NotificationsBell userId={userId} />}
 
-            <div className="flex items-center gap-2 md:gap-3">
+            {/* Mobile only — desktop sidebar already shows user info + logout */}
+            <div className="flex md:hidden items-center gap-2">
               {userName ? (
-                <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs md:text-sm flex-shrink-0">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
                   {userName[0].toUpperCase()}
                 </div>
               ) : (
-                <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
+                <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
               )}
-              <div className="hidden md:flex flex-col items-start">
-                {userName ? (
-                  <>
-                    <span className="text-sm font-semibold text-[var(--text)]">{userName}</span>
-                    <span className="text-xs text-[var(--muted)]">Personal plan</span>
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="h-4 w-24 rounded bg-[var(--line)] animate-pulse" />
-                    <div className="h-3 w-20 rounded bg-[var(--line)] animate-pulse" />
-                  </div>
-                )}
-              </div>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
-                className="ml-1 md:ml-2 flex items-center justify-center rounded-lg p-1 md:p-1.5 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)] active:text-[var(--red)] min-h-[44px] min-w-[44px]"
+                className="flex items-center justify-center rounded-lg p-1 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)] min-h-[44px] min-w-[44px]"
                 aria-label="Sign out"
               >
                 <I n="logout" size={20} />
