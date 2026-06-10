@@ -83,16 +83,16 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 
 /* Mobile drawer */
 .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;backdrop-filter:blur(2px)}
-.drawer{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--card);z-index:201;display:flex;flex-direction:column;padding:20px 16px;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.12)}
-.drawer-close{align-self:flex-end;margin-bottom:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;transition:background .15s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--card);z-index:201;display:flex;flex-direction:column;padding:14px 12px;overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.12);will-change:transform}
+.drawer-close{align-self:flex-end;margin-bottom:8px;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;transition:background .12s;flex-shrink:0}
 .drawer-close:hover{background:var(--bg);color:var(--text)}
 
 /* Nav — always vertical, full labels */
-.sidebar .brand,.drawer .brand{color:var(--text);padding:0 8px;margin-bottom:24px}
+.sidebar .brand,.drawer .brand{color:var(--text);padding:0 8px;margin-bottom:16px}
 .sidebar-brand-copy{display:flex;flex-direction:column;gap:2px;line-height:1}
 .sidebar-brand-copy small{display:block;max-width:150px;white-space:normal;font-size:11px;font-weight:400;color:var(--muted);line-height:1.3}
 .nav{display:flex;flex-direction:column;gap:2px;flex:1}
-.nav-item{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;color:var(--muted);text-align:left;min-height:44px;transition:color .2s;z-index:0;width:100%}
+.nav-item{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:13px;color:var(--muted);text-align:left;min-height:42px;transition:color .15s;z-index:0;width:100%}
 .nav-item:hover{color:var(--text)}
 .nav-item.active{color:var(--primary)}
 .nav-item svg.ic{width:20px;height:20px;flex-shrink:0}

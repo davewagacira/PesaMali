@@ -161,7 +161,7 @@ export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen, on
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
               onClick={onDrawerClose}
             />
             {/* Drawer panel */}
@@ -170,7 +170,7 @@ export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen, on
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <button className="drawer-close" onClick={onDrawerClose} aria-label="Close menu">
                 <I n="x" size={20} />
