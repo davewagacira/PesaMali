@@ -21,7 +21,9 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
     setIsLoggingOut(true)
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
-      router.push('/auth')
+      try { localStorage.clear() } catch {}
+      router.replace('/')
+      router.refresh()
     } catch (error) {
       console.error('Logout failed:', error)
       setIsLoggingOut(false)
