@@ -26,20 +26,21 @@ export default function Landing() {
     e.preventDefault()
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+  const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
   return (
     <div className="lp">
       {/* ===== Header ===== */}
       <header className="lp-nav">
         <div className="lp-nav-inner">
-          <div className="lp-brand">
+          <button className="lp-brand" onClick={scrollTop} aria-label="Back to top">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Akiba" />
             <span className="lp-brand-copy">
               <b>Akiba</b>
               <small>Smart money moves.</small>
             </span>
-          </div>
+          </button>
           <nav className="lp-nav-links">
             <a href="#features" onClick={scrollTo('features')}>Why Akiba</a>
             <a href="#how" onClick={scrollTo('how')}>How it works</a>
