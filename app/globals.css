@@ -102,7 +102,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 .nav-item:hover{color:var(--text)}
 .nav-item.active{color:var(--primary)}
 .nav-item svg.ic{width:20px;height:20px}
-.nav-item span.txt{display:none}
+.nav-item span.txt{display:inline}
 .nav-pill{position:absolute;inset:0;background:var(--primary-soft);border-radius:9px;z-index:-1}
 .theme-row{display:flex;align-items:center;justify-content:space-between;padding:10px 8px;border:none;margin:0;gap:8px}
 .theme-row>span{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:500}
