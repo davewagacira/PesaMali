@@ -127,7 +127,6 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            {userId && <NotificationsBell userId={userId} />}
             <AchievementsBadge />
             <span className={'pill ' + m.status}>
               <span className="dot" />
