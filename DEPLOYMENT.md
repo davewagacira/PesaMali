@@ -74,12 +74,27 @@ vercel
 
 In Vercel Dashboard:
 
-1. Go to Settings → Environment Variables
-2. Add each variable from Step 2
-3. Set to: **Production**, **Preview**, **Development** (all three)
+1. Go to **Settings → Environment Variables**
+2. Add each variable from Step 2:
+   - DATABASE_URL
+   - GOOGLE_GENERATIVE_AI_API_KEY
+   - GOOGLE_GENERATIVE_AI_MODEL
+   - ABLY_API_KEY
+   - SESSION_SECRET
+   - GOOGLE_CLOUD_PROJECT_ID
+   - VERTEX_AI_LOCATION
+   - VERTEX_AI_MODEL
+   - GOOGLE_VERTEX_API_KEY
+   - AI_GATEWAY_API_KEY
+   - AI_GATEWAY_MODEL
+
+3. For each variable, set it for: **Production**, **Preview**, **Development**
 4. Click "Save"
 
-**Important**: Make sure `DATABASE_URL` uses the **direct connection** (not pooler) for Vercel's serverless functions.
+**Important Notes**:
+- Make sure `DATABASE_URL` uses the **direct connection** (not pooler) for Vercel's serverless functions
+- Copy/paste the full connection string
+- Do NOT use the pooler endpoint (it has rate limiting issues with serverless)
 
 ### Step 5: Deploy
 
