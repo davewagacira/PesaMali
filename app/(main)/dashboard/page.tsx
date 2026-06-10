@@ -119,7 +119,7 @@ export default function DashboardPage() {
               <I n="target" size={14} />
               <span className="text-xs font-semibold text-[var(--primary)]">Monthly overview</span>
             </div>
-            <h1 className="text-5xl font-black text-[var(--text)] mb-2 leading-tight">
+            <h1 className="text-3xl font-extrabold text-[var(--text)] mb-2 leading-tight">
               {greet}, {firstName}
             </h1>
             <p className="text-[var(--muted)]">
