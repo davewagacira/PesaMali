@@ -54,12 +54,18 @@ export default function Header({ userName, userId }: HeaderProps) {
                 {userName ? userName[0].toUpperCase() : 'U'}
               </div>
               <div className="hidden sm:flex flex-col items-start">
-                <span className="text-sm font-semibold text-[var(--text)]">{userName || 'User'}</span>
-                <span className="text-xs text-[var(--muted)]">Personal plan</span>
+                {userName ? (
+                  <>
+                    <span className="text-sm font-semibold text-[var(--text)]">{userName}</span>
+                    <span className="text-xs text-[var(--muted)]">Personal plan</span>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="h-4 w-24 rounded bg-[var(--line)] animate-pulse" />
+                    <div className="h-3 w-20 rounded bg-[var(--line)] animate-pulse" />
+                  </div>
+                )}
               </div>
-              <span className="text-[var(--muted)]">
-                <I n="chevronDown" size={16} />
-              </span>
             </button>
 
             <AnimatePresence>
