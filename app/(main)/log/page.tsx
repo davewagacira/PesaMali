@@ -5,6 +5,7 @@ import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
 import { SuccessModal } from '@/components/SuccessModal'
+import { DatePicker } from '@/components/DatePicker'
 import { LogSkeleton } from '@/components/LogSkeleton'
 import { listContainer, listItem } from '@/lib/motion'
 
@@ -210,7 +211,7 @@ export default function LogPage() {
           </div>
           <div className="field">
             <label>Date</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <DatePicker value={date} onChange={setDate} />
           </div>
           <motion.button className="btn btn-primary" whileTap={{ scale: 0.97 }} onClick={add}>
             <I n="plusCircle" size={16} />

@@ -44,6 +44,8 @@ export const PATHS: Record<string, React.ReactNode> = {
   wifi: <g><path d="M2.5 9a14 14 0 0 1 19 0"/><path d="M5.5 12.5a9.5 9.5 0 0 1 13 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".8" fill="currentColor"/></g>,
   bell: <g><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></g>,
   chevronDown: <path d="M6 9l6 6 6-6"/>,
+  chevronLeft: <path d="M15 6l-6 6 6 6"/>,
+  chevronRight: <path d="M9 6l6 6-6 6"/>,
   edit: <g><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 3 21l.5-4.5L17 3z"/></g>,
   sheet: <g><path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M4 9h16M4 15h16"/></g>,
   file: <g><path d="M4 3h10l6 6v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></g>,
