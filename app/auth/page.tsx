@@ -74,10 +74,11 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1>Turn spending into financial intelligence.</h1>
+          <h1>{signup ? 'Your money story starts here.' : 'Welcome back to smarter money.'}</h1>
           <p>
-            Akiba transforms daily transactions into real-time insight, helping people understand
-            their money, adjust faster, and build stronger financial habits with AI-guided clarity.
+            {signup
+              ? 'Create your account in seconds and let Akiba turn every shilling into clear, daily guidance built around your real spending.'
+              : 'Sign in to pick up right where you left off — your safe-to-spend, live analytics and AI coach are ready and waiting.'}
           </p>
         </motion.div>
         <motion.div
