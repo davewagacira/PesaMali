@@ -5,12 +5,7 @@ import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
 import { PageHeroCard } from '@/components/PageHeroCard'
-
-const stagger = (i: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
-})
+import { listContainer, listItem } from '@/lib/motion'
 
 interface CategoryBudget {
   category: string
@@ -187,7 +182,7 @@ export default function SettingsPage() {
   if (isLoading) return <PageHeroCard icon="settings" badge="Configuration" title="Settings" subtitle="Manage your budget, notifications, and preferences" />
 
   return (
-    <div>
+    <motion.div variants={listContainer} initial="hidden" animate="show">
       <PageHeroCard
         icon="settings"
         badge="Configuration"
@@ -196,7 +191,7 @@ export default function SettingsPage() {
       />
 
       {/* Notifications */}
-      <motion.div className="grid cols-1 gap-6 mb-6" {...stagger(0)}>
+      <motion.div className="grid cols-1 gap-6 mb-6" variants={listItem}>
         <div className="card">
           <h3>
             <I n="bell" size={14} />
@@ -245,7 +240,7 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Category Budgets */}
-      <motion.div className="grid cols-1 gap-6 mb-6" {...stagger(1)}>
+      <motion.div className="grid cols-1 gap-6 mb-6" variants={listItem}>
         <div className="card">
           <h3>
             <I n="target" size={14} />
@@ -302,7 +297,7 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Recurring Expenses */}
-      <motion.div className="grid cols-1 gap-6 mb-6" {...stagger(2)}>
+      <motion.div className="grid cols-1 gap-6 mb-6" variants={listItem}>
         <div className="card">
           <h3>
             <I n="repeat" size={14} />
@@ -392,7 +387,7 @@ export default function SettingsPage() {
       </motion.div>
 
       {/* Reports */}
-      <motion.div className="grid cols-1 gap-6" {...stagger(3)}>
+      <motion.div className="grid cols-1 gap-6" variants={listItem}>
         <div className="card">
           <h3>
             <I n="barChart" size={14} />
@@ -451,6 +446,6 @@ export default function SettingsPage() {
         message={successMessage}
         onClose={() => setShowSuccess(false)}
       />
-    </div>
+    </motion.div>
   )
 }

@@ -53,6 +53,20 @@ export function AreaChart({
             <stop offset="0%" stopColor="#6366F1" stopOpacity=".28" />
             <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
           </linearGradient>
+          {/* Left-to-right reveal driven by a single transform (compositor-friendly,
+              replaces the per-frame pathLength stroke recalculation that caused jank). */}
+          <clipPath id="reveal">
+            <motion.rect
+              x="0"
+              y="0"
+              width={W}
+              height={H}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.85, ease: 'easeOut' }}
+              style={{ transformOrigin: 'left', transformBox: 'fill-box' }}
+            />
+          </clipPath>
         </defs>
         {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
           <g key={i}>
@@ -69,35 +83,17 @@ export function AreaChart({
             </text>
           </g>
         ))}
-        {area && (
-          <motion.path
-            d={area}
-            fill="url(#ag)"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
+        <g clipPath="url(#reveal)">
+          {area && <path d={area} fill="url(#ag)" />}
+          <path
+            d={idealPath}
+            fill="none"
+            stroke="var(--faint)"
+            strokeWidth="1.6"
+            strokeDasharray="5 5"
           />
-        )}
-        <motion.path
-          d={idealPath}
-          fill="none"
-          stroke="var(--faint)"
-          strokeWidth="1.6"
-          strokeDasharray="5 5"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1 }}
-        />
-        <motion.path
-          d={spentPath}
-          fill="none"
-          stroke="#6366F1"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1.1, ease: 'easeOut' }}
-        />
+          <path d={spentPath} fill="none" stroke="#6366F1" strokeWidth="2.4" strokeLinecap="round" />
+        </g>
         {last && (
           <motion.circle
             cx={x(last.day)}
@@ -108,7 +104,7 @@ export function AreaChart({
             strokeWidth="2"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 1, duration: 0.3 }}
+            transition={{ delay: 0.8, duration: 0.3, ease: 'easeOut' }}
           />
         )}
         <text className="ax" x={P} y={H - 8}>

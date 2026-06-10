@@ -1,11 +1,6 @@
 import { motion } from 'framer-motion'
 import { Skeleton, SkeletonText } from './Skeleton'
-
-const stagger = (i: number) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.07, ease: 'easeOut' },
-})
+import { stagger } from '@/lib/motion'
 
 export function DashboardSkeleton() {
   return (
