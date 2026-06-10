@@ -34,7 +34,7 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)] w-full">
         <div className="flex h-12 md:h-16 w-full items-center justify-between px-3 md:px-6">
-          {/* Hamburger — mobile only */}
+          {/* Hamburger — mobile oly */}
           <button
             className="flex md:hidden items-center justify-center rounded-lg p-1 text-[var(--muted)] hover:bg-[var(--bg)] hover:text-[var(--text)] min-h-[44px] min-w-[44px]"
             onClick={onMenuClick}
