@@ -537,7 +537,7 @@ export default function AIPage() {
 
         <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
-            className="flex h-[min(720px,calc(100vh-340px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[560px] max-[1180px]:min-h-0"
+            className="flex h-[calc(100vh-280px)] min-h-[600px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[calc(100vh-320px)] max-[1180px]:min-h-0"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
@@ -624,36 +624,36 @@ export default function AIPage() {
               </AnimatePresence>
             </div>
 
-            <div className="mt-auto shrink-0 rounded-b-[20px] border-t border-[var(--line)] bg-[var(--card)] px-4 py-3.5">
-              <div className="mb-[11px] flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {suggestions.map(([icon, label, question]) => (
+            <div className="mt-auto shrink-0 rounded-b-[20px] border-t border-[var(--line)] bg-[var(--card)] px-4 py-2.5">
+              <div className="mb-2 flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {suggestions.slice(0, 4).map(([icon, label, question]) => (
                   <button
                     key={question}
                     onClick={() => ask(question)}
                     disabled={busy}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--card-2)] px-[13px] py-2 text-[11.5px] font-medium text-[var(--muted)] transition hover:-translate-y-px hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-60"
+                    className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--card-2)] px-3 py-1.5 text-[10px] font-medium text-[var(--muted)] transition hover:-translate-y-px hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-60"
                   >
-                    <I n={icon} size={13} />
-                    {label}
+                    <I n={icon} size={12} />
+                    <span className="hidden sm:inline">{label}</span>
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-2.5 rounded-[14px] border border-[var(--line)] bg-[var(--bg)] py-1.5 pl-4 pr-1.5 transition focus-within:border-[var(--primary)] focus-within:shadow-[0_0_0_3px_var(--primary-soft)]">
+              <div className="flex items-center gap-2 rounded-[12px] border border-[var(--line)] bg-[var(--bg)] py-1 pl-3 pr-1 transition focus-within:border-[var(--primary)] focus-within:shadow-[0_0_0_3px_var(--primary-soft)]">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !busy && ask()}
                   disabled={busy}
-                  placeholder="Ask about your spending - your week, your habits, your plan..."
-                  className="min-w-0 flex-1 bg-transparent py-2.5 text-[13.5px] text-[var(--text)] outline-none placeholder:text-[var(--muted)]"
+                  placeholder="Ask about your spending..."
+                  className="min-w-0 flex-1 bg-transparent py-2 text-[13px] text-[var(--text)] outline-none placeholder:text-[var(--muted)]"
                 />
                 <button
                   onClick={() => ask()}
                   disabled={busy}
                   aria-label="Send"
-                  className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[11px] [background:var(--primary-grad)] text-white shadow-[var(--shadow-lg)] transition active:scale-95 disabled:opacity-60"
+                  className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[10px] [background:var(--primary-grad)] text-white shadow-[var(--shadow-lg)] transition active:scale-95 disabled:opacity-60"
                 >
-                  <I n="send" size={17} />
+                  <I n="send" size={16} />
                 </button>
               </div>
             </div>
