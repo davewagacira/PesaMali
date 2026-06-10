@@ -232,10 +232,10 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
   .auth-right{flex:1;padding:40px}
   .auth-hero h1{font-size:36px;max-width:480px}
   .auth-card{max-width:100%}
-  .sidebar{width:260px;height:auto;position:sticky;top:0;flex-direction:column;align-items:flex-start;padding:20px 16px;border-right:1px solid var(--line);border-bottom:none;overflow-y:auto;overflow-x:hidden}
+  .sidebar{width:260px;height:100vh;position:sticky;top:0;flex-direction:column;align-items:flex-start;padding:20px 16px;border-right:1px solid var(--line);border-bottom:none;overflow:hidden}
   .sidebar .brand{color:var(--text);padding:0 8px;margin-bottom:24px}
   .sidebar-brand-copy{display:flex;flex-direction:column;gap:4px;line-height:1}
-  .sidebar-brand-copy small{display:block;max-width:150px;white-space:normal}
+  .sidebar-brand-copy small{display:block;max-width:150px;white-space:normal;font-size:11px;font-weight:400;color:var(--muted);line-height:1.3}
   .nav{flex-direction:column;gap:2px}
   .nav-item{padding:10px 12px;font-size:13px;min-width:auto;justify-content:flex-start;text-align:left;gap:12px}
   .nav-item span.txt{display:inline}
