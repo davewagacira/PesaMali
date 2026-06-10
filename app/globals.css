@@ -50,7 +50,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 
 /* auth */
 .auth{min-height:100vh;display:flex;flex-direction:column}
-.auth-left{padding:24px;display:flex;flex-direction:column;justify-content:space-between;background:var(--primary-grad);color:#fff;position:relative;overflow:hidden}
+.auth-left{display:none;padding:24px;flex-direction:column;justify-content:space-between;background:var(--primary-grad);color:#fff;position:relative;overflow:hidden}
 .auth-left::after{content:'';position:absolute;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.07);top:-140px;right:-140px}
 .auth-left::before{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.06);bottom:-100px;left:-80px}
 .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;letter-spacing:.3px;z-index:1}
@@ -228,7 +228,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 @media (min-width:769px){
   body{font-size:14px}
   .auth{flex-direction:row}
-  .auth-left{flex:1;padding:40px}
+  .auth-left{display:flex;flex:1;padding:40px}
   .auth-right{flex:1;padding:40px}
   .auth-hero h1{font-size:36px;max-width:480px}
   .auth-card{max-width:100%}
