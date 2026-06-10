@@ -38,7 +38,9 @@ function SidebarContent({
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/auth')
+    try { localStorage.clear() } catch {}
+    router.replace('/')
+    router.refresh()
   }
 
   return (

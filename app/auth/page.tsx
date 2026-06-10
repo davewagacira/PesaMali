@@ -55,6 +55,9 @@ export default function AuthPage() {
   return (
     <div className="auth">
       <div className="auth-left">
+        <button className="auth-back" onClick={() => router.push('/')}>
+          <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
+        </button>
         <div className="brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
@@ -99,6 +102,9 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.1 }}
         >
+          <button className="auth-back auth-back-mobile" onClick={() => router.push('/')}>
+            <I n="logout" size={15} style={{ transform: 'scaleX(-1)' }} /> Back to home
+          </button>
           <h2>{signup ? 'Create your account' : 'Welcome back'}</h2>
           <div className="sub">
             {signup
