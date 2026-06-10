@@ -1,11 +1,17 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { I } from '@/components/Icons'
 
 export default function AuthPage() {
   const [signup, setSignup] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('mode') === 'signup') setSignup(true)
+  }, [])
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
