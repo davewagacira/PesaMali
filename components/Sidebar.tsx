@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { I } from './Icons'
 import { Skeleton } from './Skeleton'
+import { useState, useEffect } from 'react'
 
 interface SidebarProps {
   userName: string
@@ -22,6 +23,7 @@ const NAV = [
 export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
