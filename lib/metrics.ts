@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Expense } from '@/types'
 
 export const CATS = [
   { id: 'food', name: 'Food', icon: 'utensils', color: '#4F46E5' },
@@ -10,6 +9,8 @@ export const CATS = [
   { id: 'electricity', name: 'Electricity', icon: 'zap', color: '#EAB308' },
   { id: 'water', name: 'Water', icon: 'droplet', color: '#3B82F6' },
   { id: 'fun', name: 'Leisure', icon: 'film', color: '#F59E0B' },
+  { id: 'shopping', name: 'Shopping', icon: 'shoppingBag', color: '#EC4899' },
+  { id: 'grocery', name: 'Grocery', icon: 'basket', color: '#22C55E' },
   { id: 'other', name: 'Other', icon: 'receipt', color: '#94A3B8' },
 ]
 
