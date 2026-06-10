@@ -239,9 +239,11 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
   .nav{flex-direction:column;gap:2px}
   .nav-item{padding:10px 12px;font-size:13px;min-width:auto;justify-content:flex-start;text-align:left;gap:12px}
   .nav-item span.txt{display:inline}
-  .theme-row{display:flex;padding:10px 8px;border:none;margin:0}
+  .theme-row{display:flex;align-items:center;gap:8px;padding:10px 8px;border:none;margin:0;justify-content:space-between}
+  .theme-row span{display:flex;align-items:center;gap:8px}
   .theme-row span span{display:inline}
-  .user{display:flex;padding:12px 8px;border-top:1px solid var(--line);margin-top:auto}
+  .user{display:flex;align-items:center;gap:12px;padding:12px 8px;border-top:1px solid var(--line);margin-top:auto}
+  .user > div:nth-child(2){display:flex;flex-direction:column;gap:2px;flex:1}
   .shell{flex-direction:row}
   .main{padding:28px 32px;max-width:1240px}
   .page-head{gap:20px}
