@@ -50,9 +50,13 @@ export default function Header({ userName, userId }: HeaderProps) {
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[var(--bg)]"
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-sm">
-                {userName ? userName[0].toUpperCase() : 'U'}
-              </div>
+              {userName ? (
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-sm">
+                  {userName[0].toUpperCase()}
+                </div>
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse" />
+              )}
               <div className="hidden sm:flex flex-col items-start">
                 {userName ? (
                   <>
