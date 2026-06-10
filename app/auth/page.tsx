@@ -78,7 +78,7 @@ export default function AuthPage() {
           <p>
             {signup
               ? 'Create your account in seconds and let Akiba turn every shilling into clear, daily guidance built around your real spending.'
-              : 'Sign in to pick up right where you left off — your safe-to-spend, live analytics and AI coach are ready and waiting.'}
+              : 'Sign in to pick up right where you left off. Your safe-to-spend, live analytics and AI coach are ready and waiting.'}
           </p>
         </motion.div>
         <motion.div

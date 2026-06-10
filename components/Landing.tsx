@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation'
 import { I } from './Icons'
 
 const FEATURES = [
-  { icon: 'target', title: 'Safe-to-spend, daily', desc: 'Know exactly how much you can spend today without breaking your budget — recalculated in real time.' },
+  { icon: 'target', title: 'Safe-to-spend, daily', desc: 'Know exactly how much you can spend today without breaking your budget, recalculated in real time.' },
   { icon: 'chart', title: 'Live analytics', desc: 'Watch your spending patterns unfold with clean charts that actually make sense at a glance.' },
-  { icon: 'sparkles', title: 'AI money coach', desc: 'Ask anything about your finances and get clear, personal guidance — no jargon, no judgment.' },
+  { icon: 'sparkles', title: 'AI money coach', desc: 'Ask anything about your finances and get clear, personal guidance with no jargon and no judgment.' },
   { icon: 'trophy', title: 'Streaks & achievements', desc: 'Turn good habits into a game. Build momentum and stay motivated to keep saving.' },
   { icon: 'shield', title: 'Private & secure', desc: 'Your data is encrypted and protected with MFA. Your money story stays yours, always.' },
   { icon: 'zap', title: 'Effortless logging', desc: 'Log an expense in seconds with quick categories and smart defaults built for real life.' },
@@ -69,7 +69,7 @@ export default function Landing() {
             Turn everyday spending into <span className="lp-grad">financial intelligence</span>.
           </h1>
           <p>
-            Akiba transforms your daily transactions into real-time insight — helping you understand
+            Akiba transforms your daily transactions into real-time insight that helps you understand
             your money, adjust faster, and build stronger financial habits with AI-guided clarity.
           </p>
           <div className="lp-cta-row">
@@ -104,7 +104,7 @@ export default function Landing() {
             </div>
             <div className="lp-mock-tx">
               {[
-                { ic: 'utensils', name: 'Lunch — Mama Oliech', amt: '−420' },
+                { ic: 'utensils', name: 'Lunch at Mama Oliech', amt: '−420' },
                 { ic: 'bus', name: 'Matatu fare', amt: '−80' },
                 { ic: 'phone', name: 'Airtime top-up', amt: '−100' },
               ].map((t) => (
@@ -190,7 +190,7 @@ export default function Landing() {
       <section id="get-started" className="lp-cta-band">
         <div className="lp-cta-inner">
           <h2>Start making smart money moves today.</h2>
-          <p>Join Akiba and turn your spending into a financial advantage — free to begin.</p>
+          <p>Join Akiba and turn your spending into a financial advantage. Free to begin.</p>
           <div className="lp-cta-row lp-cta-center">
             <button className="lp-btn lp-btn-light lp-btn-lg" onClick={signup}>
               Create your free account <I n="trendUp" size={16} />
