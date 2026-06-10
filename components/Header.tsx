@@ -40,12 +40,7 @@ export default function Header({ userName, userId }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--card)] shadow-sm">
-      <div className="mx-auto flex h-16 max-w-full items-center justify-between px-6">
-        {/* Left: Branding/Logo */}
-        <div className="flex items-center gap-3">
-          <div className="text-xl font-bold text-[var(--text)]">Akiba</div>
-        </div>
-
+      <div className="mx-auto flex h-16 max-w-full items-center justify-end px-6">
         {/* Right: Notifications + Profile */}
         <div className="flex items-center gap-4">
           {userId && <NotificationsBell userId={userId} />}
