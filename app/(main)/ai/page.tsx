@@ -491,7 +491,6 @@ export default function AIPage() {
           badge="AI insights"
           title="Akiba AI"
           subtitle="Personal financial intelligence built from your real spending behavior."
-          surface="card"
         >
           <button
             onClick={toggleMemory}
