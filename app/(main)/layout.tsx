@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
@@ -49,17 +48,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           onMenuClick={() => setDrawerOpen(true)}
         />
         <main className="main flex-1 overflow-auto">
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1 }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+          {children}
         </main>
       </div>
     </div>
