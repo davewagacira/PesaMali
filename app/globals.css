@@ -237,7 +237,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
   .sidebar-brand-copy{display:flex}
   .sidebar-brand-copy small{display:block;max-width:150px;white-space:normal}
   .nav{flex-direction:column;gap:2px}
-  .nav-item{padding:10px 12px;font-size:13px;min-width:auto}
+  .nav-item{padding:10px 12px;font-size:13px;min-width:auto;justify-content:flex-start;text-align:left;gap:12px}
   .nav-item span.txt{display:inline}
   .theme-row{display:flex;padding:10px 8px;border:none;margin:0}
   .theme-row span span{display:inline}
