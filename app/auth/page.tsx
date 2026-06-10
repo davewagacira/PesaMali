@@ -102,8 +102,8 @@ export default function AuthPage() {
         >
           {pageLoading ? (
             <>
-              <Skeleton height={28} width="70%" style={{ marginBottom: 5 }} />
-              <Skeleton height={14} width="85%" style={{ marginBottom: 24 }} />
+              <Skeleton height={28} width="70%" style={{ marginBottom: 5, background: 'var(--line)' }} />
+              <Skeleton height={14} width="85%" style={{ marginBottom: 24, background: 'var(--line)' }} />
             </>
           ) : (
             <>
