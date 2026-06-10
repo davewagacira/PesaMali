@@ -342,7 +342,7 @@ export default function SettingsPage() {
             <select
               value={newCategoryBudget.category}
               onChange={(e) => setNewCategoryBudget({ ...newCategoryBudget, category: e.target.value })}
-              className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="">Select category...</option>
               {categories.map((cat) => (
@@ -416,7 +416,7 @@ export default function SettingsPage() {
             <select
               value={newRecurring.category}
               onChange={(e) => setNewRecurring({ ...newRecurring, category: e.target.value })}
-              className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="">Select category...</option>
               {categories.map((cat) => (
@@ -442,7 +442,7 @@ export default function SettingsPage() {
             <select
               value={newRecurring.frequency}
               onChange={(e) => setNewRecurring({ ...newRecurring, frequency: e.target.value })}
-              className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="monthly">Monthly</option>
               <option value="weekly">Weekly</option>
@@ -473,7 +473,7 @@ export default function SettingsPage() {
               <select
                 value={reportMonth}
                 onChange={(e) => setReportMonth(parseInt(e.target.value))}
-                className="rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+                className="rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                   <option key={m} value={m}>
@@ -484,7 +484,7 @@ export default function SettingsPage() {
               <select
                 value={reportYear}
                 onChange={(e) => setReportYear(parseInt(e.target.value))}
-                className="rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+                className="rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
               >
                 {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
                   <option key={y} value={y}>
