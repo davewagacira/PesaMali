@@ -401,7 +401,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 .lp-cta-inner .lp-cta-row{margin-top:24px}
 
 /* footer */
-.lp-footer{max-width:1160px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;align-items:flex-start;gap:14px;text-align:left;border-top:1px solid var(--line)}
+.lp-footer{max-width:1160px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;border-top:1px solid var(--line)}
 .lp-footer .lp-brand{font-size:16px}
 .lp-footer .lp-brand img{width:28px;height:28px}
 .lp-footer-copy{color:var(--muted);font-size:12.5px}
@@ -421,7 +421,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
   .lp-steps{grid-template-columns:repeat(3,1fr);gap:18px}
   .lp-cta-inner{padding:64px 32px}
   .lp-cta-inner h2{font-size:34px}
-  .lp-footer{flex-direction:row;justify-content:space-between;padding:32px 24px 48px}
+  .lp-footer{flex-direction:row;justify-content:space-between;align-items:center;text-align:left;padding:32px 24px 48px}
 }
 @media (min-width:481px) and (max-width:768px){
   .lp-feature-grid{grid-template-columns:repeat(2,1fr)}
