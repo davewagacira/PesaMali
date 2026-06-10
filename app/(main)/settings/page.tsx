@@ -21,9 +21,16 @@ interface RecurringExpense {
   active: boolean
 }
 
+interface UserSettings {
+  monthlyBudget?: number
+  savingsGoal?: number
+}
+
 export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true)
+  const [monthlyBudget, setMonthlyBudget] = useState('')
+  const [savingsGoal, setSavingsGoal] = useState('')
   const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([])
   const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([])
   const [newCategoryBudget, setNewCategoryBudget] = useState({ category: '', limit: '' })
@@ -48,6 +55,8 @@ export default function SettingsPage() {
       .then(([userData, budgets, recurring]) => {
         if (userData.notificationsEnabled !== undefined) setNotificationsEnabled(userData.notificationsEnabled)
         if (userData.pushNotificationsEnabled !== undefined) setPushNotificationsEnabled(userData.pushNotificationsEnabled)
+        if (userData.monthlyBudget) setMonthlyBudget(userData.monthlyBudget.toString())
+        if (userData.savingsGoal) setSavingsGoal(userData.savingsGoal.toString())
         if (Array.isArray(budgets)) setCategoryBudgets(budgets)
         if (Array.isArray(recurring)) setRecurringExpenses(recurring)
       })
@@ -79,6 +88,25 @@ export default function SettingsPage() {
       })
       setPushNotificationsEnabled(!pushNotificationsEnabled)
       setSuccessMessage(pushNotificationsEnabled ? 'Push notifications disabled' : 'Push notifications enabled')
+      setShowSuccess(true)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const saveBudgetGoals = async () => {
+    if (!monthlyBudget && !savingsGoal) return
+    try {
+      const body: UserSettings = {}
+      if (monthlyBudget) body.monthlyBudget = parseFloat(monthlyBudget)
+      if (savingsGoal) body.savingsGoal = parseFloat(savingsGoal)
+
+      await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      setSuccessMessage('Budget and goals updated')
       setShowSuccess(true)
     } catch (e) {
       console.error(e)
@@ -189,6 +217,51 @@ export default function SettingsPage() {
         title="Settings"
         subtitle="Manage your budget, notifications, and preferences"
       />
+
+      {/* Budget & Goals */}
+      <motion.div className="grid cols-1 gap-6 mb-6" variants={listItem}>
+        <div className="card">
+          <h3>
+            <I n="wallet" size={14} />
+            Budget & Goals
+          </h3>
+          <p className="text-sm text-[var(--muted)] mb-4">Set your monthly budget and savings goal</p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--muted)] uppercase mb-2">Monthly Budget (KES)</label>
+              <input
+                type="number"
+                value={monthlyBudget}
+                onChange={(e) => setMonthlyBudget(e.target.value)}
+                placeholder="e.g., 50000"
+                className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              />
+              <p className="text-xs text-[var(--muted)] mt-1">Your total spending limit for the month</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--muted)] uppercase mb-2">Savings Goal (KES)</label>
+              <input
+                type="number"
+                value={savingsGoal}
+                onChange={(e) => setSavingsGoal(e.target.value)}
+                placeholder="e.g., 10000"
+                className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              />
+              <p className="text-xs text-[var(--muted)] mt-1">Amount you want to save each month</p>
+            </div>
+
+            <button
+              onClick={saveBudgetGoals}
+              disabled={!monthlyBudget && !savingsGoal}
+              className="w-full rounded-lg [background:var(--primary-grad)] px-4 py-2 font-semibold text-white transition active:scale-95 disabled:opacity-50"
+            >
+              Save Budget & Goals
+            </button>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Notifications */}
       <motion.div className="grid cols-1 gap-6 mb-6" variants={listItem}>
