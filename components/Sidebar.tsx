@@ -27,6 +27,8 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
     router.push('/auth')
   }
 
+  const isLoading = !userName
+
   return (
     <aside className="sidebar relative z-50">
       <div className="brand">
@@ -38,28 +40,38 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
         </div>
       </div>
       <nav className="nav">
-        {NAV.map((n) => {
-          const isActive = pathname === n.href || pathname.startsWith(n.href + '/')
-          return (
-            <button
-              key={n.id}
-              className={'nav-item' + (isActive ? ' active' : '')}
-              onClick={() => router.push(n.href)}
-            >
-              <AnimatePresence>
-                {isActive && (
-                  <motion.span
-                    layoutId="navpill"
-                    className="nav-pill"
-                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                  />
-                )}
-              </AnimatePresence>
-              <I n={n.icon} />
-              <span className="txt">{n.label}</span>
-            </button>
-          )
-        })}
+        {isLoading ? (
+          // Skeleton nav items
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="nav-item opacity-50 cursor-default">
+              <div className="w-5 h-5 rounded bg-[var(--line)] animate-pulse" />
+              <div className="h-4 w-24 rounded bg-[var(--line)] animate-pulse" />
+            </div>
+          ))
+        ) : (
+          NAV.map((n) => {
+            const isActive = pathname === n.href || pathname.startsWith(n.href + '/')
+            return (
+              <button
+                key={n.id}
+                className={'nav-item' + (isActive ? ' active' : '')}
+                onClick={() => router.push(n.href)}
+              >
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.span
+                      layoutId="navpill"
+                      className="nav-pill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                </AnimatePresence>
+                <I n={n.icon} />
+                <span className="txt">{n.label}</span>
+              </button>
+            )
+          })
+        )}
       </nav>
       <div className="theme-row">
         <span>
@@ -79,18 +91,30 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
         </button>
       </div>
       <div className="user">
-        <div className="avatar">{userName ? userName[0].toUpperCase() : 'U'}</div>
-        <div>
-          <b>{userName}</b>
-          <span>Personal plan</span>
-        </div>
-        <button
-          style={{ marginLeft: 'auto', color: 'var(--muted)' }}
-          onClick={handleLogout}
-          aria-label="Sign out"
-        >
-          <I n="logout" size={16} />
-        </button>
+        {isLoading ? (
+          <>
+            <div className="h-10 w-10 rounded-lg bg-[var(--line)] animate-pulse" />
+            <div className="flex flex-col gap-1.5 flex-1">
+              <div className="h-4 w-20 rounded bg-[var(--line)] animate-pulse" />
+              <div className="h-3 w-16 rounded bg-[var(--line)] animate-pulse" />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="avatar">{userName[0].toUpperCase()}</div>
+            <div>
+              <b>{userName}</b>
+              <span>Personal plan</span>
+            </div>
+            <button
+              style={{ marginLeft: 'auto', color: 'var(--muted)' }}
+              onClick={handleLogout}
+              aria-label="Sign out"
+            >
+              <I n="logout" size={16} />
+            </button>
+          </>
+        )}
       </div>
     </aside>
   )
