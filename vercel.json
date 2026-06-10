@@ -1,0 +1,82 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "nodeVersion": "18.x",
+  "env": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string from Neon"
+    },
+    "GOOGLE_GENERATIVE_AI_API_KEY": {
+      "description": "Google Generative AI API key"
+    },
+    "GOOGLE_GENERATIVE_AI_MODEL": {
+      "description": "Model name for Google Generative AI (e.g., gemini-1.5-flash)"
+    },
+    "ABLY_API_KEY": {
+      "description": "Ably real-time messaging API key"
+    },
+    "SESSION_SECRET": {
+      "description": "Secret key for session management (min 32 characters)"
+    },
+    "GOOGLE_CLOUD_PROJECT_ID": {
+      "description": "Google Cloud project ID"
+    },
+    "VERTEX_AI_LOCATION": {
+      "description": "Vertex AI location (e.g., global)"
+    },
+    "VERTEX_AI_MODEL": {
+      "description": "Vertex AI model name"
+    },
+    "GOOGLE_VERTEX_API_KEY": {
+      "description": "Google Vertex AI API key"
+    },
+    "AI_GATEWAY_API_KEY": {
+      "description": "AI Gateway API key"
+    },
+    "AI_GATEWAY_MODEL": {
+      "description": "AI Gateway model name"
+    }
+  },
+  "functions": {
+    "app/**/*.ts": {
+      "maxDuration": 60
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ]
+}
