@@ -43,6 +43,7 @@ export default function Landing() {
           <nav className="lp-nav-links">
             <a href="#features" onClick={scrollTo('features')}>Why Akiba</a>
             <a href="#how" onClick={scrollTo('how')}>How it works</a>
+            <a href="#get-started" onClick={scrollTo('get-started')}>Get started</a>
           </nav>
           <div className="lp-nav-actions">
             <button className="lp-btn lp-btn-ghost" onClick={login}>Log in</button>
@@ -185,7 +186,7 @@ export default function Landing() {
       </section>
 
       {/* ===== CTA band ===== */}
-      <section className="lp-cta-band">
+      <section id="get-started" className="lp-cta-band">
         <div className="lp-cta-inner">
           <h2>Start making smart money moves today.</h2>
           <p>Join Akiba and turn your spending into a financial advantage — free to begin.</p>
