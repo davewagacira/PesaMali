@@ -49,6 +49,7 @@ export const PATHS: Record<string, React.ReactNode> = {
   repeat: <g><path d="M7 7h10v10M7 17l10-10"/></g>,
   trash: <g><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/><path d="M5 6l.5 11a3 3 0 0 0 3 2.8h7a3 3 0 0 0 3-2.8L19 6"/></g>,
   x: <g><path d="M18 6L6 18M6 6l12 12"/></g>,
+  menu: <g><path d="M3 6h18M3 12h18M3 18h18"/></g>,
 }
 
 interface IProps {

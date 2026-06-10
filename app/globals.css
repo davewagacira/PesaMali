@@ -77,17 +77,29 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 
 /* shell */
 .shell{display:flex;flex-direction:column;min-height:100vh}
-.sidebar{width:100%;background:var(--card);border-bottom:1px solid var(--line);padding:12px;display:flex;align-items:center;gap:8px;overflow-x:auto;position:relative;z-index:30}
-.sidebar .brand{color:var(--text);margin:0;flex-shrink:0}
-.sidebar-brand-copy{display:none}
-.nav{display:flex;flex-direction:row;gap:2px;flex:1;overflow-x:auto}
-.nav-item{position:relative;display:flex;align-items:center;justify-content:center;gap:0;padding:8px 10px;border-radius:9px;font-size:0;color:var(--muted);text-align:center;height:44px;min-width:44px;flex-shrink:0;transition:color .2s;z-index:0}
+
+/* Desktop sidebar — hidden on mobile, shown at 769px+ */
+.sidebar{display:none}
+
+/* Mobile drawer */
+.drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;backdrop-filter:blur(2px)}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--card);z-index:201;display:flex;flex-direction:column;padding:20px 16px;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.12)}
+.drawer-close{align-self:flex-end;margin-bottom:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;transition:background .15s}
+.drawer-close:hover{background:var(--bg);color:var(--text)}
+
+/* Nav — always vertical, full labels */
+.sidebar .brand,.drawer .brand{color:var(--text);padding:0 8px;margin-bottom:24px}
+.sidebar-brand-copy{display:flex}
+.sidebar-brand-copy small{display:block;max-width:150px;white-space:normal}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.nav-item{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;color:var(--muted);text-align:left;min-height:44px;transition:color .2s;z-index:0;width:100%}
 .nav-item:hover{color:var(--text)}
 .nav-item.active{color:var(--primary)}
-.nav-item svg.ic{width:20px;height:20px}
-.nav-item span.txt{display:none}
+.nav-item svg.ic{width:20px;height:20px;flex-shrink:0}
+.nav-item span.txt{display:inline}
 .nav-pill{position:absolute;inset:0;background:var(--primary-soft);border-radius:9px;z-index:-1}
-.theme-row{display:none}
+.theme-row{display:flex;padding:10px 8px;border:none;margin:0}
+.theme-row span span{display:inline}
 .user{display:none}
 .avatar{width:32px;height:32px;border-radius:8px;background:var(--primary-grad);display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px;flex-shrink:0}
 .user b{display:block;font-size:12px}
@@ -213,8 +225,6 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
   .auth-card{max-width:420px;padding:28px}
   .auth-card h2{font-size:22px}
   .auth-hero h1{font-size:32px}
-  .sidebar{padding:14px}
-  .nav-item{padding:9px 12px;min-width:48px}
   .main{padding:20px;max-width:100%}
   .card{padding:18px}
   .log-grid{grid-template-columns:1fr}
@@ -232,15 +242,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
   .auth-right{flex:1;padding:40px}
   .auth-hero h1{font-size:36px;max-width:480px}
   .auth-card{max-width:100%}
-  .sidebar{width:260px;height:auto;position:sticky;top:0;flex-direction:column;align-items:flex-start;padding:20px 16px;border-right:1px solid var(--line);border-bottom:none;overflow-y:auto;overflow-x:hidden}
-  .sidebar .brand{color:var(--text);padding:0 8px;margin-bottom:24px}
-  .sidebar-brand-copy{display:flex}
-  .sidebar-brand-copy small{display:block;max-width:150px;white-space:normal}
-  .nav{flex-direction:column;gap:2px}
-  .nav-item{padding:10px 12px;font-size:13px;min-width:auto}
-  .nav-item span.txt{display:inline}
-  .theme-row{display:flex;padding:10px 8px;border:none;margin:0}
-  .theme-row span span{display:inline}
+  .sidebar{display:flex;width:260px;height:100vh;position:sticky;top:0;flex-direction:column;align-items:flex-start;padding:20px 16px;border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden}
   .user{display:flex;padding:12px 8px;border-top:1px solid var(--line);margin-top:auto}
   .shell{flex-direction:row}
   .main{padding:28px 32px;max-width:1240px}
