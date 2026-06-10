@@ -40,27 +40,17 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
           >
             <I n="menu" size={22} />
           </button>
-          {/* Right: Notifications (always) + user info & logout (mobile only — desktop has sidebar) */}
-          <div className="flex items-center gap-2 ml-auto">
+          {/* Right: Notifications + profile avatar (always visible) */}
+          <div className="flex items-center gap-3 ml-auto">
             {userId && <NotificationsBell userId={userId} />}
 
-            {/* Mobile only — desktop sidebar already shows user info + logout */}
-            <div className="flex md:hidden items-center gap-2">
-              {userName ? (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                  {userName[0].toUpperCase()}
-                </div>
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
-              )}
-              <button
-                onClick={() => setShowLogoutConfirm(true)}
-                className="flex items-center justify-center rounded-lg p-1 text-[var(--muted)] transition hover:bg-[var(--bg)] hover:text-[var(--red)] min-h-[44px] min-w-[44px]"
-                aria-label="Sign out"
-              >
-                <I n="logout" size={20} />
-              </button>
-            </div>
+            {userName ? (
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                {userName[0].toUpperCase()}
+              </div>
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />
+            )}
           </div>
         </div>
       </header>
