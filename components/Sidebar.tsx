@@ -28,7 +28,7 @@ export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps
   }
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar relative z-50">
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
