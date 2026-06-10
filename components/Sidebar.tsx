@@ -120,16 +120,16 @@ function SidebarContent({
 
       <div className="user">
         {isLoading ? (
-          <div className="h-9 w-9 rounded-lg bg-[var(--line)] animate-pulse" />
+          <div className="h-4 w-24 rounded bg-[var(--line)] animate-pulse" />
         ) : (
           <>
-            <div className="avatar">{userName[0].toUpperCase()}</div>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', flex: 1 }}>{userName}</span>
             <button
-              style={{ marginLeft: 'auto', color: 'var(--muted)' }}
+              style={{ color: 'var(--muted)', fontSize: 12, fontWeight: 500 }}
               onClick={handleLogout}
               aria-label="Sign out"
             >
-              <I n="logout" size={16} />
+              Log out
             </button>
           </>
         )}
