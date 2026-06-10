@@ -41,7 +41,7 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
             <I n="menu" size={22} />
           </button>
           {/* Right: Notifications (always) + user info & logout (mobile only — desktop has sidebar) */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             {userId && <NotificationsBell userId={userId} />}
 
             {/* Mobile only — desktop sidebar already shows user info + logout */}
