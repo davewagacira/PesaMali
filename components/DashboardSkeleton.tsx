@@ -12,8 +12,8 @@ export function DashboardSkeleton() {
     <div>
       <div className="page-head">
         <div>
-          <h1>Welcome back</h1>
-          <p>Your spending at a glance</p>
+          <Skeleton height={32} width={220} style={{ marginBottom: 8 }} />
+          <Skeleton height={14} width={180} />
         </div>
       </div>
 
