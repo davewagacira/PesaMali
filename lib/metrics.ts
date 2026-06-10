@@ -6,6 +6,7 @@ export const CATS = [
   { id: 'transport', name: 'Transport', icon: 'bus', color: '#0EA5E9' },
   { id: 'rent', name: 'Rent', icon: 'home', color: '#8B5CF6' },
   { id: 'airtime', name: 'Airtime', icon: 'phone', color: '#10B981' },
+  { id: 'internet', name: 'Internet', icon: 'wifi', color: '#06B6D4' },
   { id: 'fun', name: 'Leisure', icon: 'film', color: '#F59E0B' },
   { id: 'other', name: 'Other', icon: 'receipt', color: '#94A3B8' },
 ]

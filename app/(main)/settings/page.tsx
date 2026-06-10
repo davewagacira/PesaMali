@@ -205,7 +205,7 @@ export default function SettingsPage() {
     window.location.href = url
   }
 
-  const categories = ['Food', 'Transport', 'Rent', 'Entertainment', 'Utilities', 'Health', 'Airtime', 'Shopping', 'Other']
+  const categories = ['Food', 'Transport', 'Rent', 'Entertainment', 'Utilities', 'Health', 'Airtime', 'Internet', 'Shopping', 'Other']
 
   if (isLoading) return <PageHeroCard icon="settings" badge="Configuration" title="Settings" subtitle="Manage your budget, notifications, and preferences" />
 

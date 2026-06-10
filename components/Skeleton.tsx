@@ -15,7 +15,7 @@ export function Skeleton({
 }: SkeletonProps) {
   return (
     <div
-      className={className}
+      className={`skeleton-pulse ${className}`}
       style={{
         background: 'var(--card-2)',
         borderRadius: circle ? '50%' : 12,

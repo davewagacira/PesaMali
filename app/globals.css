@@ -428,6 +428,17 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 @media (min-width:481px) and (max-width:768px){
   .lp-feature-grid{grid-template-columns:repeat(2,1fr)}
   .lp-hero-copy h1{font-size:42px}
+
+/* Skeleton loader pulsing animation */
+@keyframes pulse-skeleton {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.skeleton-pulse {
+  animation: pulse-skeleton 2s ease-in-out infinite;
+}
+
 }
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

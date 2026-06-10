@@ -124,7 +124,7 @@ export default function LogPage() {
     ['Matatu fare', 80, 'transport'],
     ['Tomatoes', 50, 'food'],
     ['Airtime', 100, 'airtime'],
-    ['Lunch', 150, 'food'],
+    ['WiFi', 4000, 'internet'],
   ]
 
   const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
@@ -178,7 +178,7 @@ export default function LogPage() {
             <input
               value={item}
               onChange={(e) => setItem(e.target.value)}
-              placeholder="e.g. Tomatoes, Matatu fare, Airtime"
+              placeholder="e.g. Tomatoes, Matatu fare, WiFi"
             />
           </div>
           <div className="field">
