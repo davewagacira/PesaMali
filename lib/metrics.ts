@@ -33,7 +33,8 @@ export interface Metrics {
   spent: number
   remaining: number
   daysLeft: number
-  safe: number
+  safe: number          // how much MORE you can spend today (resets daily)
+  dailyAllowance: number // full daily allowance for today before any spending
   todaySpent: number
   spendPace: number
   monthPace: number
@@ -57,12 +58,16 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     const dayOfMonth = now.getDate()
     const dKey = (day: number) => iso(new Date(Y, Mn, Math.min(day, dayOfMonth)))
 
+    const today = iso(new Date())
     const spent = expenses.reduce((s, e) => s + e.amt, 0)
     const remaining = budget - spent
     const daysLeft = daysInMonth - dayOfMonth + 1
-    const safe = Math.max(0, (remaining - goal) / daysLeft)
-    const today = iso(new Date())
     const todaySpent = expenses.filter((e) => e.date === today).reduce((s, e) => s + e.amt, 0)
+    // Daily allowance is based on prior days only so it resets fresh each morning.
+    // safe = what you can still spend today (goes down as you spend, goes negative if over).
+    const priorSpent = spent - todaySpent
+    const dailyAllowance = Math.max(0, (budget - priorSpent - goal) / daysLeft)
+    const safe = dailyAllowance - todaySpent
     const spendPace = spent / budget
     const monthPace = dayOfMonth / daysInMonth
     const status: 'ok' | 'warn' | 'danger' =
@@ -120,6 +125,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       remaining,
       daysLeft,
       safe,
+      dailyAllowance,
       todaySpent,
       spendPace,
       monthPace,

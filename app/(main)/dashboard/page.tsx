@@ -1,12 +1,11 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { useMetrics, fmt, fmtN, catOf, MetricExpense } from '@/lib/metrics'
 import { DashboardSkeleton } from '@/components/DashboardSkeleton'
-import { NotificationsBell } from '@/components/NotificationsBell'
 import { AchievementsBadge } from '@/components/AchievementsBadge'
 import { useAblyExpenses } from '@/lib/useAbly'
 import { listContainer, listItem } from '@/lib/motion'
@@ -139,15 +138,17 @@ export default function DashboardPage() {
       <motion.div className="hero" variants={listItem}>
         <div>
           <div className="sts-label">
-            <I n="target" size={14} /> Safe to spend today
+            <I n="target" size={14} />{' '}
+            {m.safe < 0 ? 'Overspent today' : 'Safe to spend today'}
           </div>
-          <div className="sts-amount">
+          <div className="sts-amount" style={m.safe < 0 ? { color: 'var(--red)' } : undefined}>
             <span className="cur">KES </span>
-            {fmtN(m.safe)}
+            {fmtN(Math.abs(m.safe))}
           </div>
           <div className="sts-note">
-            {fmt(m.remaining)} remaining ÷ {m.daysLeft} days left, protecting your {fmt(goal)}{' '}
-            savings goal.
+            {m.safe < 0
+              ? `${fmt(m.dailyAllowance)} daily allowance · ${fmt(-m.safe)} over today`
+              : `${fmt(m.dailyAllowance)} daily allowance · ${fmt(m.todaySpent)} spent today · ${m.daysLeft} days left`}
           </div>
         </div>
         <div className="pace">
