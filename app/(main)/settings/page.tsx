@@ -19,6 +19,7 @@ interface RecurringExpense {
   item: string
   amount: number
   frequency: string
+  dayOfMonth?: number
   active: boolean
 }
 
@@ -40,6 +41,20 @@ export default function SettingsPage() {
     item: '',
     amount: '',
     frequency: 'monthly',
+    dayOfMonth: '',
+  })
+
+  // Editing states
+  const [editingCategory, setEditingCategory] = useState<string | null>(null)
+  const [editingCategoryLimit, setEditingCategoryLimit] = useState('')
+
+  const [editingRecurring, setEditingRecurring] = useState<string | null>(null)
+  const [editingRecurringData, setEditingRecurringData] = useState({
+    category: '',
+    item: '',
+    amount: '',
+    frequency: 'monthly',
+    dayOfMonth: '',
   })
   const [isLoading, setIsLoading] = useState(true)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -144,6 +159,24 @@ export default function SettingsPage() {
     }
   }
 
+  const saveCategoryBudget = async (category: string) => {
+    if (!editingCategoryLimit) return
+    try {
+      const res = await fetch(`/api/category-budgets/${encodeURIComponent(category)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ limit: parseFloat(editingCategoryLimit) }),
+      })
+      const budget = await res.json()
+      setCategoryBudgets((prev) => prev.map((b) => (b.category === category ? budget : b)))
+      setEditingCategory(null)
+      setSuccessMessage('Category budget updated')
+      setShowSuccess(true)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const deleteCategoryBudget = async (category: string) => {
     try {
       await fetch(`/api/category-budgets/${encodeURIComponent(category)}`, { method: 'DELETE' })
@@ -167,11 +200,12 @@ export default function SettingsPage() {
           item: newRecurring.item,
           amount: parseFloat(newRecurring.amount),
           frequency: newRecurring.frequency,
+          dayOfMonth: newRecurring.frequency === 'monthly' && newRecurring.dayOfMonth ? parseInt(newRecurring.dayOfMonth) : undefined,
         }),
       })
       const recurring = await res.json()
       setRecurringExpenses((prev) => [...prev, recurring])
-      setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly' })
+      setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly', dayOfMonth: '' })
       setSuccessMessage('Recurring expense added')
       setShowSuccess(true)
     } catch (e) {
@@ -199,6 +233,29 @@ export default function SettingsPage() {
       await fetch(`/api/recurring-expenses/${id}`, { method: 'DELETE' })
       setRecurringExpenses((prev) => prev.filter((r) => r.id !== id))
       setSuccessMessage('Recurring expense removed')
+      setShowSuccess(true)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const saveRecurringExpense = async (id: string) => {
+    try {
+      const res = await fetch(`/api/recurring-expenses/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: editingRecurringData.category,
+          item: editingRecurringData.item,
+          amount: parseFloat(editingRecurringData.amount),
+          frequency: editingRecurringData.frequency,
+          dayOfMonth: editingRecurringData.frequency === 'monthly' && editingRecurringData.dayOfMonth ? parseInt(editingRecurringData.dayOfMonth) : null,
+        }),
+      })
+      const recurring = await res.json()
+      setRecurringExpenses((prev) => prev.map((r) => (r.id === id ? recurring : r)))
+      setEditingRecurring(null)
+      setSuccessMessage('Recurring expense updated')
       setShowSuccess(true)
     } catch (e) {
       console.error(e)
@@ -329,16 +386,45 @@ export default function SettingsPage() {
           <div className="mb-6 space-y-2">
             {categoryBudgets.map((budget) => (
               <div key={budget.category} className="flex items-center justify-between rounded-lg bg-[var(--bg)] p-3">
-                <div>
-                  <h4 className="font-semibold text-sm">{catName(budget.category)}</h4>
-                  <p className="text-xs text-[var(--muted)]">KES {budget.limit.toLocaleString()}</p>
+                {editingCategory === budget.category ? (
+                  <div className="flex-1 flex gap-3 mr-4">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm">{catName(budget.category)}</h4>
+                      <input
+                        type="number"
+                        value={editingCategoryLimit}
+                        onChange={(e) => setEditingCategoryLimit(e.target.value)}
+                        className="mt-1 w-full rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-xs text-[var(--text)] outline-none focus:border-[var(--primary)]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 className="font-semibold text-sm">{catName(budget.category)}</h4>
+                    <p className="text-xs text-[var(--muted)]">KES {budget.limit.toLocaleString()}</p>
+                  </div>
+                )}
+                <div className="flex gap-2 shrink-0">
+                  {editingCategory === budget.category ? (
+                    <>
+                      <button onClick={() => saveCategoryBudget(budget.category)} className="p-2 rounded bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition">
+                        <I n="check" size={16} />
+                      </button>
+                      <button onClick={() => setEditingCategory(null)} className="p-2 rounded bg-[var(--card-2)] hover:bg-[var(--line)] transition">
+                        <I n="x" size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => { setEditingCategory(budget.category); setEditingCategoryLimit(budget.limit.toString()); }} className="p-2 rounded hover:bg-[var(--card-2)] text-[var(--muted)] hover:text-[var(--text)] transition">
+                        <I n="edit" size={16} />
+                      </button>
+                      <button onClick={() => deleteCategoryBudget(budget.category)} className="p-2 rounded hover:bg-[var(--red-soft)] text-[var(--muted)] hover:text-[var(--red)] transition">
+                        <I n="trash" size={16} />
+                      </button>
+                    </>
+                  )}
                 </div>
-                <button
-                  onClick={() => deleteCategoryBudget(budget.category)}
-                  className="p-2 rounded hover:bg-[var(--red-soft)] text-[var(--muted)] hover:text-[var(--red)] transition"
-                >
-                  <I n="trash" size={16} />
-                </button>
               </div>
             ))}
           </div>
@@ -387,31 +473,65 @@ export default function SettingsPage() {
             {recurringExpenses.map((recurring) => (
               <div
                 key={recurring.id}
-                className="flex items-center justify-between rounded-lg bg-[var(--bg)] p-3"
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg bg-[var(--bg)] p-3 gap-3"
               >
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm">{recurring.item}</h4>
-                  <p className="text-xs text-[var(--muted)]">
-                    {catName(recurring.category)} • KES {recurring.amount.toLocaleString()} • {recurring.frequency}
-                  </p>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => toggleRecurringExpense(recurring.id, recurring.active)}
-                    className={`px-3 py-1 rounded text-xs font-semibold transition ${
-                      recurring.active
-                        ? 'bg-[var(--green-soft)] text-[var(--green)]'
-                        : 'bg-[var(--muted)] opacity-50 text-[var(--text)]'
-                    }`}
-                  >
-                    {recurring.active ? 'Active' : 'Paused'}
-                  </button>
-                  <button
-                    onClick={() => deleteRecurringExpense(recurring.id)}
-                    className="p-2 rounded hover:bg-[var(--red-soft)] text-[var(--muted)] hover:text-[var(--red)] transition"
-                  >
-                    <I n="trash" size={16} />
-                  </button>
+                {editingRecurring === recurring.id ? (
+                  <div className="flex-1 grid gap-2 w-full">
+                    <input type="text" value={editingRecurringData.item} onChange={(e) => setEditingRecurringData({ ...editingRecurringData, item: e.target.value })} placeholder="Item name" className="rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-sm outline-none focus:border-[var(--primary)]" />
+                    <div className="flex gap-2">
+                      <input type="number" value={editingRecurringData.amount} onChange={(e) => setEditingRecurringData({ ...editingRecurringData, amount: e.target.value })} placeholder="Amount" className="w-1/3 rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-sm outline-none focus:border-[var(--primary)]" />
+                      <select value={editingRecurringData.frequency} onChange={(e) => setEditingRecurringData({ ...editingRecurringData, frequency: e.target.value })} className="w-1/3 rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-sm outline-none focus:border-[var(--primary)]">
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">Bi-weekly</option>
+                      </select>
+                      {editingRecurringData.frequency === 'monthly' && (
+                        <input type="number" min="1" max="31" placeholder="Day (1-31)" value={editingRecurringData.dayOfMonth} onChange={(e) => setEditingRecurringData({ ...editingRecurringData, dayOfMonth: e.target.value })} className="w-1/3 rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-sm outline-none focus:border-[var(--primary)]" />
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm">{recurring.item}</h4>
+                    <p className="text-xs text-[var(--muted)]">
+                      {catName(recurring.category)} • KES {recurring.amount.toLocaleString()} • {recurring.frequency}
+                      {recurring.frequency === 'monthly' && recurring.dayOfMonth ? ` (Day ${recurring.dayOfMonth})` : ''}
+                    </p>
+                  </div>
+                )}
+                <div className="flex gap-2 shrink-0 self-end sm:self-auto mt-2 sm:mt-0">
+                  {editingRecurring === recurring.id ? (
+                    <>
+                      <button onClick={() => saveRecurringExpense(recurring.id)} className="p-2 rounded bg-[var(--primary-soft)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition">
+                        <I n="check" size={16} />
+                      </button>
+                      <button onClick={() => setEditingRecurring(null)} className="p-2 rounded bg-[var(--card-2)] hover:bg-[var(--line)] transition">
+                        <I n="x" size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleRecurringExpense(recurring.id, recurring.active)}
+                        className={`px-3 py-1 rounded text-xs font-semibold transition ${
+                          recurring.active
+                            ? 'bg-[var(--green-soft)] text-[var(--green)]'
+                            : 'bg-[var(--muted)] opacity-50 text-[var(--text)]'
+                        }`}
+                      >
+                        {recurring.active ? 'Active' : 'Paused'}
+                      </button>
+                      <button onClick={() => { setEditingRecurring(recurring.id); setEditingRecurringData({ category: recurring.category, item: recurring.item, amount: recurring.amount.toString(), frequency: recurring.frequency, dayOfMonth: recurring.dayOfMonth?.toString() || '' }); }} className="p-2 rounded hover:bg-[var(--card-2)] text-[var(--muted)] hover:text-[var(--text)] transition">
+                        <I n="edit" size={16} />
+                      </button>
+                      <button
+                        onClick={() => deleteRecurringExpense(recurring.id)}
+                        className="p-2 rounded hover:bg-[var(--red-soft)] text-[var(--muted)] hover:text-[var(--red)] transition"
+                      >
+                        <I n="trash" size={16} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -453,6 +573,17 @@ export default function SettingsPage() {
               <option value="weekly">Weekly</option>
               <option value="biweekly">Bi-weekly</option>
             </select>
+            {newRecurring.frequency === 'monthly' && (
+              <input
+                type="number"
+                min="1"
+                max="31"
+                value={newRecurring.dayOfMonth}
+                onChange={(e) => setNewRecurring({ ...newRecurring, dayOfMonth: e.target.value })}
+                placeholder="Day of month (e.g., 6)"
+                className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              />
+            )}
             <button
               onClick={addRecurringExpense}
               disabled={!newRecurring.category || !newRecurring.item || !newRecurring.amount}
