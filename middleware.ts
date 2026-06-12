@@ -108,8 +108,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth', request.url))
     }
 
-    // Allow profile API and profile page always (for logged in users)
-    if (pathname.startsWith('/api/profiles') || pathname === '/profiles') {
+    // Allow profile API, user API (for header/names), and profile page always
+    if (
+      pathname.startsWith('/api/profiles') || 
+      pathname === '/api/user' || 
+      pathname === '/api/auth/logout' ||
+      pathname === '/profiles'
+    ) {
       return NextResponse.next()
     }
 
