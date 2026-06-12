@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PesaMali · Offline</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(34,197,94,.18), transparent 30%),
+        radial-gradient(circle at 84% 18%, rgba(21,94,239,.26), transparent 34%),
+        linear-gradient(135deg, #F8FBFF 0%, #EAF7FF 42%, #E8FFF5 100%);
+      color: #101828;
+    }
+    .box { text-align: center; padding: 32px 24px; max-width: 480px; }
+    img { width: 72px; height: 72px; margin-bottom: 18px; }
+    .badge {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: rgba(21,94,239,.08);
+      border: 1px solid #D1E0FF;
+      color: #155EEF;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+    h1 {
+      font-size: clamp(32px, 8vw, 44px);
+      line-height: 1.05;
+      font-weight: 820;
+      letter-spacing: -0.5px;
+      margin: 0 0 14px;
+      color: #0B1220;
+    }
+    h1 .grad {
+      background: linear-gradient(90deg, #155EEF 0%, #06B6D4 52%, #10B981 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    p { font-size: 15px; color: #475467; line-height: 1.65; margin: 0 0 26px; }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 30px;
+      background: #101828;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(16,24,40,.18);
+    }
+    button:active { transform: scale(.97); }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <img src="/icon-192.png" alt="PesaMali" />
+    <div class="badge">✦ You're offline</div>
+    <h1>No internet, <span class="grad">no worries</span>.</h1>
+    <p>Your numbers are safe. Reconnect to sync the latest, or go back to a page you visited recently.</p>
+    <button onclick="location.reload()">Try again</button>
+  </div>
+  <script>
+    addEventListener('online', () => location.reload())
+  </script>
+</body>
+</html>
