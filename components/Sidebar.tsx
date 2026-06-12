@@ -164,8 +164,8 @@ function SidebarContent({
                   Cancel
                 </button>
                 <button
-                  onClick={async () => {
-                    await fetch('/api/auth/logout', { method: 'POST' })
+                  onClick={() => {
+                    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
                     try { localStorage.clear() } catch {}
                     window.location.href = '/'
                   }}
