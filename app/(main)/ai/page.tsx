@@ -528,7 +528,7 @@ export default function AIPage() {
       tone: 'bg-[var(--primary-soft)] text-[var(--primary)]',
       text: topCategory
         ? `${topCategory.name} is your biggest flexible category - ${fmt(topCategory.amt)} (${Math.round((topCategory.amt / Math.max(metrics.flexibleSpent, 1)) * 100)}% of flexible spending).`
-        : 'Start logging expenses and PesaMali AI will identify your biggest spending category.',
+        : 'Start logging expenses and AI Coach will identify your biggest spending category.',
       ask: 'Where am I overspending and what should I stop?',
     },
     {
@@ -577,7 +577,7 @@ export default function AIPage() {
         <PageHeroCard
           icon="sparkles"
           badge="AI insights"
-          title="PesaMali AI"
+          title="AI Coach"
           subtitle="Personal financial intelligence built from your real spending behavior."
           subtitleExtra={<PoweredByGemini size="md" />}
         >
@@ -601,10 +601,10 @@ export default function AIPage() {
           >
             <div className="flex shrink-0 items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
               <div className="grid h-6 w-6 shrink-0 place-items-center text-[var(--primary)]">
-                <I n="zap" size={20} />
+                <I n="bot" size={20} />
               </div>
               <div>
-                <b className="text-sm font-bold">AI Coach</b>
+                <b className="text-sm font-bold">Rufus AI</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
                   {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}

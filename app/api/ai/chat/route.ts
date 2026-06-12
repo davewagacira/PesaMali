@@ -216,7 +216,7 @@ function buildContext(
   }
 }
 
-const OFF_TOPIC_REPLY = "I'm sorry, I can't help with that. I'm PesaMali AI, and I only discuss your personal finances. Ask me about your spending, budget, savings goal, or expense habits."
+const OFF_TOPIC_REPLY = "I'm sorry, I can't help with that. I'm AI Coach, and I only discuss your personal finances. Ask me about your spending, budget, savings goal, or expense habits."
 
 // ── Topic guard ────────────────────────────────────────────────────────────────
 // Returns true when the question is clearly unrelated to personal finance.

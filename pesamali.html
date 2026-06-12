@@ -439,7 +439,7 @@ async function askClaude(question, ctx){
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
       messages:[{role:'user',content:
-`You are PesaMali AI, a warm, direct personal-finance coach inside the PesaMali app, talking to a Kenyan university student. Currency is KES. Keep answers under 160 words, conversational, specific to the data, with concrete actions. Use **bold** sparingly for key numbers. No emojis. No markdown headers.
+`You are AI Coach, a warm, direct personal-finance coach inside the PesaMali app, talking to a Kenyan university student. Currency is KES. Keep answers under 160 words, conversational, specific to the data, with concrete actions. Use **bold** sparingly for key numbers. No emojis. No markdown headers.
 
 Live user data (this month): ${JSON.stringify(ctx)}
 
@@ -502,7 +502,7 @@ function App(){
     {id:'log',label:'Log expense',icon:'plusCircle'},
     {id:'analytics',label:'Analytics',icon:'chart'},
     {id:'achievements',label:'Achievements',icon:'trophy'},
-    {id:'ai',label:'PesaMali AI',icon:'sparkles'},
+    {id:'ai',label:'AI Coach',icon:'sparkles'},
     {id:'settings',label:'Budget & settings',icon:'settings'},
   ];
 
@@ -808,7 +808,7 @@ function Achievements({m,expenses,budget,goal}){
 
 /* ---- AI ---- */
 function AIChat({m,user,budget,goal}){
-  const [msgs,setMsgs]=useState([{who:'ai',text:`Habari ${user}. I'm **PesaMali AI**, your money coach. I read your live spending data for this month, so my answers are about your money, not generic advice. Ask how your week went, where you're overspending, or what to change — or use a quick question on the right.`}]);
+  const [msgs,setMsgs]=useState([{who:'ai',text:`Habari ${user}. I'm **AI Coach**, your money coach. I read your live spending data for this month, so my answers are about your money, not generic advice. Ask how your week went, where you're overspending, or what to change — or use a quick question on the right.`}]);
   const [input,setInput]=useState('');
   const [busy,setBusy]=useState(false);
   const logRef=useRef();
@@ -831,7 +831,7 @@ function AIChat({m,user,budget,goal}){
   const render=t=>t.split(/(\*\*[^*]+\*\*)/g).map((s,i)=>s.startsWith('**')?<b key={i}>{s.slice(2,-2)}</b>:s);
   return (
     <div>
-      <div className="page-head"><div><h1>PesaMali AI</h1><p>Your personal money coach — it reads your real spending data</p></div></div>
+      <div className="page-head"><div><h1>AI Coach</h1><p>Your personal money coach — it reads your real spending data</p></div></div>
       <div className="chat-shell">
         <div className="chat-card">
           <div className="chat-log" ref={logRef}>
@@ -842,7 +842,7 @@ function AIChat({m,user,budget,goal}){
                 </motion.div>))}
             </AnimatePresence>
           </div>
-          {busy && <div className="typing"><I n="sparkles" size={13}/>PesaMali AI is thinking…</div>}
+          {busy && <div className="typing"><I n="sparkles" size={13}/>AI Coach is thinking…</div>}
           <div className="chat-input">
             <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Ask about your spending…" onKeyDown={e=>e.key==='Enter'&&ask()}/>
             <motion.button className="send-btn" whileTap={{scale:.92}} onClick={()=>ask()} aria-label="Send"><I n="send" size={16}/></motion.button>
