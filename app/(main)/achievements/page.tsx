@@ -15,11 +15,11 @@ export default function AchievementsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/user')
+      fetch('/api/profiles/current')
         .then((r) => r.json())
         .then((d) => {
-          if (d.monthlyBudget) setBudget(d.monthlyBudget)
-          if (d.savingsGoal) setGoal(d.savingsGoal)
+          if (d.monthlyBudget !== undefined) setBudget(d.monthlyBudget)
+          if (d.savingsGoal !== undefined) setGoal(d.savingsGoal)
         })
         .catch(() => {}),
       fetch('/api/expenses')

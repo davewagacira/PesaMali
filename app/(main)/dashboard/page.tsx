@@ -86,9 +86,14 @@ export default function DashboardPage() {
         .then(guard)
         .then((d) => {
           if (d.name) setUserName(d.name)
-          if (d.monthlyBudget) setBudget(d.monthlyBudget)
-          if (d.savingsGoal) setGoal(d.savingsGoal)
           if (d.id) setUserId(d.id)
+        })
+        .catch(() => { failed = true }),
+      fetch('/api/profiles/current')
+        .then(guard)
+        .then((p) => {
+          if (p.monthlyBudget !== undefined) setBudget(p.monthlyBudget)
+          if (p.savingsGoal !== undefined) setGoal(p.savingsGoal)
         })
         .catch(() => { failed = true }),
       fetch('/api/expenses')

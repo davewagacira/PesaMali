@@ -17,6 +17,7 @@ interface UserProfile {
   monthlyBudget: number
   savingsGoal: number
   mfaEnabled: boolean
+  profileId?: string
 }
 
 export default function ProfilePage() {
@@ -26,11 +27,14 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState<Partial<UserProfile>>({})
 
   useEffect(() => {
-    fetch('/api/user')
-      .then((r) => r.json())
-      .then((d) => {
-        setProfile(d)
-        setFormData(d)
+    Promise.all([
+      fetch('/api/user').then((r) => r.json()),
+      fetch('/api/profiles/current').then((r) => r.json())
+    ])
+      .then(([u, p]) => {
+        const merged = { ...u, monthlyBudget: p.monthlyBudget, savingsGoal: p.savingsGoal, profileId: p.id }
+        setProfile(merged)
+        setFormData(merged)
       })
       .catch(() => {})
       .finally(() => setIsLoading(false))
@@ -38,11 +42,21 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
-      await fetch('/api/user', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const userBody = { name: formData.name }
+      const profileBody = { monthlyBudget: formData.monthlyBudget, savingsGoal: formData.savingsGoal }
+
+      await Promise.all([
+        fetch('/api/user', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userBody),
+        }),
+        formData.profileId ? fetch(`/api/profiles/${formData.profileId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profileBody),
+        }) : Promise.resolve()
+      ])
       setProfile(formData as UserProfile)
       setEditMode(false)
     } catch (e) {

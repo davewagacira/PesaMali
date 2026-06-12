@@ -18,9 +18,9 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/user')
+      fetch('/api/profiles/current')
         .then((r) => r.json())
-        .then((d) => { if (d.monthlyBudget) setBudget(d.monthlyBudget) })
+        .then((d) => { if (d.monthlyBudget !== undefined) setBudget(d.monthlyBudget) })
         .catch(() => {}),
       fetch('/api/expenses')
         .then((r) => r.json())

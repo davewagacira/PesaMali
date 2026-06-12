@@ -108,10 +108,10 @@ export default function WishlistPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/user')
+      fetch('/api/profiles/current')
         .then((r) => r.json())
         .then((d) => {
-          if (d.monthlyBudget) setBudget(d.monthlyBudget)
+          if (d.monthlyBudget !== undefined) setBudget(d.monthlyBudget)
           if (d.savingsGoal !== undefined) setGoal(d.savingsGoal)
         })
         .catch(() => {}),

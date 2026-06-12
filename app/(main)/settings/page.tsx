@@ -46,18 +46,21 @@ export default function SettingsPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1)
   const [reportYear, setReportYear] = useState(new Date().getFullYear())
+  const [profileId, setProfileId] = useState('')
 
   useEffect(() => {
     Promise.all([
       fetch('/api/user').then((r) => r.json()),
+      fetch('/api/profiles/current').then((r) => r.json()),
       fetch('/api/category-budgets').then((r) => r.json()),
       fetch('/api/recurring-expenses').then((r) => r.json()),
     ])
-      .then(([userData, budgets, recurring]) => {
+      .then(([userData, profileData, budgets, recurring]) => {
         if (userData.notificationsEnabled !== undefined) setNotificationsEnabled(userData.notificationsEnabled)
         if (userData.pushNotificationsEnabled !== undefined) setPushNotificationsEnabled(userData.pushNotificationsEnabled)
-        if (userData.monthlyBudget) setMonthlyBudget(userData.monthlyBudget.toString())
-        if (userData.savingsGoal) setSavingsGoal(userData.savingsGoal.toString())
+        if (profileData.id) setProfileId(profileData.id)
+        if (profileData.monthlyBudget !== undefined) setMonthlyBudget(profileData.monthlyBudget.toString())
+        if (profileData.savingsGoal !== undefined) setSavingsGoal(profileData.savingsGoal.toString())
         if (Array.isArray(budgets)) setCategoryBudgets(budgets)
         if (Array.isArray(recurring)) setRecurringExpenses(recurring)
       })
@@ -97,12 +100,13 @@ export default function SettingsPage() {
 
   const saveBudgetGoals = async () => {
     if (!monthlyBudget && !savingsGoal) return
+    if (!profileId) return
     try {
       const body: UserSettings = {}
       if (monthlyBudget) body.monthlyBudget = parseFloat(monthlyBudget)
       if (savingsGoal) body.savingsGoal = parseFloat(savingsGoal)
 
-      await fetch('/api/user', {
+      await fetch(`/api/profiles/${profileId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

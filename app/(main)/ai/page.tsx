@@ -220,13 +220,14 @@ export default function AIPage() {
   useEffect(() => {
     Promise.all([
       fetch('/api/user').then((r) => r.json()),
+      fetch('/api/profiles/current').then((r) => r.json()),
       fetch('/api/expenses').then((r) => r.json()),
       fetch('/api/ai/conversations').then((r) => r.json()),
     ])
-      .then(([userData, expenseData, convData]) => {
+      .then(([userData, profileData, expenseData, convData]) => {
         if (userData.name) setUserName(userData.name)
-        if (userData.monthlyBudget) setBudget(userData.monthlyBudget)
-        if (userData.savingsGoal) setGoal(userData.savingsGoal)
+        if (profileData.monthlyBudget !== undefined) setBudget(profileData.monthlyBudget)
+        if (profileData.savingsGoal !== undefined) setGoal(profileData.savingsGoal)
         setMemoryEnabled(userData.aiMemoryEnabled !== false)
         if (Array.isArray(expenseData)) {
           setExpenses(
