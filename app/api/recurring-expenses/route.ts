@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(recurring, { status: 201 })
   } catch (e) {
     console.error('[Recurring expenses POST error]', e)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 })
   }
 }
 

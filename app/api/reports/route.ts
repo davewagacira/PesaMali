@@ -80,8 +80,8 @@ export async function GET(req: NextRequest) {
       const doc = new jsPDF()
       const pageWidth = doc.internal.pageSize.getWidth()
       
-      // Use primary brand color from globals.css: #4F46E5 (rgb: 79, 70, 229)
-      const brandColor = [79, 70, 229] as [number, number, number]
+      // Use landing page/auth brand color: #101828 (rgb: 16, 24, 40)
+      const brandColor = [16, 24, 40] as [number, number, number]
       
       // Header Background
       doc.setFillColor(...brandColor)
@@ -100,11 +100,11 @@ export async function GET(req: NextRequest) {
       // Add Logo
       try {
         const logoPath = path.join(process.cwd(), 'public', 'logo.png')
-        const logoBuffer = fs.readFileSync(logoPath)
-        const logoBase64 = logoBuffer.toString('base64')
-        // Place logo on the right side of the header. The header is 40 units high.
-        // We'll make the logo 24x24 units, centered vertically in the 40 unit header.
-        doc.addImage(logoBase64, 'PNG', pageWidth - 44, 8, 24, 24)
+        if (fs.existsSync(logoPath)) {
+          const logoBuffer = fs.readFileSync(logoPath)
+          const logoBase64 = 'data:image/png;base64,' + logoBuffer.toString('base64')
+          doc.addImage(logoBase64, 'PNG', pageWidth - 44, 8, 24, 24)
+        }
       } catch (e) {
         console.error("Could not load logo for PDF", e)
       }
