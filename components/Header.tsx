@@ -79,7 +79,7 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
                     <span className="text-xs font-bold leading-tight">{profileName || userName}</span>
                     <span className="text-[10px] text-[var(--muted)] leading-tight">Switch profile</span>
                   </div>
-                  <I n="chevronDown" size={14} className="text-[var(--muted)] ml-1" />
+                  <I n="chevronDown" size={14} style={{ color: 'var(--muted)', marginLeft: 4 }} />
                 </button>
                 <AnimatePresence>
                   {showProfileMenu && (
@@ -104,6 +104,26 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
                         >
                           <I n="refreshCw" size={14} />
                           Switch profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false)
+                            router.push('/profile')
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)] hover:text-[var(--text)]"
+                        >
+                          <I n="user" size={14} />
+                          My Profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false)
+                            router.push('/settings')
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)] hover:text-[var(--text)]"
+                        >
+                          <I n="settings" size={14} />
+                          Settings
                         </button>
                         <button
                           onClick={() => {
