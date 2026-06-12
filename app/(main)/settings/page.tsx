@@ -146,6 +146,7 @@ export default function SettingsPage() {
         }),
       })
       const budget = await res.json()
+      if (!res.ok) throw new Error(budget.error || 'Failed to add budget')
       setCategoryBudgets((prev) =>
         prev.some((b) => b.category === budget.category)
           ? prev.map((b) => (b.category === budget.category ? budget : b))
@@ -168,6 +169,7 @@ export default function SettingsPage() {
         body: JSON.stringify({ limit: parseFloat(editingCategoryLimit) }),
       })
       const budget = await res.json()
+      if (!res.ok) throw new Error(budget.error || 'Failed to update budget')
       setCategoryBudgets((prev) => prev.map((b) => (b.category === category ? budget : b)))
       setEditingCategory(null)
       setSuccessMessage('Category budget updated')
@@ -204,6 +206,7 @@ export default function SettingsPage() {
         }),
       })
       const recurring = await res.json()
+      if (!res.ok) throw new Error(recurring.error || 'Failed to add recurring expense')
       setRecurringExpenses((prev) => [...prev, recurring])
       setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly', dayOfMonth: '' })
       setSuccessMessage('Recurring expense added')
@@ -253,6 +256,7 @@ export default function SettingsPage() {
         }),
       })
       const recurring = await res.json()
+      if (!res.ok) throw new Error(recurring.error || 'Failed to update recurring expense')
       setRecurringExpenses((prev) => prev.map((r) => (r.id === id ? recurring : r)))
       setEditingRecurring(null)
       setSuccessMessage('Recurring expense updated')
