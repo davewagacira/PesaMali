@@ -213,6 +213,7 @@ export default function SettingsPage() {
       setShowSuccess(true)
     } catch (e) {
       console.error(e)
+      alert(e instanceof Error ? e.message : 'An error occurred while adding the recurring expense')
     }
   }
 

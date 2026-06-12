@@ -41,10 +41,14 @@ export async function POST(req: NextRequest) {
     const dayOfMonth = body.dayOfMonth == null ? null : cleanInt(body.dayOfMonth, 1, 31)
     const dayOfWeek = body.dayOfWeek == null ? null : cleanInt(body.dayOfWeek, 0, 6)
     if (!category || !item || amount === null || !frequency) {
-      return NextResponse.json({ error: 'A valid category, item, amount and frequency are required' }, { status: 400 })
+      return NextResponse.json({ 
+        error: `Validation failed: category=${!!category}, item=${!!item}, amount=${amount}, frequency=${!!frequency}` 
+      }, { status: 400 })
     }
     if ((body.dayOfMonth != null && dayOfMonth === null) || (body.dayOfWeek != null && dayOfWeek === null)) {
-      return NextResponse.json({ error: 'Invalid day of month or day of week' }, { status: 400 })
+      return NextResponse.json({ 
+        error: `Invalid day/week: dayOfMonth=${dayOfMonth} (input: ${body.dayOfMonth}), dayOfWeek=${dayOfWeek} (input: ${body.dayOfWeek})` 
+      }, { status: 400 })
     }
 
     // Calculate next run date

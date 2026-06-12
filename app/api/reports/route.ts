@@ -7,6 +7,8 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import Papa from 'papaparse'
 import { cleanInt } from '@/lib/validate'
+import fs from 'fs'
+import path from 'path'
 
 export async function GET(req: NextRequest) {
   try {
@@ -94,6 +96,18 @@ export async function GET(req: NextRequest) {
       doc.setFontSize(11)
       doc.setFont('helvetica', 'normal')
       doc.text(`User: ${profile.name} | Month: ${queryMonth}/${queryYear}`, 20, 30)
+      
+      // Add Logo
+      try {
+        const logoPath = path.join(process.cwd(), 'public', 'logo.png')
+        const logoBuffer = fs.readFileSync(logoPath)
+        const logoBase64 = logoBuffer.toString('base64')
+        // Place logo on the right side of the header. The header is 40 units high.
+        // We'll make the logo 24x24 units, centered vertically in the 40 unit header.
+        doc.addImage(logoBase64, 'PNG', pageWidth - 44, 8, 24, 24)
+      } catch (e) {
+        console.error("Could not load logo for PDF", e)
+      }
       
       // Reset text color
       doc.setTextColor(40, 40, 40)
