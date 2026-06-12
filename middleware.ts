@@ -135,5 +135,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|logo.png).*)'],
+  // PWA assets (manifest, service worker, icons, offline page) must stay
+  // public — the browser fetches them without sending auth context
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|logo.png|manifest.json|sw.js|offline.html|icon-192.png|icon-512.png|icon-maskable-512.png|apple-touch-icon.png).*)',
+  ],
 }
