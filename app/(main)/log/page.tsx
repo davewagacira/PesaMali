@@ -317,7 +317,7 @@ export default function LogPage() {
             New expense
           </h3>
           <div className="cat-pick">
-            {CATS.map((c) => (
+            {CATS.filter((c) => c.id !== 'rent' && c.id !== 'internet').map((c) => (
               <motion.button
                 key={c.id}
                 whileTap={{ scale: 0.94 }}
@@ -329,12 +329,6 @@ export default function LogPage() {
               </motion.button>
             ))}
           </div>
-          {(cat === 'rent' || cat === 'internet') && (
-            <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 10px' }}>
-              Tip: {cat === 'rent' ? 'rent' : 'internet'} can log itself every month — set it up under
-              Settings → Recurring expenses, and you won&apos;t need to enter it here.
-            </p>
-          )}
           <div className="field">
             <label>Expense name</label>
             <input
