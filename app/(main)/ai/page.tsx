@@ -604,7 +604,7 @@ export default function AIPage() {
                 <I n="zap" size={20} />
               </div>
               <div>
-                <b className="text-sm font-bold">PesaMali AI</b>
+                <b className="text-sm font-bold">AI Coach</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
                   {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}
