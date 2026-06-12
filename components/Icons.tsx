@@ -9,7 +9,7 @@ export const PATHS: Record<string, React.ReactNode> = {
   sparkles: (
     <g>
       <image
-        href="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_logo_2025.svg.png"
+        href="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png"
         x="0"
         y="0"
         width="24"
