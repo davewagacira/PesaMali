@@ -13,6 +13,7 @@ const full = (s: string) =>
 
 export default function AnalyticsPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
+  const [trends, setTrends] = useState<{ label: string; amt: number }[]>([])
   const [budget, setBudget] = useState(15000)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -34,6 +35,14 @@ export default function AnalyticsPage() {
           }
         })
         .catch(() => {}),
+      fetch('/api/analytics/trends')
+        .then((r) => r.json())
+        .then((d) => {
+          if (Array.isArray(d)) {
+            setTrends(d)
+          }
+        })
+        .catch(() => {}),
     ]).finally(() => setIsLoading(false))
   }, [])
 
@@ -41,6 +50,7 @@ export default function AnalyticsPage() {
   const top = m.topItems[0]
   const topDay = [...m.dowOrdered].sort((a, b) => b.amt - a.amt)[0]
   const maxD = Math.max(...m.dowOrdered.map((o) => o.amt), 1)
+  const maxT = Math.max(...trends.map((o) => o.amt), 1)
 
   if (isLoading) return <AnalyticsSkeleton />
 
@@ -96,6 +106,28 @@ export default function AnalyticsPage() {
             <p className="chart-note">No data yet.</p>
           )}
         </motion.div>
+      </motion.div>
+      <motion.div className="card" variants={listItem} style={{ marginBottom: 16 }}>
+        <h3><I n="flame" size={14} />Monthly Trends</h3>
+        {trends.length ? (
+          <div className="bar-chart" style={{ height: 180, marginTop: 16 }}>
+            {trends.map((o, i) => (
+              <div className="bar-col" key={o.label} style={{ minWidth: 40 }}>
+                <span className="v">{o.amt ? fmtN(o.amt) : ''}</span>
+                <motion.span
+                  className="stick"
+                  style={{ height: Math.max(3, (o.amt / maxT) * 100) + '%', transformOrigin: 'bottom' }}
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ duration: 0.45, delay: Math.min(i, 6) * 0.04, ease: 'easeOut' }}
+                />
+                <span className="d">{o.label}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="chart-note">No trend data yet.</p>
+        )}
       </motion.div>
       <motion.div className="card" variants={listItem}>
         <h3><I n="receipt" size={14} />Category breakdown</h3>
