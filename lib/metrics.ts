@@ -137,7 +137,9 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
 
     const byDow = DOW.map((l) => ({ label: l, amt: 0 }))
     expenses.forEach((e) => {
-      byDow[new Date(e.date + 'T00:00:00').getDay()].amt += e.amt
+      if (!isFixedExpense(e.cat, e.item)) {
+        byDow[new Date(e.date + 'T00:00:00').getDay()].amt += e.amt
+      }
     })
     const dowOrdered = [...byDow.slice(1), byDow[0]]
 
