@@ -36,10 +36,11 @@ Gather these API keys from their respective providers:
   ```bash
   openssl rand -base64 32
   ```
-- **GOOGLE_CLOUD_PROJECT_ID**: From Google Cloud
-- **VERTEX_AI_LOCATION**: Usually `global`
-- **VERTEX_AI_MODEL**: `gemini-3-flash-preview` (or similar)
-- **GOOGLE_VERTEX_API_KEY**: From Google Cloud
+- **GOOGLE_VERTEX_API_KEY**: From Google Cloud — Vertex AI express-mode API key.
+  This is the variable that powers the AI chat on Vercel (no key file needed).
+- **VERTEX_AI_MODEL**: `gemini-2.0-flash-001` (or similar)
+- **GOOGLE_CLOUD_PROJECT_ID** + **VERTEX_AI_LOCATION** + **GOOGLE_APPLICATION_CREDENTIALS**:
+  only needed for local development with a service-account key file in `keys/`
 - **AI_GATEWAY_API_KEY**: From AI Gateway provider
 - **AI_GATEWAY_MODEL**: `openai/gpt-5.5` (or similar)
 
