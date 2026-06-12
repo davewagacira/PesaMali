@@ -72,39 +72,6 @@ export function AISkeleton() {
           <Skeleton height={16} width={300} />
         </div>
 
-        <motion.div
-          className="mb-[26px] flex items-center gap-[26px] max-[1180px]:flex-col max-[1180px]:items-start max-[1180px]:gap-[18px]"
-          {...stagger(0)}
-        >
-          <div className="relative h-[92px] w-[92px] shrink-0">
-            <div className="absolute -inset-[9px] rounded-full border border-dashed border-[var(--line)]" />
-            <div className="absolute inset-0 rounded-full bg-[var(--card-2)]">
-              <div className="absolute inset-[5px] rounded-full bg-[var(--bg)]" />
-            </div>
-            <Skeleton width={56} height={56} circle className="absolute inset-[18px]" />
-          </div>
-          <div className="w-full max-w-xl">
-            <Skeleton width={300} height={36} style={{ marginBottom: 10 }} />
-            <SkeletonText lines={2} />
-          </div>
-        </motion.div>
-
-        <div className="mb-6 grid grid-cols-4 gap-3.5 max-[1180px]:grid-cols-2 max-[560px]:grid-cols-1">
-          {[0, 1, 2, 3].map((i) => (
-            <motion.div
-              key={i}
-              className="flex items-center gap-[13px] rounded-2xl border border-[var(--line)] bg-[var(--card)] px-[18px] py-4 shadow-[var(--shadow)]"
-              {...stagger(i + 1)}
-            >
-              <Skeleton width={40} height={40} />
-              <div className="min-w-0 flex-1">
-                <Skeleton width={120} height={10} style={{ marginBottom: 8 }} />
-                <Skeleton width={90} height={16} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
         <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
             className="flex h-[min(720px,calc(100dvh-280px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[min(560px,calc(100dvh-220px))] max-[1180px]:min-h-[420px]"

@@ -592,40 +592,6 @@ export default function AIPage() {
           </div>
         </PageHeroCard>
 
-        <motion.div
-          className="mb-[26px] flex items-center gap-[26px] max-[1180px]:flex-col max-[1180px]:items-start max-[1180px]:gap-[18px]"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-        >
-          <Orb thinking={busy} />
-          <div>
-            <h1 className="text-[30px] font-extrabold leading-[1.2] tracking-normal max-[1180px]:text-2xl">
-              Your money,{' '}
-              <span className="bg-gradient-to-r from-[var(--primary)] via-[#7C3AED] to-[#06B6D4] bg-clip-text text-transparent">
-                understood.
-              </span>
-            </h1>
-            <p className="mt-1.5 max-w-xl text-[13.5px] leading-[1.7] text-[var(--muted)]">
-              PesaMali AI reads your live spending data, every shilling, every category, every day, and
-              answers like a coach who actually knows you. Ask anything about your month.
-            </p>
-          </div>
-        </motion.div>
-
-        <div className="mb-6 grid grid-cols-4 gap-3.5 max-[1180px]:grid-cols-2 max-[560px]:grid-cols-1">
-          <InsightCard icon="target" tone="p" label="Safe to spend today" value={fmt(metrics.safe)} delay={0} />
-          <InsightCard icon="wallet" tone="p" label="Remaining" value={fmt(metrics.remaining)} delay={0.07} />
-          <InsightCard
-            icon="trendUp"
-            tone="p"
-            label="Pace"
-            value={`${Math.round(metrics.spendPace * 100)}% / ${Math.round(metrics.monthPace * 100)}%`}
-            delay={0.14}
-          />
-          <InsightCard icon={status.icon} tone={status.tone} label="Status" value={status.label} delay={0.21} />
-        </div>
-
         <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
             className="flex h-[min(720px,calc(100dvh-280px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[min(560px,calc(100dvh-220px))] max-[1180px]:min-h-[420px]"
@@ -634,7 +600,9 @@ export default function AIPage() {
             transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
           >
             <div className="flex shrink-0 items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
-              <img src="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png" alt="Gemini" className="h-6 w-6 shrink-0" />
+              <div className="grid h-6 w-6 shrink-0 place-items-center text-[var(--primary)]">
+                <I n="zap" size={20} />
+              </div>
               <div>
                 <b className="text-sm font-bold">PesaMali AI</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
@@ -684,9 +652,7 @@ export default function AIPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] [background:var(--primary-grad)] text-white">
-                      <I n="sparkles" size={15} />
-                    </div>
+                    <img src="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png" alt="Gemini" className="h-8 w-8 shrink-0 rounded-[10px]" />
                     <div className="rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px]">
                       <TypingDots />
                     </div>
@@ -700,9 +666,7 @@ export default function AIPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] [background:var(--primary-grad)] text-white">
-                      <I n="sparkles" size={15} />
-                    </div>
+                    <img src="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png" alt="Gemini" className="h-8 w-8 shrink-0 rounded-[10px]" />
                     <div className="whitespace-pre-wrap rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px] text-[13.5px] leading-[1.75] [&_b]:font-semibold [&_b]:text-[var(--primary)]">
                       {render(streamingReply)}
                       <motion.span
