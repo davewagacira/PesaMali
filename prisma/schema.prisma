@@ -37,6 +37,9 @@ model Expense {
   item      String
   amount    Float
   createdAt DateTime @default(now())
+
+  @@index([userId, date])
+  @@index([userId, category, date])
 }
 
 model Conversation {
@@ -47,6 +50,8 @@ model Conversation {
   messages  Message[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
 }
 
 model Message {
@@ -56,6 +61,8 @@ model Message {
   role           String   // "user" or "ai"
   content        String   @db.Text
   createdAt      DateTime @default(now())
+
+  @@index([conversationId, createdAt])
 }
 
 model CategoryBudget {
@@ -85,6 +92,9 @@ model RecurringExpense {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([userId, active])
+  @@index([active, nextRunDate])
 }
 
 model Achievement {
@@ -97,6 +107,8 @@ model Achievement {
   icon      String?
   unlockedAt DateTime @default(now())
   createdAt DateTime @default(now())
+
+  @@index([userId, unlockedAt])
 }
 
 model Notification {
@@ -109,4 +121,7 @@ model Notification {
   read      Boolean  @default(false)
   actionUrl String?
   createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, read])
 }

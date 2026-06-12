@@ -7,6 +7,7 @@ import { resolve } from 'path'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { isFixedCat } from '@/lib/metrics'
+import { cleanString } from '@/lib/validate'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
 function getVertexClient(): GoogleGenAI | null {
@@ -284,9 +285,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { question, conversationId, compressedContext } = await req.json()
-    if (!question?.trim()) {
-      return NextResponse.json({ error: 'Question required' }, { status: 400 })
+    const body = await req.json()
+    const question = cleanString(body.question, 2000)
+    const conversationId = typeof body.conversationId === 'string' ? body.conversationId : undefined
+    const compressedContext =
+      typeof body.compressedContext === 'string' ? body.compressedContext.slice(0, 8000) : undefined
+    if (!question) {
+      return NextResponse.json({ error: 'Question required (max 2000 characters)' }, { status: 400 })
     }
 
     // Layer 1: fast topic guard — block obvious off-topic questions before any AI call

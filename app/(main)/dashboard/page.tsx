@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState('')
   const [userId, setUserId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [hideMoney, setHideMoney] = useState(false)
 
@@ -75,18 +76,23 @@ export default function DashboardPage() {
 
   const refreshData = useCallback(async (showLoading = false) => {
     if (showLoading) setIsLoading(true)
+    let failed = false
+    const guard = (r: Response) => {
+      if (!r.ok) throw new Error(`Request failed (${r.status})`)
+      return r.json()
+    }
     await Promise.all([
       fetch('/api/user')
-        .then((r) => r.json())
+        .then(guard)
         .then((d) => {
           if (d.name) setUserName(d.name)
           if (d.monthlyBudget) setBudget(d.monthlyBudget)
           if (d.savingsGoal) setGoal(d.savingsGoal)
           if (d.id) setUserId(d.id)
         })
-        .catch(() => {}),
+        .catch(() => { failed = true }),
       fetch('/api/expenses')
-        .then((r) => r.json())
+        .then(guard)
         .then((d) => {
           if (Array.isArray(d)) {
             setExpenses(
@@ -100,14 +106,15 @@ export default function DashboardPage() {
             )
           }
         })
-        .catch(() => {}),
+        .catch(() => { failed = true }),
       fetch('/api/category-budgets')
-        .then((r) => r.json())
+        .then(guard)
         .then((d) => {
           if (Array.isArray(d)) setCatBudgets(d)
         })
-        .catch(() => {}),
+        .catch(() => { failed = true }),
     ]).finally(() => {
+      setLoadError(failed)
       if (showLoading) setIsLoading(false)
     })
   }, [])
@@ -194,6 +201,40 @@ export default function DashboardPage() {
 
   return (
     <motion.div className="pro-page" variants={listContainer} initial="hidden" animate="show">
+      {loadError && (
+        <div
+          role="alert"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '10px 16px',
+            borderRadius: 12,
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            marginBottom: 14,
+          }}
+        >
+          <span>Some of your data failed to load — figures below may be incomplete.</span>
+          <button
+            type="button"
+            onClick={() => refreshData(false)}
+            style={{
+              border: 'none',
+              borderRadius: 8,
+              padding: '6px 14px',
+              background: '#EF4444',
+              color: '#fff',
+              fontWeight: 600,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <motion.section className="pro-hero" variants={listItem}>
         <div>
           <span className="pro-eyebrow">Finance command center</span>

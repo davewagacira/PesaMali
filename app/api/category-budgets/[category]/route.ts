@@ -3,6 +3,7 @@ import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { cleanAmount } from '@/lib/validate'
 
 export async function PUT(req: NextRequest, { params }: { params: { category: string } }) {
   try {
@@ -11,8 +12,9 @@ export async function PUT(req: NextRequest, { params }: { params: { category: st
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { limit } = await req.json()
-    if (typeof limit !== 'number' || limit <= 0) {
+    const body = await req.json()
+    const limit = cleanAmount(body.limit)
+    if (limit === null) {
       return NextResponse.json({ error: 'Invalid limit' }, { status: 400 })
     }
 

@@ -7,11 +7,16 @@ import { SessionData, sessionOptions } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json()
-    if (!email || !password) {
+    const body = await req.json()
+    const email = typeof body.email === 'string' ? body.email.trim() : ''
+    const password = typeof body.password === 'string' ? body.password : ''
+    if (!email || !password || email.length > 254 || password.length > 128) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
     }
-    const user = await prisma.user.findUnique({ where: { email } })
+    // Accounts may predate email normalization, so try the exact form first.
+    const user =
+      (await prisma.user.findUnique({ where: { email } })) ||
+      (await prisma.user.findUnique({ where: { email: email.toLowerCase() } }))
     if (!user) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }

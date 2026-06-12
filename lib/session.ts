@@ -12,5 +12,10 @@ export interface SessionData {
 export const sessionOptions: SessionOptions = {
   password: process.env.SESSION_SECRET!,
   cookieName: 'pesamali-session',
-  cookieOptions: { secure: process.env.NODE_ENV === 'production' },
+  ttl: 60 * 60 * 24 * 7, // 7 days
+  cookieOptions: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+  },
 }

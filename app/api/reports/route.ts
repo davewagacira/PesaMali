@@ -5,6 +5,7 @@ import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import jsPDF from 'jspdf'
 import Papa from 'papaparse'
+import { cleanInt } from '@/lib/validate'
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,8 +16,11 @@ export async function GET(req: NextRequest) {
 
     const { format = 'pdf', month, year } = Object.fromEntries(req.nextUrl.searchParams)
     const now = new Date()
-    const queryYear = year ? parseInt(year) : now.getFullYear()
-    const queryMonth = month ? parseInt(month) : now.getMonth() + 1
+    const queryYear = year ? cleanInt(year, 2000, 2100) : now.getFullYear()
+    const queryMonth = month ? cleanInt(month, 1, 12) : now.getMonth() + 1
+    if (queryYear === null || queryMonth === null) {
+      return NextResponse.json({ error: 'Invalid month or year' }, { status: 400 })
+    }
 
     const monthStart = `${queryYear}-${String(queryMonth).padStart(2, '0')}-01`
     const monthEnd = new Date(queryYear, queryMonth, 0).toISOString().slice(0, 10)
