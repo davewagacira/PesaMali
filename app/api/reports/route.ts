@@ -78,8 +78,8 @@ export async function GET(req: NextRequest) {
       const doc = new jsPDF()
       const pageWidth = doc.internal.pageSize.getWidth()
       
-      // Brand color: Blue (#007aff)
-      const brandColor = [0, 122, 255] as [number, number, number]
+      // Use primary brand color from globals.css: #4F46E5 (rgb: 79, 70, 229)
+      const brandColor = [79, 70, 229] as [number, number, number]
       
       // Header Background
       doc.setFillColor(...brandColor)
