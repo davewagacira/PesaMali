@@ -1,6 +1,6 @@
 // PesaMali service worker: app shell + last-known data so the app still
 // opens and shows your numbers without a connection.
-const VERSION = 'pesamali-v1'
+const VERSION = 'pesamali-v2'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGE_CACHE = `${VERSION}-pages`
 const API_CACHE = `${VERSION}-api`
@@ -27,6 +27,22 @@ self.addEventListener('fetch', (event) => {
 
   // Only handle same-origin GETs; mutations must always hit the network
   if (request.method !== 'GET' || url.origin !== location.origin) return
+
+  // Offline page: network-first so layout fixes reach installed PWAs quickly
+  if (url.pathname === '/offline.html') {
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone()
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy))
+          }
+          return res
+        })
+        .catch(() => caches.match('/offline.html'))
+    )
+    return
+  }
 
   // Build assets and images: cache-first (hashed filenames never change)
   if (url.pathname.startsWith('/_next/static/') || /\.(png|jpg|jpeg|svg|ico|woff2?)$/.test(url.pathname)) {
