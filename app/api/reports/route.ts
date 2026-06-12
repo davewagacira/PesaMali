@@ -95,7 +95,11 @@ export async function GET(req: NextRequest) {
       
       doc.setFontSize(11)
       doc.setFont('helvetica', 'normal')
-      doc.text(`User: ${profile.name} | Month: ${queryMonth}/${queryYear}`, 20, 30)
+      
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+                          "July", "August", "September", "October", "November", "December"]
+      const monthName = monthNames[queryMonth - 1] || queryMonth
+      doc.text(`User: ${profile.name} | Month: ${monthName} ${queryYear}`, 20, 30)
       
       // Add Logo
       try {
