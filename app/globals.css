@@ -1170,9 +1170,9 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   color:var(--text);
 }
 .profile-type-btn.sel{
-  background:rgba(21,94,239,0.15);
-  border-color:rgba(21,94,239,0.6);
-  color:#fff;
+  background:var(--primary-soft);
+  border-color:var(--primary);
+  color:var(--primary);
 }
 .profile-type-icon{font-size:24px;margin-bottom:6px}
 .profile-type-btn b{font-size:13px;font-weight:700;display:block}

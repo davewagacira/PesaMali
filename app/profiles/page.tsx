@@ -44,15 +44,16 @@ interface Profile {
   color: string
   type: string
   monthlyBudget: number
+  savingsGoal: number
 }
 
-function ProfileCard({ profile, onClick, selected }: { profile: Profile; onClick: () => void; selected?: boolean }) {
+function ProfileCard({ profile, onClick, onEdit, selected }: { profile: Profile; onClick: () => void; onEdit?: () => void; selected?: boolean }) {
   const [hovered, setHovered] = useState(false)
 
   return (
     <motion.button
       id={`profile-card-${profile.id}`}
-      className="profile-card"
+      className="profile-card group relative"
       onClick={onClick}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
@@ -85,6 +86,14 @@ function ProfileCard({ profile, onClick, selected }: { profile: Profile; onClick
           </motion.span>
         )}
       </motion.div>
+      {onEdit && (
+        <div
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          className="absolute top-2 right-2 p-1.5 rounded-md text-[var(--muted)] hover:bg-[var(--line)] hover:text-[var(--text)] transition-colors opacity-0 group-hover:opacity-100 z-10 cursor-pointer"
+        >
+          <I n="edit" size={14} />
+        </div>
+      )}
       <AnimatePresence>
         {hovered && (
           <motion.div
@@ -131,14 +140,14 @@ function AddProfileCard({ onClick }: { onClick: () => void }) {
   )
 }
 
-function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCreate: (profile: Profile) => void }) {
-  const [step, setStep] = useState(0) // 0: pick type, 1: customize
-  const [type, setType] = useState('personal')
-  const [name, setName] = useState('')
-  const [avatar, setAvatar] = useState('😊')
-  const [color, setColor] = useState('#155EEF')
-  const [budget, setBudget] = useState('15000')
-  const [savings, setSavings] = useState('2000')
+function CreateProfileModal({ onClose, onCreate, initialData }: { onClose: () => void; onCreate: (profile: Profile) => void; initialData?: Profile }) {
+  const [step, setStep] = useState(initialData ? 1 : 0) // 0: pick type, 1: customize
+  const [type, setType] = useState(initialData?.type || 'personal')
+  const [name, setName] = useState(initialData?.name || '')
+  const [avatar, setAvatar] = useState(initialData?.avatar || 'user')
+  const [color, setColor] = useState(initialData?.color || '#155EEF')
+  const [budget, setBudget] = useState(initialData?.monthlyBudget?.toString() || '15000')
+  const [savings, setSavings] = useState(initialData?.savingsGoal?.toString() || '2000')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -149,13 +158,15 @@ function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCrea
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/profiles', {
-        method: 'POST',
+      const method = initialData ? 'PUT' : 'POST'
+      const url = initialData ? `/api/profiles/${initialData.id}` : '/api/profiles'
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), avatar, color, type, monthlyBudget: parseFloat(budget) || 15000, savingsGoal: parseFloat(savings) || 2000 }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to create profile'); return }
+      if (!res.ok) { setError(data.error || `Failed to ${initialData ? 'update' : 'create'} profile`); return }
       onCreate(data)
     } catch { setError('Network error') }
     finally { setLoading(false) }
@@ -179,7 +190,7 @@ function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCrea
       >
         <div className="profile-modal-head">
           <div>
-            <h2>{step === 0 ? 'Choose profile type' : 'Customize your profile'}</h2>
+            <h2>{step === 0 ? 'Choose profile type' : (initialData ? 'Edit your profile' : 'Customize your profile')}</h2>
             <p>{step === 0 ? 'What kind of money will this profile track?' : 'Make it yours'}</p>
           </div>
           <button className="profile-modal-close" onClick={onClose} aria-label="Close">
@@ -301,7 +312,7 @@ function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCrea
                   disabled={loading}
                   style={{ flex: 1 }}
                 >
-                  {loading ? 'Creating…' : <>Create profile <I n="check" size={16} /></>}
+                  {loading ? (initialData ? 'Saving…' : 'Creating…') : <>{initialData ? 'Save changes' : 'Create profile'} <I n="check" size={16} /></>}
                 </motion.button>
               </div>
             </motion.div>
@@ -317,6 +328,7 @@ export default function ProfilesPage() {
   const [loading, setLoading] = useState(true)
   const [selecting, setSelecting] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [userName, setUserName] = useState('')
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -387,12 +399,12 @@ export default function ProfilesPage() {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="profiles-header">
-          <h1 className="profiles-title">
-            {loading ? 'Loading…' : "Which space are we focusing on?"}
-          </h1>
           {userName && (
-            <p className="profiles-subtitle">Welcome back, <strong>{userName}</strong> 👋</p>
+            <h1 className="profiles-title">Welcome back, {userName} 👋</h1>
           )}
+          <p className="profiles-subtitle">
+            {loading ? 'Loading…' : "Which space are we focusing on?"}
+          </p>
         </div>
 
         {loading ? (
@@ -419,6 +431,7 @@ export default function ProfilesPage() {
                   <ProfileCard
                     profile={profile}
                     onClick={() => handleSelect(profile.id)}
+                    onEdit={() => setEditingProfile(profile)}
                     selected={selecting === profile.id}
                   />
                 </motion.div>
@@ -459,10 +472,19 @@ export default function ProfilesPage() {
       </motion.div>
 
       <AnimatePresence>
-        {showCreate && (
+        {(showCreate || editingProfile) && (
           <CreateProfileModal
-            onClose={() => setShowCreate(false)}
-            onCreate={handleProfileCreated}
+            initialData={editingProfile || undefined}
+            onClose={() => { setShowCreate(false); setEditingProfile(null); }}
+            onCreate={(profile) => {
+              if (editingProfile) {
+                setProfiles(prev => prev.map(p => p.id === profile.id ? profile : p))
+              } else {
+                handleProfileCreated(profile)
+              }
+              setShowCreate(false)
+              setEditingProfile(null)
+            }}
           />
         )}
       </AnimatePresence>
