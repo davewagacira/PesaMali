@@ -74,29 +74,7 @@ function SidebarContent({
         </div>
       </div>
 
-      {/* Active profile pill */}
-      {profileName && (
-        <motion.button
-          className="sidebar-profile-pill"
-          onClick={handleSwitchProfile}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          title="Switch profile"
-          style={{ '--profile-color': profileColor || '#155EEF' } as React.CSSProperties}
-        >
-          <span
-            className="sidebar-profile-avatar"
-            style={{ background: `${profileColor || '#155EEF'}20`, border: `1.5px solid ${profileColor || '#155EEF'}30` }}
-          >
-            {profileAvatar || '😊'}
-          </span>
-          <div className="sidebar-profile-info">
-            <b>{profileName}</b>
-            <small>{PROFILE_TYPE_LABELS[profileType || 'personal'] || profileType}</small>
-          </div>
-          <I n="refreshCw" size={13} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-        </motion.button>
-      )}
+
 
       <nav className="nav">
         {isLoading ? (

@@ -10,10 +10,27 @@ interface HeaderProps {
   userName: string
   userId: string
   onMenuClick?: () => void
+  profileAvatar?: string
+  profileColor?: string
+  profileName?: string
 }
 
-export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
+// Helper to map old emojis from DB to new Lucide icons if they exist
+const mapLegacyAvatar = (avatar: string) => {
+  const map: Record<string, string> = {
+    '🎓': 'book',
+    '💻': 'bot',
+    '💼': 'wallet',
+    '🚀': 'zap',
+    '💎': 'sparkles',
+    '😊': 'user',
+  }
+  return map[avatar] || avatar
+}
+
+export default function Header({ userName, userId, onMenuClick, profileAvatar, profileColor, profileName }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
 
@@ -47,8 +64,61 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
             {userId && <NotificationsBell userId={userId} />}
 
             {userName ? (
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[#7C3AED] flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                {userName[0].toUpperCase()}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 rounded-full hover:bg-[var(--bg)] p-1 pr-3 transition"
+                >
+                  <div 
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-[var(--primary)] shadow-sm border border-[var(--line)]"
+                    style={profileColor ? { background: `${profileColor}15`, borderColor: `${profileColor}30`, color: profileColor } : {}}
+                  >
+                    {profileAvatar ? <I n={mapLegacyAvatar(profileAvatar)} size={16} /> : userName[0].toUpperCase()}
+                  </div>
+                  <div className="hidden md:flex flex-col items-start min-w-[80px]">
+                    <span className="text-xs font-bold leading-tight">{profileName || userName}</span>
+                    <span className="text-[10px] text-[var(--muted)] leading-tight">Switch profile</span>
+                  </div>
+                  <I n="chevronDown" size={14} className="text-[var(--muted)] ml-1" />
+                </button>
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                      <motion.div
+                        className="absolute right-0 top-12 z-50 mt-2 w-48 rounded-xl border border-[var(--line)] bg-[var(--card)] p-1 shadow-[var(--shadow-lg)]"
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <div className="px-3 py-2 border-b border-[var(--line)] mb-1">
+                          <b className="text-sm font-semibold">{profileName || userName}</b>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false)
+                            router.push('/profiles')
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)] hover:text-[var(--text)]"
+                        >
+                          <I n="refreshCw" size={14} />
+                          Switch profile
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false)
+                            setShowLogoutConfirm(true)
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-[var(--red)] transition hover:bg-[var(--red-soft)]"
+                        >
+                          <I n="logout" size={14} />
+                          Sign out
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <div className="h-8 w-8 rounded-full bg-[var(--line)] animate-pulse flex-shrink-0" />

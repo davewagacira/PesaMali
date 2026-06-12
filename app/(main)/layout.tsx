@@ -56,7 +56,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         profileType={profileType}
       />
       <div className="flex flex-col flex-1">
-        <Header userName={userName} userId={userId} onMenuClick={() => setDrawerOpen(true)} />
+        <Header 
+          userName={userName} 
+          userId={userId} 
+          onMenuClick={() => setDrawerOpen(true)} 
+          profileAvatar={profileAvatar}
+          profileColor={profileColor}
+          profileName={profileName}
+        />
         <main className="main flex-1 overflow-auto">
           {children}
         </main>
