@@ -183,7 +183,6 @@ async function runMigration() {
     try {
       await prisma.$executeRawUnsafe(`ALTER TABLE "RecurringExpense" ADD COLUMN IF NOT EXISTS "fixed" BOOLEAN NOT NULL DEFAULT false`)
       await prisma.$executeRawUnsafe(`ALTER TABLE "Expense" ADD COLUMN IF NOT EXISTS "fixed" BOOLEAN`)
-      // Existing rent/internet recurring bills keep their current behaviour
       await prisma.$executeRawUnsafe(`UPDATE "RecurringExpense" SET "fixed" = true WHERE "category" IN ('rent', 'internet') OR "item" ~* '\\yrent\\y'`)
       console.log('  ✅ Fixed-bill columns ready')
     } catch (e) { console.log(`  ⚠️  ${e.message?.split('\n')[0]}`) }
