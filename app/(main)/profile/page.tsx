@@ -266,6 +266,7 @@ export default function ProfilePage() {
                     Disable 2FA
                   </button>
                 )}
+                {mfaError && <p className="mt-2 text-xs text-[var(--red)]">{mfaError}</p>}
               </motion.div>
             )}
 
@@ -286,7 +287,7 @@ export default function ProfilePage() {
                   onClick={() => { setMfaStep('confirming'); setMfaError('') }}
                   className="w-full rounded-lg [background:var(--primary-grad)] py-2 text-sm font-semibold text-white transition active:scale-95"
                 >
-                  I've scanned it — next
+                  I&apos;ve scanned it — next
                 </button>
                 <button onClick={cancelMfa} className="w-full rounded-lg border border-[var(--line)] py-2 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)]">
                   Cancel
