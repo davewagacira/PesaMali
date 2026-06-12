@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import Papa from 'papaparse'
 import { cleanInt } from '@/lib/validate'
 
@@ -76,101 +77,118 @@ export async function GET(req: NextRequest) {
       // PDF format
       const doc = new jsPDF()
       const pageWidth = doc.internal.pageSize.getWidth()
-      const pageHeight = doc.internal.pageSize.getHeight()
-      let yPos = 20
-
-      // Title
-      doc.setFontSize(20)
-      doc.text('PesaMali Monthly Report', 20, yPos)
-      yPos += 15
-
-      // Header info
-      doc.setFontSize(11)
-      doc.text(`Month: ${queryMonth}/${queryYear}`, 20, yPos)
-      yPos += 7
-      doc.text(`User: ${profile.name}`, 20, yPos)
-      yPos += 7
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, yPos)
-      yPos += 15
-
-      // Summary section
-      doc.setFontSize(13)
-      doc.text('Summary', 20, yPos)
-      yPos += 10
-
-      doc.setFontSize(10)
-      const summary = [
-        `Budget: KES ${profile.monthlyBudget.toLocaleString()}`,
-        `Total Spent: KES ${totalSpent.toLocaleString()}`,
-        `Remaining: KES ${(profile.monthlyBudget - totalSpent).toLocaleString()}`,
-        `Savings Goal: KES ${profile.savingsGoal.toLocaleString()}`,
-        `Status: ${totalSpent <= profile.monthlyBudget ? '✓ On Track' : '✗ Over Budget'}`,
-      ]
-
-      for (const line of summary) {
-        if (yPos > pageHeight - 40) {
-          doc.addPage()
-          yPos = 20
-        }
-        doc.text(line, 20, yPos)
-        yPos += 7
-      }
-
-      yPos += 10
-
-      // Category breakdown
-      doc.setFontSize(13)
-      doc.text('Spending by Category', 20, yPos)
-      yPos += 10
-
-      doc.setFontSize(10)
-      for (const [cat, amt] of Object.entries(categoryExpenses)) {
-        if (yPos > pageHeight - 40) {
-          doc.addPage()
-          yPos = 20
-        }
-        const pct = ((amt / totalSpent) * 100).toFixed(1)
-        doc.text(`${cat}: KES ${amt.toLocaleString()} (${pct}%)`, 20, yPos)
-        yPos += 7
-      }
-
-      yPos += 10
-
-      // Expenses table
-      doc.setFontSize(13)
-      doc.text('All Expenses', 20, yPos)
-      yPos += 10
-
-      doc.setFontSize(9)
-      const colWidth = [30, 40, 55, 30]
-      const headers = ['Date', 'Category', 'Item', 'Amount']
-
-      // Draw headers
+      
+      // Brand color: Blue (#007aff)
+      const brandColor = [0, 122, 255] as [number, number, number]
+      
+      // Header Background
+      doc.setFillColor(...brandColor)
+      doc.rect(0, 0, pageWidth, 40, 'F')
+      
+      // Header Text
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(24)
       doc.setFont('helvetica', 'bold')
-      let xPos = 20
-      for (let i = 0; i < headers.length; i++) {
-        doc.text(headers[i], xPos, yPos)
-        xPos += colWidth[i]
-      }
+      doc.text('PesaMali Report', 20, 20)
+      
+      doc.setFontSize(11)
       doc.setFont('helvetica', 'normal')
-      yPos += 7
+      doc.text(`User: ${profile.name} | Month: ${queryMonth}/${queryYear}`, 20, 30)
+      
+      // Reset text color
+      doc.setTextColor(40, 40, 40)
+      let yPos = 50
 
-      // Draw rows
-      for (const expense of expenses) {
-        if (yPos > pageHeight - 20) {
-          doc.addPage()
-          yPos = 20
-        }
+      // Summary
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Summary', 20, yPos)
+      yPos += 8
+      
+      const onTrack = totalSpent <= profile.monthlyBudget
+      
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Metric', 'Amount (KES)']],
+        body: [
+          ['Monthly Budget', profile.monthlyBudget.toLocaleString()],
+          ['Total Spent', totalSpent.toLocaleString()],
+          ['Remaining', (profile.monthlyBudget - totalSpent).toLocaleString()],
+          ['Savings Goal', profile.savingsGoal.toLocaleString()],
+          ['Status', onTrack ? 'On Track' : 'Over Budget'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: brandColor, textColor: 255 },
+        styles: { fontSize: 11, cellPadding: 5 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } },
+        margin: { left: 20, right: 20 },
+      })
+      
+      yPos = (doc as any).lastAutoTable.finalY + 15
+      
+      // Categories Table
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Spending by Category', 20, yPos)
+      yPos += 8
+      
+      const catData = Object.entries(categoryExpenses)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cat, amt]) => {
+          const pct = ((amt / totalSpent) * 100).toFixed(1)
+          return [cat, amt.toLocaleString(), `${pct}%`]
+        })
 
-        xPos = 20
-        doc.text(expense.date, xPos, yPos)
-        xPos += colWidth[0]
-        doc.text(expense.category, xPos, yPos)
-        xPos += colWidth[1]
-        doc.text(expense.item.slice(0, 15), xPos, yPos)
-        xPos += colWidth[2]
-        doc.text(`KES ${expense.amount}`, xPos, yPos)
-        yPos += 6
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Category', 'Amount (KES)', '% of Total']],
+        body: catData.length > 0 ? catData : [['No expenses', '-', '-']],
+        theme: 'grid',
+        headStyles: { fillColor: [100, 100, 100], textColor: 255 },
+        styles: { fontSize: 10, cellPadding: 4 },
+        columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+        margin: { left: 20, right: 20 },
+      })
+
+      yPos = (doc as any).lastAutoTable.finalY + 15
+
+      // Expenses Table
+      doc.setFontSize(16)
+      doc.setFont('helvetica', 'bold')
+      doc.text('All Expenses', 20, yPos)
+      yPos += 8
+      
+      const expData = expenses.map(e => [
+        e.date, 
+        e.category, 
+        e.item, 
+        e.amount.toLocaleString()
+      ])
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Date', 'Category', 'Item', 'Amount (KES)']],
+        body: expData.length > 0 ? expData : [['-', '-', 'No expenses recorded', '-']],
+        theme: 'striped',
+        headStyles: { fillColor: brandColor, textColor: 255 },
+        styles: { fontSize: 9, cellPadding: 4 },
+        columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
+        margin: { left: 20, right: 20 },
+      })
+      
+      // Footer
+      const pageCount = (doc as any).internal.getNumberOfPages()
+      doc.setFontSize(8)
+      doc.setTextColor(150, 150, 150)
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i)
+        doc.text(
+          `Generated by PesaMali on ${new Date().toLocaleDateString()}  •  Page ${i} of ${pageCount}`,
+          pageWidth / 2,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: 'center' }
+        )
       }
 
       const pdf = doc.output('arraybuffer')

@@ -21,6 +21,7 @@
     "framer-motion": "^11.3.8",
     "iron-session": "^8.0.3",
     "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "next": "14.2.5",
     "otplib": "^13.4.1",
     "papaparse": "^5.5.3",
