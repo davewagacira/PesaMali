@@ -293,7 +293,7 @@ export default function DashboardPage() {
           </div>
           {m.fixedSpent > 0 && (
             <div className="dash-meter-foot">
-              <span>Fixed bills paid (rent, internet)</span>
+              <span>Recurring bills paid</span>
               <span>{moneyText(m.fixedSpent)}</span>
             </div>
           )}
