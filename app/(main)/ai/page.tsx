@@ -50,59 +50,6 @@ const SPACED_PINNED_CONVERSATIONS_KEY = 'pesa-mali:pinned-ai-conversations'
 const PREVIOUS_PINNED_CONVERSATIONS_KEY = ['pes', 'arly:pinned-ai-conversations'].join('')
 const LEGACY_PINNED_CONVERSATIONS_KEY = ['aki', 'ba:pinned-ai-conversations'].join('')
 
-const GEMINI_LOGO_URL =
-  'https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_logo_2025.svg.png'
-
-function PoweredByGemini({ size = 'sm' }: { size?: 'sm' | 'md' }) {
-  const logoClass = size === 'md' ? 'h-[18px]' : 'h-3.5'
-  const textClass = size === 'md' ? 'text-[11px]' : 'text-[10px]'
-
-  return (
-    <div className={`inline-flex items-center gap-1.5 ${textClass} font-medium text-[var(--muted)]`}>
-      <span>Powered by</span>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={GEMINI_LOGO_URL} alt="" className={`${logoClass} w-auto object-contain`} aria-hidden />
-    </div>
-  )
-}
-
-function greetingFor(name: string): string {
-  const first = name.trim().split(/\s+/)[0]
-  return first ? `Hello ${first}.` : 'Hello.'
-}
-
-function buildWelcomeMessage({
-  name,
-  spent,
-  remaining,
-  category,
-  fresh = false,
-}: {
-  name: string
-  spent: number
-  remaining: number
-  category?: string
-  fresh?: boolean
-}): string {
-  const hello = greetingFor(name)
-
-  const categoryBit = category
-    ? ` Most of your flexible spending has been going to **${category}**.`
-    : ''
-
-  if (fresh) {
-    return (
-      `${hello} I've pulled up your numbers again. You've spent **${fmt(spent)}** this month and you've got **${fmt(remaining)}** left.${categoryBit}\n\n` +
-      `What's on your mind? We can talk through your week, where you might want to pull back, or whether you're on track. Just type away, or tap a suggestion if you'd rather start there.`
-    )
-  }
-
-  return (
-    `${hello} I've been looking at how your month is going. You've spent **${fmt(spent)}** so far and you still have **${fmt(remaining)}** to work with.${categoryBit}\n\n` +
-    `If you'd like, we can walk through how your week went, where you might ease off, or whether you're on track for the rest of the month. Ask me anything, or tap a suggestion below.`
-  )
-}
-
 function render(t: string) {
   return t.split(/(\*\*[^*]+\*\*)/g).map((s, i) =>
     s.startsWith('**') ? <b key={i}>{s.slice(2, -2)}</b> : s
@@ -207,11 +154,11 @@ function MessageRow({ msg }: { msg: Message }) {
       <div
         className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-xs font-semibold ${
           msg.who === 'ai'
-            ? 'bg-transparent text-[var(--primary)]'
+            ? '[background:var(--primary-grad)] text-white'
             : 'border border-[var(--line)] bg-[var(--card-2)] text-[var(--muted)]'
         }`}
       >
-        {msg.who === 'ai' ? <I n="bot" size={24} /> : 'D'}
+        {msg.who === 'ai' ? <I n="sparkles" size={15} /> : 'D'}
       </div>
       <div
         className={`whitespace-pre-wrap rounded-2xl px-[17px] py-[13px] text-[13.5px] leading-[1.75] ${
@@ -235,7 +182,7 @@ export default function AIPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
   const [budget, setBudget] = useState(15000)
   const [goal, setGoal] = useState(2000)
-  const [userName, setUserName] = useState('')
+  const [userName, setUserName] = useState('there')
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [memoryEnabled, setMemoryEnabled] = useState(true)
@@ -335,15 +282,11 @@ export default function AIPage() {
   useEffect(() => {
     if (isLoading || initializedWelcome.current) return
     initializedWelcome.current = true
+    const category = topCategory?.name || 'your flexible spending'
     setMsgs([
       {
         who: 'ai',
-        text: buildWelcomeMessage({
-          name: userName,
-          spent: metrics.spent,
-          remaining: metrics.remaining,
-          category: topCategory?.name,
-        }),
+        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining, biggest category **${category}**. Ask me anything, or tap a suggestion below.`,
       },
     ])
   }, [isLoading, metrics.remaining, metrics.spent, topCategory?.name, userName])
@@ -365,18 +308,9 @@ export default function AIPage() {
     setMsgs([
       {
         who: 'ai',
-        text: buildWelcomeMessage({
-          name: userName,
-          spent: metrics.spent,
-          remaining: metrics.remaining,
-          category: topCategory?.name,
-          fresh: true,
-        }),
+        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
       },
     ])
-    requestAnimationFrame(() => {
-      if (logRef.current) logRef.current.scrollTop = 0
-    })
   }
 
   const loadConversation = async (convId: string) => {
@@ -528,7 +462,7 @@ export default function AIPage() {
       tone: 'bg-[var(--primary-soft)] text-[var(--primary)]',
       text: topCategory
         ? `${topCategory.name} is your biggest flexible category - ${fmt(topCategory.amt)} (${Math.round((topCategory.amt / Math.max(metrics.flexibleSpent, 1)) * 100)}% of flexible spending).`
-        : 'Start logging expenses and AI Coach will identify your biggest spending category.',
+        : 'Start logging expenses and PesaMali AI will identify your biggest spending category.',
       ask: 'Where am I overspending and what should I stop?',
     },
     {
@@ -577,34 +511,63 @@ export default function AIPage() {
         <PageHeroCard
           icon="sparkles"
           badge="AI insights"
-          title="AI Coach"
+          title="PesaMali AI"
           subtitle="Personal financial intelligence built from your real spending behavior."
-          subtitleExtra={<PoweredByGemini size="md" />}
         >
-          <div className="flex flex-col items-end gap-3">
-            <button
-              onClick={toggleMemory}
-              className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
-            >
-              <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
-              Memory {memoryEnabled ? 'on' : 'off'}
-            </button>
-          </div>
+          <button
+            onClick={toggleMemory}
+            className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+          >
+            <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
+            Memory {memoryEnabled ? 'on' : 'off'}
+          </button>
         </PageHeroCard>
+
+        <motion.div
+          className="mb-[26px] flex items-center gap-[26px] max-[1180px]:flex-col max-[1180px]:items-start max-[1180px]:gap-[18px]"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
+        >
+          <Orb thinking={busy} />
+          <div>
+            <h1 className="text-[30px] font-extrabold leading-[1.2] tracking-normal max-[1180px]:text-2xl">
+              Your money,{' '}
+              <span className="bg-gradient-to-r from-[var(--primary)] via-[#7C3AED] to-[#06B6D4] bg-clip-text text-transparent">
+                understood.
+              </span>
+            </h1>
+            <p className="mt-1.5 max-w-xl text-[13.5px] leading-[1.7] text-[var(--muted)]">
+              PesaMali AI reads your live spending data, every shilling, every category, every day, and
+              answers like a coach who actually knows you. Ask anything about your month.
+            </p>
+          </div>
+        </motion.div>
+
+        <div className="mb-6 grid grid-cols-4 gap-3.5 max-[1180px]:grid-cols-2 max-[560px]:grid-cols-1">
+          <InsightCard icon="target" tone="p" label="Safe to spend today" value={fmt(metrics.safe)} delay={0} />
+          <InsightCard icon="wallet" tone="p" label="Remaining" value={fmt(metrics.remaining)} delay={0.07} />
+          <InsightCard
+            icon="trendUp"
+            tone="p"
+            label="Pace"
+            value={`${Math.round(metrics.spendPace * 100)}% / ${Math.round(metrics.monthPace * 100)}%`}
+            delay={0.14}
+          />
+          <InsightCard icon={status.icon} tone={status.tone} label="Status" value={status.label} delay={0.21} />
+        </div>
 
         <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
-            className="flex h-[min(720px,calc(100dvh-280px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[min(560px,calc(100dvh-220px))] max-[1180px]:min-h-[420px]"
+            className="flex h-[calc(100vh-280px)] min-h-[600px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[calc(100vh-320px)] max-[1180px]:min-h-0"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
           >
-            <div className="flex shrink-0 items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
-              <div className="grid h-6 w-6 shrink-0 place-items-center text-[var(--primary)]">
-                <I n="bot" size={20} />
-              </div>
+            <div className="flex items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
+              <Orb small />
               <div>
-                <b className="text-sm font-bold">Rufus AI</b>
+                <b className="text-sm font-bold">PesaMali AI</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
                   {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}
@@ -612,25 +575,25 @@ export default function AIPage() {
               </div>
               <button
                 onClick={startNewChat}
-                className="ml-auto flex shrink-0 items-center gap-1.5 self-start text-xs text-[var(--faint)] transition hover:text-[var(--red)]"
+                className="ml-auto flex items-center gap-1.5 text-xs text-[var(--faint)] transition hover:text-[var(--red)]"
               >
                 <I n="plusCircle" size={13} />
                 New chat
               </button>
             </div>
 
-            <div ref={logRef} className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-[22px] scroll-smooth">
-              <AnimatePresence initial={false} mode="popLayout">
+            <div ref={logRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-[22px] scroll-smooth">
+              <AnimatePresence initial={false}>
                 {displayedMessages.map((item, i) => {
                   if ('isCompressed' in item && item.isCompressed) {
                     return (
                       <motion.button
-                        key="compressed-summary"
+                        key={`compressed-${i}`}
                         onClick={() => setExpandedCompressed(!expandedCompressed)}
                         className="my-1 rounded-xl border border-[var(--line)] bg-[var(--card-2)] px-4 py-3 text-left text-xs leading-6 text-[var(--muted)] transition hover:bg-[var(--primary-soft)]"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
+                        initial={{ opacity: 0, height: 0, y: 20 }}
+                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                        exit={{ opacity: 0, height: 0 }}
                       >
                         <span className="mb-1 flex items-center gap-2 font-semibold">
                           <I n="book" size={14} />
@@ -641,8 +604,7 @@ export default function AIPage() {
                       </motion.button>
                     )
                   }
-                  const msg = item as Message
-                  return <MessageRow key={`${msg.who}-${i}-${msg.text.slice(0, 24)}`} msg={msg} />
+                  return <MessageRow key={i} msg={item as Message} />
                 })}
 
                   {busy && !streamingReply && (
@@ -652,8 +614,8 @@ export default function AIPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-transparent text-[var(--primary)]">
-                      <I n="bot" size={24} />
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] [background:var(--primary-grad)] text-white">
+                      <I n="sparkles" size={15} />
                     </div>
                     <div className="rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px]">
                       <TypingDots />
@@ -668,8 +630,8 @@ export default function AIPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-transparent text-[var(--primary)]">
-                      <I n="bot" size={24} />
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] [background:var(--primary-grad)] text-white">
+                      <I n="sparkles" size={15} />
                     </div>
                     <div className="whitespace-pre-wrap rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px] text-[13.5px] leading-[1.75] [&_b]:font-semibold [&_b]:text-[var(--primary)]">
                       {render(streamingReply)}
