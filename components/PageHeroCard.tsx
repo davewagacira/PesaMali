@@ -9,6 +9,7 @@ interface PageHeroCardProps {
   title: string
   subtitle: string
   children?: React.ReactNode
+  subtitleExtra?: React.ReactNode
   /** 'gradient' (default) matches the primary-soft hero look; 'card' matches the sidebar surface */
   surface?: 'gradient' | 'card'
 }
@@ -19,6 +20,7 @@ export function PageHeroCard({
   title,
   subtitle,
   children,
+  subtitleExtra,
 }: PageHeroCardProps) {
   return (
     <motion.div
@@ -37,6 +39,7 @@ export function PageHeroCard({
           )}
           <h1>{title}</h1>
           <p>{subtitle}</p>
+          {subtitleExtra && <div className="page-hero-pro-extra">{subtitleExtra}</div>}
         </div>
         {children && <div className="page-hero-pro-actions">{children}</div>}
       </div>

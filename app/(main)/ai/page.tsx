@@ -579,6 +579,7 @@ export default function AIPage() {
           badge="AI insights"
           title="PesaMali AI"
           subtitle="Personal financial intelligence built from your real spending behavior."
+          subtitleExtra={<PoweredByGemini size="md" />}
         >
           <div className="flex flex-col items-end gap-3">
             <button
@@ -588,7 +589,6 @@ export default function AIPage() {
               <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
               Memory {memoryEnabled ? 'on' : 'off'}
             </button>
-            <PoweredByGemini size="md" />
           </div>
         </PageHeroCard>
 
@@ -640,9 +640,6 @@ export default function AIPage() {
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
                   {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}
-                </div>
-                <div className="mt-1.5">
-                  <PoweredByGemini />
                 </div>
               </div>
               <button

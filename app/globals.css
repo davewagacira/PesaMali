@@ -839,6 +839,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
 .page-hero-pro h1{font-size:30px;line-height:1.08;font-weight:850;letter-spacing:0;color:var(--text)}
 .page-hero-pro p{margin-top:7px;color:var(--muted);font-size:14px;line-height:1.55}
 .page-hero-pro-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.page-hero-pro-extra{margin-top:9px}
 
 @media (max-width:1020px){
   .lp-hero{grid-template-columns:1fr!important;gap:0!important;padding:64px 24px 54px!important}
