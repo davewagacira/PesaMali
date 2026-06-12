@@ -154,7 +154,9 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       cum.push({ day: d, spent: run, ideal: (flexibleBudget * d) / daysInMonth })
     }
 
-    const daysWithSpend = new Set(expenses.map((e) => e.date)).size || 1
+    const daysWithSpend = new Set(
+      expenses.filter((e) => !isFixedExpense(e.cat, e.item)).map((e) => e.date)
+    ).size || 1
     // Fixed bills are one-off, so only flexible spend is extrapolated to month end.
     const projected = fixedSpent + (flexibleSpent / dayOfMonth) * daysInMonth
     const recentTx = [...expenses]

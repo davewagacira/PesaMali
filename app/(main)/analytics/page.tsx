@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
       <motion.div className="grid cols-3" style={{ marginBottom: 16 }} variants={listContainer}>
         <motion.div className="card" variants={listItem}>
           <h3><I n="coins" size={14} />Daily average</h3>
-          <div className="kpi">{fmt(m.spent / m.daysWithSpend)}</div>
+          <div className="kpi">{fmt(m.flexibleSpent / m.daysWithSpend)}</div>
           <div className="delta">across days with spending</div>
         </motion.div>
         <motion.div className="card" variants={listItem}>
@@ -90,8 +90,8 @@ export default function AnalyticsPage() {
         </motion.div>
         <motion.div className="card" variants={listItem}>
           <h3><I n="chart" size={14} />Spending by category</h3>
-          {m.byCat.length ? (
-            <Donut byCat={m.byCat} total={m.spent} />
+          {m.byFlexCat.length ? (
+            <Donut byCat={m.byFlexCat} total={m.flexibleSpent} />
           ) : (
             <p className="chart-note">No data yet.</p>
           )}
@@ -99,16 +99,16 @@ export default function AnalyticsPage() {
       </motion.div>
       <motion.div className="card" variants={listItem}>
         <h3><I n="receipt" size={14} />Category breakdown</h3>
-        {m.byCat.map((c) => (
+        {m.byFlexCat.map((c) => (
           <div className="cat-row" key={c.id}>
             <div className="t">
               <b><I n={c.icon} size={14} style={{ color: c.color }} />{c.name}</b>
-              <span>{fmt(c.amt)} · {Math.round((c.amt / m.spent) * 100)}%</span>
+              <span>{fmt(c.amt)} · {Math.round((c.amt / m.flexibleSpent) * 100)}%</span>
             </div>
             <div className="bar">
               <motion.span
                 className="fill"
-                style={{ background: c.color, width: (c.amt / m.spent) * 100 + '%', transformOrigin: 'left' }}
+                style={{ background: c.color, width: (c.amt / m.flexibleSpent) * 100 + '%', transformOrigin: 'left' }}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ duration: 0.55, ease: 'easeOut' }}
