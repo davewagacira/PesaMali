@@ -3,19 +3,58 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
-import { CATS, catOf, fmt, fmtN, iso, MetricExpense } from '@/lib/metrics'
+import { CATS, catOf, fmt, iso, MetricExpense } from '@/lib/metrics'
 import { SuccessModal } from '@/components/SuccessModal'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { DatePicker } from '@/components/DatePicker'
 import { LogSkeleton } from '@/components/LogSkeleton'
 import { listContainer, listItem } from '@/lib/motion'
 
-function TxRow({ e, onDelete }: { e: MetricExpense; onDelete?: (id: string) => void }) {
+function TxRow({
+  e,
+  onDelete,
+  onRename,
+}: {
+  e: MetricExpense
+  onDelete?: (id: string) => void
+  onRename?: (id: string, item: string) => Promise<boolean>
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(e.item)
+  const [saving, setSaving] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const c = catOf(e.cat)
   const dt = new Date(e.date + 'T00:00:00').toLocaleDateString('en-KE', {
     day: 'numeric',
     month: 'short',
   })
+
+  useEffect(() => {
+    if (!editing) setDraft(e.item)
+  }, [e.item, editing])
+
+  const cancel = () => {
+    setDraft(e.item)
+    setEditing(false)
+  }
+
+  const startEdit = () => {
+    setMenuOpen(false)
+    setEditing(true)
+  }
+
+  const save = async () => {
+    const next = draft.trim()
+    if (!next || next === e.item || !onRename) {
+      cancel()
+      return
+    }
+    setSaving(true)
+    const ok = await onRename(e.id, next)
+    setSaving(false)
+    if (ok) setEditing(false)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -29,7 +68,21 @@ function TxRow({ e, onDelete }: { e: MetricExpense; onDelete?: (id: string) => v
             <I n={c.icon} size={17} />
           </div>
           <div>
-            <b>{e.item}</b>
+            {editing ? (
+              <input
+                className="tx-edit-input"
+                value={draft}
+                autoFocus
+                disabled={saving}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') save()
+                  if (event.key === 'Escape') cancel()
+                }}
+              />
+            ) : (
+              <b>{e.item}</b>
+            )}
             <span>
               {c.name} · {dt}
             </span>
@@ -37,12 +90,78 @@ function TxRow({ e, onDelete }: { e: MetricExpense; onDelete?: (id: string) => v
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span className="amt">− {fmt(e.amt)}</span>
-          {onDelete && (
+          {onRename && (
+            editing ? (
+              <>
+                <button
+                  className="tx-action"
+                  onClick={save}
+                  disabled={saving}
+                  aria-label="Save expense name"
+                  title="Save"
+                >
+                  <I n="check" size={14} />
+                </button>
+                <button
+                  className="tx-action"
+                  onClick={cancel}
+                  disabled={saving}
+                  aria-label="Cancel editing"
+                  title="Cancel"
+                >
+                  <I n="x" size={14} />
+                </button>
+              </>
+            ) : (
+              <div className="tx-menu-wrap">
+                <button
+                  className="tx-action"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  aria-label={`Actions for ${e.item}`}
+                  aria-expanded={menuOpen}
+                  title="Actions"
+                >
+                  <I n="moreVertical" size={16} />
+                </button>
+                <AnimatePresence>
+                  {menuOpen && (
+                    <motion.div
+                      className="tx-menu"
+                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                      transition={{ duration: 0.14 }}
+                    >
+                      <button onClick={startEdit}>
+                        <I n="edit" size={14} />
+                        Edit
+                      </button>
+                      {onDelete && (
+                        <button
+                          className="danger"
+                          onClick={() => {
+                            setMenuOpen(false)
+                            onDelete(e.id)
+                          }}
+                        >
+                          <I n="trash" size={14} />
+                          Delete
+                        </button>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )
+          )}
+          {onDelete && !onRename && (
             <button
+              className="tx-action"
               onClick={() => onDelete(e.id)}
-              style={{ color: 'var(--faint)', fontSize: 11, padding: '2px 6px' }}
+              aria-label={`Delete ${e.item}`}
+              title="Delete"
             >
-              ×
+              <I n="x" size={14} />
             </button>
           )}
         </div>
@@ -63,6 +182,7 @@ export default function LogPage() {
   const [modalVariant, setModalVariant] = useState<'success' | 'warning'>('success')
   const [confirmDelete, setConfirmDelete] = useState<MetricExpense | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAdding, setIsAdding] = useState(false)
 
   const ping = (msg: string) => {
     setToast(msg)
@@ -90,9 +210,11 @@ export default function LogPage() {
   }, [])
 
   const add = async () => {
+    if (isAdding) return
     const a = parseFloat(amt)
     if (!item.trim()) return ping('Add a name for the expense')
     if (!a || a <= 0) return ping('Enter a valid amount')
+    setIsAdding(true)
     try {
       const res = await fetch('/api/expenses', {
         method: 'POST',
@@ -129,6 +251,8 @@ export default function LogPage() {
       }
     } catch {
       ping('Failed to save expense')
+    } finally {
+      setIsAdding(false)
     }
   }
 
@@ -145,12 +269,31 @@ export default function LogPage() {
     }
   }
 
-  const quicks: [string, number, string][] = [
-    ['Matatu fare', 80, 'transport'],
-    ['Tomatoes', 50, 'food'],
-    ['Airtime', 100, 'airtime'],
-    ['WiFi', 4000, 'internet'],
-  ]
+  const renameExpense = async (id: string, nextItem: string) => {
+    if (!nextItem.trim()) {
+      ping('Expense name cannot be empty')
+      return false
+    }
+    try {
+      const res = await fetch(`/api/expenses/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item: nextItem.trim() }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setExpenses((ex) => ex.map((e) => (e.id === id ? { ...e, item: data.item } : e)))
+        setSuccessMessage('Expense name updated successfully.')
+        setModalVariant('success')
+        setShowSuccessModal(true)
+        return true
+      }
+      ping(data.error || 'Failed to update expense')
+    } catch {
+      ping('Failed to update expense')
+    }
+    return false
+  }
 
   const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
 
@@ -170,21 +313,6 @@ export default function LogPage() {
             <I n="plusCircle" size={14} />
             New expense
           </h3>
-          <div className="quick">
-            {quicks.map((q) => (
-              <button
-                key={q[0]}
-                onClick={() => {
-                  setItem(q[0])
-                  setAmt(String(q[1]))
-                  setCat(q[2])
-                }}
-              >
-                <I n="zap" size={12} />
-                {q[0]} · {q[1]}
-              </button>
-            ))}
-          </div>
           <div className="cat-pick">
             {CATS.map((c) => (
               <motion.button
@@ -199,11 +327,11 @@ export default function LogPage() {
             ))}
           </div>
           <div className="field">
-            <label>What did you buy?</label>
+            <label>Expense name</label>
             <input
               value={item}
               onChange={(e) => setItem(e.target.value)}
-              placeholder="e.g. Tomatoes, Matatu fare, WiFi"
+              placeholder="e.g. Fare, KPLC prepaid, lunch"
             />
           </div>
           <div className="field">
@@ -214,16 +342,16 @@ export default function LogPage() {
               type="number"
               min="1"
               placeholder="e.g. 50"
-              onKeyDown={(e) => e.key === 'Enter' && add()}
+              onKeyDown={(e) => e.key === 'Enter' && !isAdding && add()}
             />
           </div>
           <div className="field">
             <label>Date</label>
             <DatePicker value={date} onChange={setDate} />
           </div>
-          <motion.button className="btn btn-primary" whileTap={{ scale: 0.97 }} onClick={add}>
+          <motion.button className="btn btn-primary" whileTap={{ scale: 0.97 }} onClick={add} disabled={isAdding}>
             <I n="plusCircle" size={16} />
-            Add expense
+            {isAdding ? 'Adding...' : 'Add expense'}
           </motion.button>
         </motion.div>
         <motion.div className="card" variants={listItem}>
@@ -245,7 +373,12 @@ export default function LogPage() {
           <div className="scroll">
             <AnimatePresence initial={false}>
               {sorted.map((e) => (
-                <TxRow key={e.id} e={e} onDelete={() => setConfirmDelete(e)} />
+                <TxRow
+                  key={e.id}
+                  e={e}
+                  onRename={renameExpense}
+                  onDelete={() => setConfirmDelete(e)}
+                />
               ))}
             </AnimatePresence>
             {!sorted.length && (

@@ -69,7 +69,7 @@ export default function Header({ userName, userId, onMenuClick }: HeaderProps) {
               transition={{ duration: 0.2 }}
             >
               <h2 className="text-lg font-bold text-[var(--text)] mb-2">Sign out?</h2>
-              <p className="text-sm text-[var(--muted)] mb-6">Are you sure you want to sign out from Akiba?</p>
+              <p className="text-sm text-[var(--muted)] mb-6">Are you sure you want to sign out from PesaMali?</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}

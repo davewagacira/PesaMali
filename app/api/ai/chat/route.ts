@@ -160,7 +160,7 @@ function buildContext(
   }
 }
 
-const OFF_TOPIC_REPLY = "I'm sorry, I can't help with that. I'm Akiba AI — I only discuss your personal finances. Ask me about your spending, budget, savings goal, or expense habits."
+const OFF_TOPIC_REPLY = "I'm sorry, I can't help with that. I'm PesaMali AI — I only discuss your personal finances. Ask me about your spending, budget, savings goal, or expense habits."
 
 // ── Topic guard ────────────────────────────────────────────────────────────────
 // Returns true when the question is clearly unrelated to personal finance.
@@ -320,11 +320,11 @@ export async function POST(req: NextRequest) {
     let conversationHistory = ''
     if (conversation && memoryEnabled) {
       conversationHistory = conversation.messages
-        .map((m: any) => `${m.role === 'user' ? 'User' : 'Akiba'}: ${m.content}`)
+        .map((m: any) => `${m.role === 'user' ? 'User' : 'PesaMali'}: ${m.content}`)
         .join('\n')
     }
 
-    const systemPrompt = `You are Akiba, a personal-finance coach inside the Akiba app. You're casual, direct, and helpful — more like a friend than a robot. Currency is KES.
+    const systemPrompt = `You are PesaMali, a personal-finance coach inside the PesaMali app. You're casual, direct, and helpful — more like a friend than a robot. Currency is KES.
 
 SCOPE RULE: Only discuss personal finances (spending, budget, savings, categories, habits). If asked anything else (health, politics, relationships, general knowledge, coding, entertainment) reply: "I can't help with that — I only discuss personal finances."
 

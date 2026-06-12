@@ -16,7 +16,12 @@ export const CATS = [
 
 export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-export const iso = (dt: Date) => dt.toISOString().slice(0, 10)
+export const iso = (dt: Date) => {
+  const y = dt.getFullYear()
+  const m = String(dt.getMonth() + 1).padStart(2, '0')
+  const d = String(dt.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
 export const fmtN = (n: number) => Math.round(n).toLocaleString('en-KE')
 export const fmt = (n: number) => 'KES ' + fmtN(n)
 export const catOf = (id: string) => CATS.find((c) => c.id === id) || CATS[CATS.length - 1]
@@ -49,16 +54,16 @@ export interface Metrics {
   recentTx: MetricExpense[]
 }
 
-export function useMetrics(expenses: MetricExpense[], budget: number, goal: number): Metrics {
+export function useMetrics(expenses: MetricExpense[], budget: number, goal: number, now: Date = new Date()): Metrics {
+  const todayKey = iso(now)
   return useMemo(() => {
-    const now = new Date()
     const Y = now.getFullYear()
     const Mn = now.getMonth()
     const daysInMonth = new Date(Y, Mn + 1, 0).getDate()
     const dayOfMonth = now.getDate()
     const dKey = (day: number) => iso(new Date(Y, Mn, Math.min(day, dayOfMonth)))
 
-    const today = iso(new Date())
+    const today = todayKey
     const spent = expenses.reduce((s, e) => s + e.amt, 0)
     const remaining = budget - spent
     const daysLeft = daysInMonth - dayOfMonth + 1
@@ -75,8 +80,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
 
     const last7: { label: string; amt: number; today: boolean }[] = []
     for (let i = 6; i >= 0; i--) {
-      const dt = new Date()
-      dt.setDate(dt.getDate() - i)
+      const dt = new Date(Y, Mn, dayOfMonth - i)
       const k = iso(dt)
       last7.push({
         label: DOW[dt.getDay()],
@@ -103,7 +107,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
 
     const byDow = DOW.map((l) => ({ label: l, amt: 0 }))
     expenses.forEach((e) => {
-      byDow[new Date(e.date).getDay()].amt += e.amt
+      byDow[new Date(e.date + 'T00:00:00').getDay()].amt += e.amt
     })
     const dowOrdered = [...byDow.slice(1), byDow[0]]
 
@@ -139,5 +143,5 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       projected,
       recentTx,
     }
-  }, [expenses, budget, goal])
+  }, [expenses, budget, goal, todayKey])
 }

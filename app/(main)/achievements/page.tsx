@@ -57,7 +57,7 @@ export default function AchievementsPage() {
     { icon: 'piggy', t: 'Saver in the making', p: 'Keep your remaining balance above your savings goal.', ok: m.remaining >= goal },
     { icon: 'coins', t: 'Cheap day champion', p: 'Have a day where you spend under KES 100.', ok: cheapDay },
     { icon: 'flag', t: 'Month finisher', p: 'End a month with money left over.', ok: false },
-    { icon: 'crown', t: 'Akiba master', p: 'Finish 3 months in a row under budget.', ok: false },
+    { icon: 'crown', t: 'PesaMali master', p: 'Finish 3 months in a row under budget.', ok: false },
   ]
   const n = achs.filter((a) => a.ok).length
 

@@ -14,7 +14,7 @@ const FEATURES = [
 
 const STEPS = [
   { n: '01', icon: 'plusCircle', title: 'Log your spending', desc: 'Add expenses in a tap. Quick categories make it effortless to stay on top of every shilling.' },
-  { n: '02', icon: 'barChart', title: 'See the insight', desc: 'Akiba instantly turns your transactions into safe-to-spend numbers and live analytics.' },
+  { n: '02', icon: 'barChart', title: 'See the insight', desc: 'PesaMali instantly turns your transactions into safe-to-spend numbers and live analytics.' },
   { n: '03', icon: 'sprout', title: 'Build better habits', desc: 'Stay on pace with streaks, nudges, and an AI coach that keeps you moving forward.' },
 ]
 
@@ -35,14 +35,14 @@ export default function Landing() {
         <div className="lp-nav-inner">
           <button className="lp-brand" onClick={scrollTop} aria-label="Back to top">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Akiba" />
+            <img src="/logo.png" alt="PesaMali" />
             <span className="lp-brand-copy">
-              <b>Akiba</b>
+              <b>PesaMali</b>
               <small>Smart money moves.</small>
             </span>
           </button>
           <nav className="lp-nav-links">
-            <a href="#features" onClick={scrollTo('features')}>Why Akiba</a>
+            <a href="#features" onClick={scrollTo('features')}>Why PesaMali</a>
             <a href="#how" onClick={scrollTo('how')}>How it works</a>
             <a href="#get-started" onClick={scrollTo('get-started')}>Get started</a>
           </nav>
@@ -55,9 +55,6 @@ export default function Landing() {
 
       {/* ===== Hero ===== */}
       <section className="lp-hero">
-        <div className="lp-blob lp-blob-1" />
-        <div className="lp-blob lp-blob-2" />
-
         <motion.div
           className="lp-hero-copy"
           initial={{ opacity: 0, y: 24 }}
@@ -69,7 +66,7 @@ export default function Landing() {
             Turn everyday spending into <span className="lp-grad">financial intelligence</span>.
           </h1>
           <p>
-            Akiba transforms your daily transactions into real-time insight that helps you understand
+            PesaMali transforms your daily transactions into real-time insight that helps you understand
             your money, adjust faster, and build stronger financial habits with AI-guided clarity.
           </p>
           <div className="lp-cta-row">
@@ -82,62 +79,12 @@ export default function Landing() {
             <I n="check" size={14} /> No card required · Built for Kenyan students
           </div>
         </motion.div>
-
-        {/* Floating dashboard mockup */}
-        <motion.div
-          className="lp-hero-visual"
-          initial={{ opacity: 0, y: 30, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-        >
-          <motion.div
-            className="lp-mock"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <div className="lp-mock-label"><span className="lp-dot" /> Safe to spend today</div>
-            <div className="lp-mock-amount"><span className="lp-cur">KES</span> 1,240</div>
-            <div className="lp-mock-bar"><span style={{ width: '68%' }} /></div>
-            <div className="lp-mock-meta">
-              <span>68% of daily pace used</span>
-              <span className="lp-mock-ok">On track</span>
-            </div>
-            <div className="lp-mock-tx">
-              {[
-                { ic: 'utensils', name: 'Lunch at Mama Oliech', amt: '−420' },
-                { ic: 'bus', name: 'Matatu fare', amt: '−80' },
-                { ic: 'phone', name: 'Airtime top-up', amt: '−100' },
-              ].map((t) => (
-                <div className="lp-tx-row" key={t.name}>
-                  <span className="lp-tx-ic"><I n={t.ic} size={15} /></span>
-                  <span className="lp-tx-name">{t.name}</span>
-                  <span className="lp-tx-amt">{t.amt}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="lp-chip lp-chip-1"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <I n="flame" size={15} /> 12-day streak
-          </motion.div>
-          <motion.div
-            className="lp-chip lp-chip-2"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-          >
-            <I n="trendDown" size={15} /> 18% under budget
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* ===== Features ===== */}
       <section id="features" className="lp-section">
         <div className="lp-section-head">
-          <span className="lp-eyebrow">Why Akiba</span>
+          <span className="lp-eyebrow">Why PesaMali</span>
           <h2>Everything you need to master your money</h2>
           <p>Simple tools, serious clarity. Built to fit the way you actually spend.</p>
         </div>
@@ -190,7 +137,7 @@ export default function Landing() {
       <section id="get-started" className="lp-cta-band">
         <div className="lp-cta-inner">
           <h2>Start making smart money moves today.</h2>
-          <p>Join Akiba and turn your spending into a financial advantage. Free to begin.</p>
+          <p>Join PesaMali and turn your spending into a financial advantage. Free to begin.</p>
           <div className="lp-cta-row lp-cta-center">
             <button className="lp-btn lp-btn-light lp-btn-lg" onClick={signup}>
               Create your free account <I n="trendUp" size={16} />
@@ -203,13 +150,13 @@ export default function Landing() {
       <footer className="lp-footer">
         <div className="lp-brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Akiba" />
+          <img src="/logo.png" alt="PesaMali" />
           <span className="lp-brand-copy">
-            <b>Akiba</b>
+            <b>PesaMali</b>
             <small>Smart money moves.</small>
           </span>
         </div>
-        <span className="lp-footer-copy">© {new Date().getFullYear()} Akiba · Smart money moves.</span>
+        <span className="lp-footer-copy">© {new Date().getFullYear()} PesaMali · Smart money moves.</span>
       </footer>
     </div>
   )

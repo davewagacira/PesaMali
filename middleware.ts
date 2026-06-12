@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const sessionCookie = request.cookies.get('akiba-session')
+  const sessionCookie = request.cookies.get('pesamali-session')
   if (!sessionCookie) {
     return NextResponse.redirect(new URL('/auth', request.url))
   }
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   } catch {
     // Malformed session cookie — clear it and redirect
     const redirect = NextResponse.redirect(new URL('/auth', request.url))
-    redirect.cookies.delete('akiba-session')
+    redirect.cookies.delete('pesamali-session')
     return redirect
   }
 

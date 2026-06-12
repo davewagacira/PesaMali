@@ -3,7 +3,7 @@ import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { publishExpenseEvent } from '@/lib/ably'
+import { processDueRecurringExpenses } from '@/lib/recurring'
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
     if (!session.isLoggedIn || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    await processDueRecurringExpenses(session.userId)
 
     const recurring = await prisma.recurringExpense.findMany({
       where: { userId: session.userId, active: true },
@@ -74,51 +76,8 @@ export async function POST(req: NextRequest) {
 // Execute recurring expenses (should be called by a cron job)
 export async function PATCH(req: NextRequest) {
   try {
-    const today = new Date().toISOString().slice(0, 10)
-
-    const dueRecurring = await prisma.recurringExpense.findMany({
-      where: {
-        active: true,
-        nextRunDate: { lte: today },
-      },
-    })
-
-    for (const recurring of dueRecurring) {
-      // Create the expense
-      const expense = await prisma.expense.create({
-        data: {
-          userId: recurring.userId,
-          date: today,
-          category: recurring.category,
-          item: recurring.item,
-          amount: recurring.amount,
-        },
-      })
-
-      // Calculate next run date
-      let nextRunDate = new Date(today)
-      if (recurring.frequency === 'monthly') {
-        nextRunDate.setMonth(nextRunDate.getMonth() + 1)
-      } else if (recurring.frequency === 'weekly') {
-        nextRunDate.setDate(nextRunDate.getDate() + 7)
-      } else if (recurring.frequency === 'biweekly') {
-        nextRunDate.setDate(nextRunDate.getDate() + 14)
-      }
-
-      // Update recurring expense
-      await prisma.recurringExpense.update({
-        where: { id: recurring.id },
-        data: {
-          lastRunDate: today,
-          nextRunDate: nextRunDate.toISOString().slice(0, 10),
-        },
-      })
-
-      // Publish real-time event
-      await publishExpenseEvent(recurring.userId, 'add', expense)
-    }
-
-    return NextResponse.json({ executed: dueRecurring.length })
+    const executed = await processDueRecurringExpenses()
+    return NextResponse.json({ executed })
   } catch (e) {
     console.error('[Recurring expenses PATCH error]', e)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

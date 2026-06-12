@@ -14,6 +14,7 @@ interface DatePickerProps {
 
 export function DatePicker({ value, onChange }: DatePickerProps) {
   const [open, setOpen] = useState(false)
+  const [placement, setPlacement] = useState<'down' | 'up'>('down')
   const ref = useRef<HTMLDivElement>(null)
 
   const today = new Date()
@@ -29,17 +30,29 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
 
   useEffect(() => {
     if (!open) return
+    const updatePlacement = () => {
+      if (!ref.current) return
+      const rect = ref.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      setPlacement(spaceBelow < 340 && spaceAbove > spaceBelow ? 'up' : 'down')
+    }
     const onDoc = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
     }
+    updatePlacement()
     document.addEventListener('mousedown', onDoc)
     document.addEventListener('keydown', onKey)
+    window.addEventListener('resize', updatePlacement)
+    window.addEventListener('scroll', updatePlacement, true)
     return () => {
       document.removeEventListener('mousedown', onDoc)
       document.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', updatePlacement)
+      window.removeEventListener('scroll', updatePlacement, true)
     }
   }, [open])
 
@@ -101,10 +114,10 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="dp-pop"
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            className={`dp-pop ${placement === 'up' ? 'up' : ''}`}
+            initial={{ opacity: 0, y: placement === 'up' ? 6 : -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            exit={{ opacity: 0, y: placement === 'up' ? 6 : -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
           >
             <div className="dp-head">

@@ -1,30 +1,21 @@
-import type { Metadata } from 'next'
-import { Poppins, IBM_Plex_Mono } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-poppins',
-  display: 'swap',
-})
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-mono',
-  display: 'swap',
-})
-
 export const metadata: Metadata = {
-  title: 'Akiba · Know your money',
+  title: 'PesaMali · Know your money',
   description: 'Personal finance app for Kenyan students',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover',
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',
     apple: '/logo.png',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
@@ -34,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-theme="light">
-      <body className={`${poppins.variable} ${ibmPlexMono.variable}`}>
+      <body>
         {children}
       </body>
     </html>

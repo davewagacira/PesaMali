@@ -5,6 +5,24 @@ import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { publishExpenseEvent } from '@/lib/ably'
 import { checkAndAwardAchievements, createNotification } from '@/lib/achievements'
+import { processDueRecurringExpenses } from '@/lib/recurring'
+
+function nairobiDateParts(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Nairobi',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
+  const get = (type: string) => parts.find((part) => part.type === type)?.value || ''
+  return {
+    year: Number(get('year')),
+    month: Number(get('month')),
+    day: Number(get('day')),
+    key: `${get('year')}-${get('month')}-${get('day')}`,
+    monthKey: `${get('year')}-${get('month')}`,
+  }
+}
 
 export async function GET() {
   try {
@@ -12,10 +30,8 @@ export async function GET() {
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const prefix = `${year}-${month}`
+    if (session.userId) await processDueRecurringExpenses(session.userId)
+    const prefix = nairobiDateParts().monthKey
     const expenses = await prisma.expense.findMany({
       where: {
         userId: session.userId,
@@ -95,8 +111,9 @@ export async function POST(req: NextRequest) {
       await publishExpenseEvent(userId, 'add', expense)
 
       // Check daily safe spend
-      const today = new Date().toISOString().slice(0, 10)
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+      const todayInfo = nairobiDateParts()
+      const today = todayInfo.key
+      const monthStart = `${todayInfo.monthKey}-01`
       const [todaySpent, monthExpenses] = await Promise.all([
         prisma.expense.aggregate({
           where: { userId, date: today },
@@ -109,16 +126,18 @@ export async function POST(req: NextRequest) {
       ])
 
       const monthSpent = monthExpenses._sum.amount || 0
-      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
-      const daysLeft = daysInMonth - new Date().getDate()
+      const todayTotal = todaySpent._sum.amount || 0
+      const daysInMonth = new Date(todayInfo.year, todayInfo.month, 0).getDate()
+      const daysLeft = daysInMonth - todayInfo.day + 1
+      const priorSpent = monthSpent - todayTotal
       const remaining = user.monthlyBudget - monthSpent
-      const safeDaily = daysLeft > 0 ? (remaining - user.savingsGoal) / daysLeft : 0
+      const safeDaily = daysLeft > 0 ? (user.monthlyBudget - priorSpent - user.savingsGoal) / daysLeft : 0
 
-      if ((todaySpent._sum.amount || 0) > safeDaily && safeDaily > 0) {
+      if (todayTotal > safeDaily && safeDaily > 0) {
         await createNotification(userId, {
           type: 'budget_warning',
-          title: '⏰ Daily Safe Spend Exceeded',
-          message: `Today's spending (KES ${(todaySpent._sum.amount || 0).toLocaleString()}) exceeds safe daily amount (KES ${safeDaily.toLocaleString()})`,
+          title: 'Daily Safe Spend Exceeded',
+          message: `Today's spending (KES ${todayTotal.toLocaleString()}) exceeds safe daily amount (KES ${safeDaily.toLocaleString()})`,
           icon: 'alert',
         })
       }

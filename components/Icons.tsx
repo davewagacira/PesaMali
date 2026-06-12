@@ -54,6 +54,9 @@ export const PATHS: Record<string, React.ReactNode> = {
   helpCircle: <g><circle cx="12" cy="12" r="10"/><path d="M12 17v.01"/><path d="M12 13a2 2 0 0 0-2-2 2 2 0 0 0-2 2c0 1 1 2 2 3s2 1 2 2"/></g>,
   repeat: <g><path d="M7 7h10v10M7 17l10-10"/></g>,
   trash: <g><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/><path d="M5 6l.5 11a3 3 0 0 0 3 2.8h7a3 3 0 0 0 3-2.8L19 6"/></g>,
+  moreVertical: <g><circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></g>,
+  eye: <g><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g>,
+  eyeOff: <g><path d="M3 3l18 18"/><path d="M10.6 10.6A3 3 0 0 0 13.4 13.4"/><path d="M9.8 5.4A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a18.3 18.3 0 0 1-3.2 4.1"/><path d="M6.6 6.9C3.6 8.8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/></g>,
   x: <g><path d="M18 6L6 18M6 6l12 12"/></g>,
 }
 

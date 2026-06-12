@@ -9,6 +9,8 @@ interface SidebarProps {
   userName: string
   theme: string
   onThemeToggle: () => void
+  drawerOpen?: boolean
+  onDrawerChange?: (open: boolean) => void
 }
 
 const NAV = [
@@ -16,7 +18,7 @@ const NAV = [
   { id: 'log', label: 'Log expense', icon: 'plusCircle', href: '/log' },
   { id: 'analytics', label: 'Analytics', icon: 'chart', href: '/analytics' },
   { id: 'achievements', label: 'Achievements', icon: 'trophy', href: '/achievements' },
-  { id: 'ai', label: 'Akiba AI', icon: 'sparkles', href: '/ai' },
+  { id: 'ai', label: 'PesaMali AI', icon: 'sparkles', href: '/ai' },
   { id: 'settings', label: 'Budget & settings', icon: 'settings', href: '/settings' },
 ]
 
@@ -32,7 +34,7 @@ function SidebarContent({ userName, theme, onThemeToggle, onNav }: { userName: s
           <Skeleton width={36} height={36} style={{ borderRadius: 11, flexShrink: 0 }} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+          <img src="/logo.png" alt="PesaMali" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
         )}
         <div className="sidebar-brand-copy">
           {isLoading ? (
@@ -42,7 +44,7 @@ function SidebarContent({ userName, theme, onThemeToggle, onNav }: { userName: s
             </div>
           ) : (
             <>
-              <span>Akiba</span>
+              <span>PesaMali</span>
               <small>Smart money moves.</small>
             </>
           )}
@@ -111,8 +113,10 @@ function SidebarContent({ userName, theme, onThemeToggle, onNav }: { userName: s
   )
 }
 
-export default function Sidebar({ userName, theme, onThemeToggle }: SidebarProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false)
+export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen: controlledDrawerOpen, onDrawerChange }: SidebarProps) {
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState(false)
+  const drawerOpen = controlledDrawerOpen ?? internalDrawerOpen
+  const setDrawerOpen = onDrawerChange ?? setInternalDrawerOpen
 
   return (
     <>

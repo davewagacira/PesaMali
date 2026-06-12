@@ -20,7 +20,7 @@ export async function POST() {
     }
 
     const secret = generateSecret()
-    const otpauth = generateURI({ label: user.email, secret, issuer: 'Akiba' })
+    const otpauth = generateURI({ label: user.email, secret, issuer: 'PesaMali' })
     const qrDataUrl = await QRCode.toDataURL(otpauth, { margin: 2, width: 220 })
 
     session.mfaSetupSecret = secret

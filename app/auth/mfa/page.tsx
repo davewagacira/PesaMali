@@ -78,8 +78,8 @@ export default function MfaPage() {
       <div className="auth-left">
         <div className="brand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
-          Akiba
+          <img src="/logo.png" alt="PesaMali" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+          PesaMali
         </div>
         <motion.div
           className="auth-hero"
@@ -123,7 +123,7 @@ export default function MfaPage() {
             <h2 style={{ fontSize: 20 }}>Verify your identity</h2>
           </div>
           <div className="sub">
-            Open your authenticator app and enter the 6-digit code for Akiba.
+            Open your authenticator app and enter the 6-digit code for PesaMali.
           </div>
 
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', margin: '24px 0 20px' }}>

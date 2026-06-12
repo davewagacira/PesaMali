@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Akiba — Know your money</title>
+<title>PesaMali — Know your money</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -439,7 +439,7 @@ async function askClaude(question, ctx){
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
       messages:[{role:'user',content:
-`You are Akiba AI, a warm, direct personal-finance coach inside the Akiba app, talking to a Kenyan university student. Currency is KES. Keep answers under 160 words, conversational, specific to the data, with concrete actions. Use **bold** sparingly for key numbers. No emojis. No markdown headers.
+`You are PesaMali AI, a warm, direct personal-finance coach inside the PesaMali app, talking to a Kenyan university student. Currency is KES. Keep answers under 160 words, conversational, specific to the data, with concrete actions. Use **bold** sparingly for key numbers. No emojis. No markdown headers.
 
 Live user data (this month): ${JSON.stringify(ctx)}
 
@@ -502,14 +502,14 @@ function App(){
     {id:'log',label:'Log expense',icon:'plusCircle'},
     {id:'analytics',label:'Analytics',icon:'chart'},
     {id:'achievements',label:'Achievements',icon:'trophy'},
-    {id:'ai',label:'Akiba AI',icon:'sparkles'},
+    {id:'ai',label:'PesaMali AI',icon:'sparkles'},
     {id:'settings',label:'Budget & settings',icon:'settings'},
   ];
 
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand"><div className="logo">A</div> Akiba</div>
+        <div className="brand"><div className="logo">P</div> PesaMali</div>
         <nav className="nav">
           {NAV.map(n=>(
             <button key={n.id} className={'nav-item'+(page===n.id?' active':'')} onClick={()=>setPage(n.id)}>
@@ -565,10 +565,10 @@ function Auth({signup,setSignup,setAuthed,setUser,setBudget,theme,setTheme}){
   return (
     <div className="auth">
       <div className="auth-left">
-        <div className="brand"><div className="logo">A</div> Akiba</div>
+        <div className="brand"><div className="logo">P</div> PesaMali</div>
         <motion.div className="auth-hero" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
           <h1>End the month with money left.</h1>
-          <p>Akiba tracks every shilling, shows you one clear number that's safe to spend today, and an AI coach tells you the truth about your habits before the 20th catches you off guard.</p>
+          <p>PesaMali tracks every shilling, shows you one clear number that's safe to spend today, and an AI coach tells you the truth about your habits before the 20th catches you off guard.</p>
         </motion.div>
         <motion.div className="auth-points" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.3}}>
           <div><I n="target" size={14}/> Safe-to-spend daily</div>
@@ -579,14 +579,14 @@ function Auth({signup,setSignup,setAuthed,setUser,setBudget,theme,setTheme}){
       <div className="auth-right">
         <motion.div className="auth-card" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:.45,delay:.1}}>
           <h2>{signup?'Create your account':'Welcome back'}</h2>
-          <div className="sub">{signup?'Your own dashboard, your own money rules':'Sign in to your Akiba dashboard'}</div>
+          <div className="sub">{signup?'Your own dashboard, your own money rules':'Sign in to your PesaMali dashboard'}</div>
           {signup && <div className="field"><label>Full name</label><input ref={nameRef} placeholder="Dave"/></div>}
           <div className="field"><label>Email</label><input type="email" defaultValue="dave@email.com"/></div>
           <div className="field"><label>Password</label><input type="password" defaultValue="password"/></div>
           {signup && <div className="field"><label>Monthly budget (KES)</label><input ref={budRef} type="number" defaultValue="15000"/></div>}
           <motion.button className="btn btn-primary" whileTap={{scale:.97}} onClick={enter}>
             {signup?'Create account':'Sign in'}</motion.button>
-          <div className="auth-toggle">{signup?'Already have an account? ':'New to Akiba? '}
+          <div className="auth-toggle">{signup?'Already have an account? ':'New to PesaMali? '}
             <a onClick={()=>setSignup(!signup)}>{signup?'Sign in':'Create an account'}</a></div>
         </motion.div>
       </div>
@@ -785,7 +785,7 @@ function Achievements({m,expenses,budget,goal}){
     {icon:'piggy',t:'Saver in the making',p:'Keep your remaining balance above your savings goal.',ok:m.remaining>=goal},
     {icon:'coins',t:'Cheap day champion',p:'Have a day where you spend under KES 100.',ok:cheapDay},
     {icon:'flag',t:'Month finisher',p:'End a month with money left over.',ok:false},
-    {icon:'crown',t:'Akiba master',p:'Finish 3 months in a row under budget.',ok:false},
+    {icon:'crown',t:'PesaMali master',p:'Finish 3 months in a row under budget.',ok:false},
   ];
   const n=achs.filter(a=>a.ok).length;
   return (
@@ -808,7 +808,7 @@ function Achievements({m,expenses,budget,goal}){
 
 /* ---- AI ---- */
 function AIChat({m,user,budget,goal}){
-  const [msgs,setMsgs]=useState([{who:'ai',text:`Habari ${user}. I'm **Akiba AI**, your money coach. I read your live spending data for this month, so my answers are about your money, not generic advice. Ask how your week went, where you're overspending, or what to change — or use a quick question on the right.`}]);
+  const [msgs,setMsgs]=useState([{who:'ai',text:`Habari ${user}. I'm **PesaMali AI**, your money coach. I read your live spending data for this month, so my answers are about your money, not generic advice. Ask how your week went, where you're overspending, or what to change — or use a quick question on the right.`}]);
   const [input,setInput]=useState('');
   const [busy,setBusy]=useState(false);
   const logRef=useRef();
@@ -831,7 +831,7 @@ function AIChat({m,user,budget,goal}){
   const render=t=>t.split(/(\*\*[^*]+\*\*)/g).map((s,i)=>s.startsWith('**')?<b key={i}>{s.slice(2,-2)}</b>:s);
   return (
     <div>
-      <div className="page-head"><div><h1>Akiba AI</h1><p>Your personal money coach — it reads your real spending data</p></div></div>
+      <div className="page-head"><div><h1>PesaMali AI</h1><p>Your personal money coach — it reads your real spending data</p></div></div>
       <div className="chat-shell">
         <div className="chat-card">
           <div className="chat-log" ref={logRef}>
@@ -842,7 +842,7 @@ function AIChat({m,user,budget,goal}){
                 </motion.div>))}
             </AnimatePresence>
           </div>
-          {busy && <div className="typing"><I n="sparkles" size={13}/>Akiba AI is thinking…</div>}
+          {busy && <div className="typing"><I n="sparkles" size={13}/>PesaMali AI is thinking…</div>}
           <div className="chat-input">
             <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Ask about your spending…" onKeyDown={e=>e.key==='Enter'&&ask()}/>
             <motion.button className="send-btn" whileTap={{scale:.92}} onClick={()=>ask()} aria-label="Send"><I n="send" size={16}/></motion.button>
@@ -886,7 +886,7 @@ function Settings({budget,setBudget,goal,setGoal,ping}){
         </motion.div>
         <motion.div className="card" {...stagger(1)}>
           <h3><I n="alert" size={14}/>Alert thresholds</h3>
-          <p style={{fontSize:12.5,color:'var(--muted)',lineHeight:1.7,marginBottom:10}}>Akiba compares your spending pace against the month's progress.</p>
+          <p style={{fontSize:12.5,color:'var(--muted)',lineHeight:1.7,marginBottom:10}}>PesaMali compares your spending pace against the month's progress.</p>
           {[
             ['var(--green)','var(--green-soft)','check','On track','Spending pace at or below month pace'],
             ['var(--amber)','var(--amber-soft)','alert','Slow down','Spending up to 15% ahead of pace'],

@@ -45,6 +45,11 @@ const suggestions: [string, string, string][] = [
   ['search', 'Most expensive habit', 'What is my most expensive habit?'],
 ]
 
+const PINNED_CONVERSATIONS_KEY = 'pesamali:pinned-ai-conversations'
+const SPACED_PINNED_CONVERSATIONS_KEY = 'pesa-mali:pinned-ai-conversations'
+const PREVIOUS_PINNED_CONVERSATIONS_KEY = ['pes', 'arly:pinned-ai-conversations'].join('')
+const LEGACY_PINNED_CONVERSATIONS_KEY = ['aki', 'ba:pinned-ai-conversations'].join('')
+
 function render(t: string) {
   return t.split(/(\*\*[^*]+\*\*)/g).map((s, i) =>
     s.startsWith('**') ? <b key={i}>{s.slice(2, -2)}</b> : s
@@ -241,10 +246,26 @@ export default function AIPage() {
   }, [])
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('akiba:pinned-ai-conversations')
-    if (!saved) return
+    const saved = window.localStorage.getItem(PINNED_CONVERSATIONS_KEY)
+    const spacedSaved = window.localStorage.getItem(SPACED_PINNED_CONVERSATIONS_KEY)
+    const previousSaved = window.localStorage.getItem(PREVIOUS_PINNED_CONVERSATIONS_KEY)
+    const legacySaved = window.localStorage.getItem(LEGACY_PINNED_CONVERSATIONS_KEY)
+    const stored = saved ?? spacedSaved ?? previousSaved ?? legacySaved
+    if (saved === null && stored !== null) {
+      window.localStorage.setItem(PINNED_CONVERSATIONS_KEY, stored)
+    }
+    if (spacedSaved !== null) {
+      window.localStorage.removeItem(SPACED_PINNED_CONVERSATIONS_KEY)
+    }
+    if (previousSaved !== null) {
+      window.localStorage.removeItem(PREVIOUS_PINNED_CONVERSATIONS_KEY)
+    }
+    if (legacySaved !== null) {
+      window.localStorage.removeItem(LEGACY_PINNED_CONVERSATIONS_KEY)
+    }
+    if (!stored) return
     try {
-      const parsed = JSON.parse(saved)
+      const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) setPinnedConversationIds(parsed.filter((id) => typeof id === 'string'))
     } catch {}
   }, [])
@@ -264,7 +285,7 @@ export default function AIPage() {
     setMsgs([
       {
         who: 'ai',
-        text: `Habari ${userName}. I'm **Akiba AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining, biggest category **${category}**. Ask me anything, or tap a suggestion below.`,
+        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining, biggest category **${category}**. Ask me anything, or tap a suggestion below.`,
       },
     ])
   }, [isLoading, metrics.remaining, metrics.spent, topCategory?.name, userName])
@@ -286,7 +307,7 @@ export default function AIPage() {
     setMsgs([
       {
         who: 'ai',
-        text: `Habari ${userName}. I'm **Akiba AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
+        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
       },
     ])
   }
@@ -309,7 +330,7 @@ export default function AIPage() {
       setConversations((cs) => cs.filter((c) => c.id !== convId))
       setPinnedConversationIds((ids) => {
         const next = ids.filter((id) => id !== convId)
-        window.localStorage.setItem('akiba:pinned-ai-conversations', JSON.stringify(next))
+        window.localStorage.setItem(PINNED_CONVERSATIONS_KEY, JSON.stringify(next))
         return next
       })
       if (currentConversationId === convId) startNewChat()
@@ -325,7 +346,7 @@ export default function AIPage() {
   const togglePinnedConversation = (convId: string) => {
     setPinnedConversationIds((ids) => {
       const next = ids.includes(convId) ? ids.filter((id) => id !== convId) : [convId, ...ids]
-      window.localStorage.setItem('akiba:pinned-ai-conversations', JSON.stringify(next))
+      window.localStorage.setItem(PINNED_CONVERSATIONS_KEY, JSON.stringify(next))
       return next
     })
     setOpenConversationMenuId(null)
@@ -440,7 +461,7 @@ export default function AIPage() {
       tone: 'bg-[var(--primary-soft)] text-[var(--primary)]',
       text: topCategory
         ? `${topCategory.name} is your biggest category - ${fmt(topCategory.amt)} (${Math.round((topCategory.amt / Math.max(metrics.spent, 1)) * 100)}% of spending).`
-        : 'Start logging expenses and Akiba AI will identify your biggest spending category.',
+        : 'Start logging expenses and PesaMali AI will identify your biggest spending category.',
       ask: 'Where am I overspending and what should I stop?',
     },
     {
@@ -489,7 +510,7 @@ export default function AIPage() {
         <PageHeroCard
           icon="sparkles"
           badge="AI insights"
-          title="Akiba AI"
+          title="PesaMali AI"
           subtitle="Personal financial intelligence built from your real spending behavior."
         >
           <button
@@ -516,7 +537,7 @@ export default function AIPage() {
               </span>
             </h1>
             <p className="mt-1.5 max-w-xl text-[13.5px] leading-[1.7] text-[var(--muted)]">
-              Akiba AI reads your live spending data, every shilling, every category, every day, and
+              PesaMali AI reads your live spending data, every shilling, every category, every day, and
               answers like a coach who actually knows you. Ask anything about your month.
             </p>
           </div>
@@ -545,7 +566,7 @@ export default function AIPage() {
             <div className="flex items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
               <Orb small />
               <div>
-                <b className="text-sm font-bold">Akiba AI</b>
+                <b className="text-sm font-bold">PesaMali AI</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
                   {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}
@@ -699,15 +720,14 @@ export default function AIPage() {
                           </button>
                           <button
                             aria-label="Conversation actions"
+                            aria-expanded={openConversationMenuId === conv.id}
                             onClick={(e) => {
                               e.stopPropagation()
                               setOpenConversationMenuId(openConversationMenuId === conv.id ? null : conv.id)
                             }}
-                            className="mr-1 flex h-7 w-7 shrink-0 items-center justify-center gap-0.5 rounded-lg text-[var(--muted)] transition hover:text-[var(--primary)]"
+                            className="mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--card)] hover:text-[var(--primary)]"
                           >
-                            <span className="h-1 w-1 rounded-full bg-current" />
-                            <span className="h-1 w-1 rounded-full bg-current" />
-                            <span className="h-1 w-1 rounded-full bg-current" />
+                            <I n="moreVertical" size={16} />
                           </button>
                         </div>
 

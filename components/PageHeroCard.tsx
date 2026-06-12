@@ -19,34 +19,26 @@ export function PageHeroCard({
   title,
   subtitle,
   children,
-  surface = 'card',
 }: PageHeroCardProps) {
-  const surfaceClass =
-    surface === 'card'
-      ? 'bg-[var(--card)] shadow-[var(--shadow)]'
-      : 'bg-gradient-to-r from-[var(--primary-soft)] to-transparent'
-
   return (
     <motion.div
-      className={`rounded-2xl border border-[var(--line)] ${surfaceClass} p-6 mb-6`}
+      className="page-hero-pro"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex-1">
+      <div className="page-hero-pro-inner">
+        <div className="page-hero-pro-copy">
           {badge && (
-            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--primary-soft)] px-3 py-1.5 mb-4">
+            <div className="page-hero-pro-badge">
               <I n={icon} size={14} />
-              <span className="text-xs font-semibold text-[var(--primary)]">{badge}</span>
+              <span>{badge}</span>
             </div>
           )}
-          <h1 className="text-3xl font-extrabold text-[var(--text)] mb-2 leading-tight">
-            {title}
-          </h1>
-          <p className="text-[var(--muted)]">{subtitle}</p>
+          <h1>{title}</h1>
+          <p>{subtitle}</p>
         </div>
-        {children && <div className="flex items-center gap-3 shrink-0">{children}</div>}
+        {children && <div className="page-hero-pro-actions">{children}</div>}
       </div>
     </motion.div>
   )

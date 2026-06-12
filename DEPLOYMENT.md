@@ -1,8 +1,8 @@
-# Akiba - Deployment Guide
+# PesaMali - Deployment Guide
 
 ## Deploying to Vercel
 
-This guide covers deploying Akiba to Vercel with all required environment variables and configuration.
+This guide covers deploying PesaMali to Vercel with all required environment variables and configuration.
 
 ### Prerequisites
 
@@ -63,7 +63,7 @@ vercel
 1. Go to https://vercel.com/new
 2. Select "Import Git Repository"
 3. Connect your GitHub account
-4. Select the Akiba repository
+4. Select the PesaMali repository
 5. Click "Import"
 6. On the "Configure Project" page:
    - Framework Preset: Next.js (should auto-detect)

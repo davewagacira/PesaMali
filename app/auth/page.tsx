@@ -6,6 +6,7 @@ import { I } from '@/components/Icons'
 
 export default function AuthPage() {
   const [signup, setSignup] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -61,9 +62,9 @@ export default function AuthPage() {
           </button>
           <div className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Akiba" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
+            <img src="/logo.png" alt="PesaMali" style={{ width: 36, height: 36, borderRadius: 11, objectFit: 'cover', flexShrink: 0 }} />
             <div className="sidebar-brand-copy">
-              <span>Akiba</span>
+              <span>PesaMali</span>
               <small>Smart money moves.</small>
             </div>
           </div>
@@ -77,7 +78,7 @@ export default function AuthPage() {
           <h1>{signup ? 'Your money story starts here.' : 'Welcome back to smarter money.'}</h1>
           <p>
             {signup
-              ? 'Create your account in seconds and let Akiba turn every shilling into clear, daily guidance built around your real spending.'
+              ? 'Create your account in seconds and let PesaMali turn every shilling into clear, daily guidance built around your real spending.'
               : 'Sign in to pick up right where you left off. Your safe-to-spend, live analytics and AI coach are ready and waiting.'}
           </p>
         </motion.div>
@@ -112,7 +113,7 @@ export default function AuthPage() {
           <div className="sub">
             {signup
               ? 'Your own dashboard, your own money rules'
-              : 'Sign in to your Akiba dashboard'}
+              : 'Sign in to your PesaMali dashboard'}
           </div>
           {signup && (
             <div className="field">
@@ -126,13 +127,24 @@ export default function AuthPage() {
           </div>
           <div className="field">
             <label>Password</label>
-            <input
-              ref={passwordRef}
-              type="password"
-              placeholder="••••••••"
-              autoComplete={signup ? 'new-password' : 'current-password'}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && enter()}
-            />
+            <div className="password-field">
+              <input
+                ref={passwordRef}
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                autoComplete={signup ? 'new-password' : 'current-password'}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && enter()}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                <I n={showPassword ? 'eyeOff' : 'eye'} size={18} />
+              </button>
+            </div>
           </div>
           {signup && (
             <div className="field">
@@ -152,7 +164,7 @@ export default function AuthPage() {
             {loading ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
           </motion.button>
           <div className="auth-toggle">
-            {signup ? 'Already have an account? ' : 'New to Akiba? '}
+            {signup ? 'Already have an account? ' : 'New to PesaMali? '}
             <a onClick={() => setSignup(!signup)}>
               {signup ? 'Sign in' : 'Create an account'}
             </a>

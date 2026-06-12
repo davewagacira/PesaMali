@@ -72,6 +72,8 @@ export function NotificationsBell({ userId }: { userId: string }) {
     goal_milestone: 'flag',
   }
 
+  const cleanTitle = (title: string) => title.replace(/^\s*⏰\s*/, '')
+
   return (
     <div className="relative">
       <button
@@ -118,7 +120,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                         <I n={typeIcons[notif.type] || 'info'} size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-[var(--text)]">{notif.title}</h4>
+                        <h4 className="font-semibold text-sm text-[var(--text)]">{cleanTitle(notif.title)}</h4>
                         <p className="text-xs text-[var(--muted)] mt-1">{notif.message}</p>
                         <p className="text-xs text-[var(--faint)] mt-1">
                           {new Date(notif.createdAt).toLocaleTimeString()}

@@ -8,6 +8,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [theme, setTheme] = useState('light')
   const [userName, setUserName] = useState('')
   const [userId, setUserId] = useState('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -30,9 +31,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="shell">
-      <Sidebar userName={userName} theme={theme} onThemeToggle={toggleTheme} />
+      <Sidebar
+        userName={userName}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+        drawerOpen={drawerOpen}
+        onDrawerChange={setDrawerOpen}
+      />
       <div className="flex flex-col flex-1">
-        <Header userName={userName} userId={userId} />
+        <Header userName={userName} userId={userId} onMenuClick={() => setDrawerOpen(true)} />
         <main className="main flex-1 overflow-auto">
           {children}
         </main>

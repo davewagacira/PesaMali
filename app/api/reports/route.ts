@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 
     if (format === 'csv') {
       const rows = [
-        ['Akiba - Monthly Expense Report'],
+        ['PesaMali - Monthly Expense Report'],
         [`Month: ${queryMonth}/${queryYear}`],
         [`User: ${user.name} (${user.email})`],
         [''],
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(csv, {
         headers: {
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="akiba-report-${queryYear}-${String(queryMonth).padStart(2, '0')}.csv"`,
+          'Content-Disposition': `attachment; filename="pesamali-report-${queryYear}-${String(queryMonth).padStart(2, '0')}.csv"`,
         },
       })
     } else {
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
       // Title
       doc.setFontSize(20)
-      doc.text('Akiba Monthly Report', 20, yPos)
+      doc.text('PesaMali Monthly Report', 20, yPos)
       yPos += 15
 
       // Header info
@@ -173,7 +173,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(pdf, {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="akiba-report-${queryYear}-${String(queryMonth).padStart(2, '0')}.pdf"`,
+          'Content-Disposition': `attachment; filename="pesamali-report-${queryYear}-${String(queryMonth).padStart(2, '0')}.pdf"`,
         },
       })
     }

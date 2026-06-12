@@ -59,9 +59,9 @@ export default function AnalyticsPage() {
           <div className="delta">across days with spending</div>
         </motion.div>
         <motion.div className="card" variants={listItem}>
-          <h3><I n="search" size={14} />Most bought item</h3>
+          <h3><I n="search" size={14} />Most frequent expense</h3>
           <div className="kpi" style={{ fontSize: 19 }}>{top ? top.name : '—'}</div>
-          <div className="delta">{top ? `${top.n} times · ${fmt(top.amt)} total` : ''}</div>
+          <div className="delta">{top ? `${top.n} entries · ${fmt(top.amt)} total` : ''}</div>
         </motion.div>
         <motion.div className="card" variants={listItem}>
           <h3><I n="flame" size={14} />Heaviest day</h3>

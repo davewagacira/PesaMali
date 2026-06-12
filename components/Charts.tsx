@@ -131,8 +131,8 @@ export function Donut({ byCat, total }: { byCat: CatPoint[]; total: number }) {
     C = 2 * Math.PI * R
   let acc = 0
   return (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-      <svg width="150" height="150" viewBox="0 0 150 150">
+    <div className="donut-wrap">
+      <svg className="donut-svg" width="150" height="150" viewBox="0 0 150 150">
         <circle cx="75" cy="75" r={R} fill="none" stroke="var(--card-2)" strokeWidth="16" />
         {byCat.map((c, i) => {
           const frac = c.amt / total,
@@ -175,17 +175,17 @@ export function Donut({ byCat, total }: { byCat: CatPoint[]; total: number }) {
           x="75"
           y="88"
           textAnchor="middle"
-          style={{ fontFamily: 'Poppins', fontSize: 9.5, fill: 'var(--muted)' }}
+          style={{ fontFamily: 'var(--font-sans), Inter, system-ui, sans-serif', fontSize: 9.5, fill: 'var(--muted)' }}
         >
           KES SPENT
         </text>
       </svg>
-      <div className="legend" style={{ flex: 1, minWidth: 160 }}>
+      <div className="donut-legend">
         {byCat.map((c) => (
-          <div className="li" key={c.id}>
-            <span className="sw" style={{ background: c.color }}></span>
-            {c.name}
-            <span>{Math.round((c.amt / total) * 100)}%</span>
+          <div className="donut-row" key={c.id}>
+            <span className="donut-swatch" style={{ background: c.color }} />
+            <span className="donut-name">{c.name}</span>
+            <span className="donut-percent">{Math.round((c.amt / total) * 100)}%</span>
           </div>
         ))}
       </div>
