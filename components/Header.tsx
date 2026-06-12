@@ -39,8 +39,7 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
       try { localStorage.clear() } catch {}
-      router.replace('/')
-      router.refresh()
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout failed:', error)
       setIsLoggingOut(false)
