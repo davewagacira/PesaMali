@@ -111,7 +111,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
 
     const byCat = CATS.map((c) => ({
       ...c,
-      amt: expenses.filter((e) => e.cat === c.id).reduce((s, e) => s + e.amt, 0),
+      amt: expenses.filter((e) => e.cat.toLowerCase() === c.id.toLowerCase()).reduce((s, e) => s + e.amt, 0),
     }))
       .filter((c) => c.amt > 0)
       .sort((a, b) => b.amt - a.amt)
@@ -120,7 +120,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     const byFlexCat = CATS.map((c) => ({
       ...c,
       amt: expenses
-        .filter((e) => e.cat === c.id && !isFixedExpense(e.cat, e.item))
+        .filter((e) => e.cat.toLowerCase() === c.id.toLowerCase() && !isFixedExpense(e.cat, e.item))
         .reduce((s, e) => s + e.amt, 0),
     }))
       .filter((c) => c.amt > 0)
