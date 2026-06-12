@@ -370,15 +370,21 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
 }
 
 function generateTitle(question: string): string {
-  // Extract key words from question to create a short title
-  const words = question.toLowerCase().split(/\s+/)
-  const titleWords = words.filter(
-    (w) =>
-      w.length > 3 &&
-      !['what', 'when', 'where', 'which', 'about', 'your', 'this', 'that', 'have', 'with'].includes(w)
-  ).slice(0, 3)
-
-  const title = titleWords.join(' ')
+  const q = question.toLowerCase()
+  if (/week|weekly report/.test(q)) return 'Weekly spending report'
+  if (/cut back|overspend|stop spending/.test(q)) return 'Where to cut back'
+  if (/on track|finish the month/.test(q)) return 'Monthly progress check'
+  if (/tip|save more|saving habit/.test(q)) return 'Savings tips'
+  if (/most expensive|biggest habit|habit/.test(q)) return 'Top spending habit'
+  if (/daily|today|spend today/.test(q)) return 'Daily allowance'
+  if (/category|categories/.test(q)) return 'Category breakdown'
+  if (/budget/.test(q)) return 'Budget overview'
+  if (/report|summary/.test(q)) return 'Spending summary'
+  if (/afford|can i buy|wishlist/.test(q)) return 'Affordability check'
+  // Fallback: take first 5 meaningful words, title-case
+  const stop = new Set(['what', 'when', 'where', 'which', 'about', 'your', 'this', 'that', 'have', 'with', 'give', 'tell', 'show', 'how', 'was', 'did', 'are', 'the', 'and', 'for', 'me', 'my', 'a', 'an'])
+  const words = question.split(/\s+/).filter((w) => !stop.has(w.toLowerCase().replace(/[^a-z]/g, ''))).slice(0, 4)
+  const title = words.join(' ').replace(/[?.!]+$/, '')
   return title.charAt(0).toUpperCase() + title.slice(1) || 'Conversation'
 }
 
@@ -455,6 +461,7 @@ export async function POST(req: NextRequest) {
 SCOPE RULE: Only discuss personal finances (spending, budget, savings, categories, habits). If asked anything else (health, politics, relationships, general knowledge, coding, entertainment) reply: "I can't help with that — I only discuss personal finances."
 
 STYLE: Talk like a sharp friend texting back, never like a report. React to their situation first, then weave at most 3-4 numbers naturally into sentences. NEVER answer in "Label: value" format and never dump stats line by line. Vary your responses — sometimes ask a short follow-up question, sometimes just react. Treat fixed bills (rent, internet) as commitments, not bad habits — never scold the user for them. Keep it under 200 words. Use **bold** only for the numbers that matter.
+GREETING: If you use the user's name, greet with "Hey [casual first name]" — never "Yo", never the full name. Shorten long names naturally (David → Dave, Alexander → Alex, etc.).
 ${compressedContext ? `\n\n${compressedContext}\n` : ''}
 ${conversationHistory ? `\n\nPrevious chat history:\n${conversationHistory}\n` : ''}
 Live data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:

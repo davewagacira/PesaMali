@@ -202,8 +202,8 @@ export default function AIPage() {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   const dayOfMonth = now.getDate()
   const status = statusMeta[metrics.status]
-  const topCategory = metrics.byCat[0]
-  const secondCategory = metrics.byCat[1]
+  const topCategory = metrics.byFlexCat[0]
+  const secondCategory = metrics.byFlexCat[1]
   const topItem = metrics.topItems[0]
   const weekTotal = metrics.last7.reduce((s, d) => s + d.amt, 0)
   const weekMax = Math.max(...metrics.last7.map((d) => d.amt), 1)
@@ -282,7 +282,7 @@ export default function AIPage() {
   useEffect(() => {
     if (isLoading || initializedWelcome.current) return
     initializedWelcome.current = true
-    const category = topCategory?.name || 'your spending'
+    const category = topCategory?.name || 'your flexible spending'
     setMsgs([
       {
         who: 'ai',
@@ -461,7 +461,7 @@ export default function AIPage() {
       icon: 'trendUp',
       tone: 'bg-[var(--primary-soft)] text-[var(--primary)]',
       text: topCategory
-        ? `${topCategory.name} is your biggest category - ${fmt(topCategory.amt)} (${Math.round((topCategory.amt / Math.max(metrics.spent, 1)) * 100)}% of spending).`
+        ? `${topCategory.name} is your biggest flexible category - ${fmt(topCategory.amt)} (${Math.round((topCategory.amt / Math.max(metrics.flexibleSpent, 1)) * 100)}% of flexible spending).`
         : 'Start logging expenses and PesaMali AI will identify your biggest spending category.',
       ask: 'Where am I overspending and what should I stop?',
     },
