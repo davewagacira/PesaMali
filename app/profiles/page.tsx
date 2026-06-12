@@ -75,16 +75,6 @@ function ProfileCard({ profile, onClick, onEdit, selected }: { profile: Profile;
         style={{ background: `${profile.color}18`, border: `2px solid ${profile.color}30` }}
       >
         <span className="profile-avatar-emoji" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><I n={mapLegacyAvatar(profile.avatar)} size={32} /></span>
-        {selected && (
-          <motion.span
-            className="profile-avatar-check"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            style={{ background: profile.color }}
-          >
-            <I n="check" size={12} />
-          </motion.span>
-        )}
       </motion.div>
       {onEdit && (
         <div
