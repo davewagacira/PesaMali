@@ -31,19 +31,15 @@ const mapLegacyAvatar = (avatar: string) => {
 export default function Header({ userName, userId, onMenuClick, profileAvatar, profileColor, profileName }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const router = useRouter()
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true)
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      try { localStorage.clear() } catch {}
-      window.location.href = '/'
-    } catch (error) {
-      console.error('Logout failed:', error)
-      setIsLoggingOut(false)
-    }
+  const handleLogout = () => {
+    const cover = document.createElement('div')
+    cover.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff'
+    document.body.appendChild(cover)
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+    try { localStorage.clear() } catch {}
+    window.location.href = '/'
   }
 
   return (
@@ -162,31 +158,16 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
-                  disabled={isLoggingOut}
-                  className="flex-1 rounded-lg border border-[var(--line)] bg-[var(--card)] px-4 py-2.5 font-semibold text-[var(--text)] transition hover:bg-[var(--bg)] disabled:opacity-50"
+                  className="flex-1 rounded-lg border border-[var(--line)] bg-[var(--card)] px-4 py-2.5 font-semibold text-[var(--text)] transition hover:bg-[var(--bg)]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="flex-1 rounded-lg bg-[var(--red)] px-4 py-2.5 font-semibold text-white transition hover:bg-[var(--red-dark)] disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 rounded-lg bg-[var(--red)] px-4 py-2.5 font-semibold text-white transition active:scale-95 flex items-center justify-center gap-2"
                 >
-                  {isLoggingOut ? (
-                    <>
-                      <motion.div
-                        className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      />
-                      Signing out…
-                    </>
-                  ) : (
-                    <>
-                      <I n="logout" size={16} />
-                      Sign out
-                    </>
-                  )}
+                  <I n="logout" size={16} />
+                  Sign out
                 </button>
               </div>
             </motion.div>
