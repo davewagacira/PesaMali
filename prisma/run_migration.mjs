@@ -103,8 +103,18 @@ async function runMigration() {
       } catch { console.log(`  ⚠️  ${table} FK may already exist`) }
     }
 
-    // Step 7: Unique constraint on CategoryBudget
-    console.log('\n🔑 Step 7: Updating CategoryBudget unique constraint...')
+    // Step 7: Updating RecurringExpense with schedule columns
+    console.log('\n📅 Step 7: Adding recurring schedule columns...')
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "RecurringExpense" ADD COLUMN IF NOT EXISTS "dayOfMonth" INTEGER`)
+      await prisma.$executeRawUnsafe(`ALTER TABLE "RecurringExpense" ADD COLUMN IF NOT EXISTS "dayOfWeek" INTEGER`)
+      console.log(`  ✅ Added dayOfMonth and dayOfWeek to RecurringExpense`)
+    } catch (e) {
+      console.log(`  ⚠️  Error adding schedule columns: ${e.message?.split('\n')[0]}`)
+    }
+
+    // Step 8: Unique constraint on CategoryBudget
+    console.log('\n🔑 Step 8: Updating CategoryBudget unique constraint...')
     try {
       await prisma.$executeRawUnsafe(`ALTER TABLE "CategoryBudget" DROP CONSTRAINT IF EXISTS "CategoryBudget_userId_category_key"`)
       await prisma.$executeRawUnsafe(`ALTER TABLE "CategoryBudget" ADD CONSTRAINT "CategoryBudget_profileId_category_key" UNIQUE ("profileId", "category")`)
