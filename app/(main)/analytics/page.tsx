@@ -28,8 +28,8 @@ export default function AnalyticsPage() {
         .then((d) => {
           if (Array.isArray(d)) {
             setExpenses(
-              d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
-                id: e.id, date: e.date, cat: e.category, item: e.item, amt: e.amount,
+              d.map((e: { id: string; date: string; category: string; item: string; amount: number; fixed?: boolean | null }) => ({
+                id: e.id, date: e.date, cat: e.category, item: e.item, amt: e.amount, fixed: e.fixed,
               }))
             )
           }

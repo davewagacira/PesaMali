@@ -5,6 +5,7 @@ import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { processDueRecurringExpenses } from '@/lib/recurring'
 import { cleanString, cleanAmount, cleanCategory, cleanInt } from '@/lib/validate'
+import { isFixedExpense } from '@/lib/metrics'
 
 export async function GET(req: NextRequest) {
   try {
@@ -76,6 +77,8 @@ export async function POST(req: NextRequest) {
         frequency,
         dayOfMonth,
         dayOfWeek,
+        // User decides per bill; rent/internet default to fixed
+        fixed: typeof body.fixed === 'boolean' ? body.fixed : isFixedExpense(category, item),
         nextRunDate: nextRunDate.toISOString().slice(0, 10),
       },
     })

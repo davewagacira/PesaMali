@@ -6,7 +6,7 @@ import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { listContainer, listItem } from '@/lib/motion'
-import { CATS } from '@/lib/metrics'
+import { CATS, isFixedCat } from '@/lib/metrics'
 
 interface CategoryBudget {
   category: string
@@ -21,6 +21,7 @@ interface RecurringExpense {
   frequency: string
   dayOfMonth?: number
   active: boolean
+  fixed: boolean
 }
 
 interface UserSettings {
@@ -63,6 +64,7 @@ export default function SettingsPage() {
     amount: '',
     frequency: 'monthly',
     dayOfMonth: '',
+    fixed: false,
   })
 
   // Editing states
@@ -76,6 +78,7 @@ export default function SettingsPage() {
     amount: '',
     frequency: 'monthly',
     dayOfMonth: '',
+    fixed: false,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -281,12 +284,13 @@ export default function SettingsPage() {
           amount: parseFloat(newRecurring.amount),
           frequency: newRecurring.frequency,
           dayOfMonth: newRecurring.frequency === 'monthly' && newRecurring.dayOfMonth ? parseInt(newRecurring.dayOfMonth) : undefined,
+          fixed: newRecurring.fixed,
         }),
       })
       const recurring = await res.json()
       if (!res.ok) throw new Error(recurring.error || 'Failed to add recurring expense')
       setRecurringExpenses((prev) => [...prev, recurring])
-      setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly', dayOfMonth: '' })
+      setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly', dayOfMonth: '', fixed: false })
       setSuccessMessage('Recurring expense added')
       setShowSuccess(true)
     } catch (e) {
@@ -332,6 +336,7 @@ export default function SettingsPage() {
           amount: parseFloat(editingRecurringData.amount),
           frequency: editingRecurringData.frequency,
           dayOfMonth: editingRecurringData.frequency === 'monthly' && editingRecurringData.dayOfMonth ? parseInt(editingRecurringData.dayOfMonth) : null,
+          fixed: editingRecurringData.fixed,
         }),
       })
       const recurring = await res.json()
@@ -603,6 +608,14 @@ export default function SettingsPage() {
                         <input type="number" min="1" max="31" placeholder="Day (1-31)" value={editingRecurringData.dayOfMonth} onChange={(e) => setEditingRecurringData({ ...editingRecurringData, dayOfMonth: e.target.value })} className="w-1/3 rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-sm outline-none focus:border-[var(--primary)]" />
                       )}
                     </div>
+                    <label className="flex items-center gap-2 text-xs text-[var(--muted)] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editingRecurringData.fixed}
+                        onChange={(e) => setEditingRecurringData({ ...editingRecurringData, fixed: e.target.checked })}
+                      />
+                      Fixed commitment — exclude from spending analytics
+                    </label>
                   </div>
                 ) : (
                   <div className="flex-1">
@@ -610,6 +623,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-[var(--muted)]">
                       {catName(recurring.category)} • KES {recurring.amount.toLocaleString()} • {recurring.frequency}
                       {recurring.frequency === 'monthly' && recurring.dayOfMonth ? ` (Day ${recurring.dayOfMonth})` : ''}
+                      {recurring.fixed ? ' • Fixed bill' : ''}
                     </p>
                   </div>
                 )}
@@ -635,7 +649,7 @@ export default function SettingsPage() {
                       >
                         {recurring.active ? 'Active' : 'Paused'}
                       </button>
-                      <button onClick={() => { setEditingRecurring(recurring.id); setEditingRecurringData({ category: recurring.category, item: recurring.item, amount: recurring.amount.toString(), frequency: recurring.frequency, dayOfMonth: recurring.dayOfMonth?.toString() || '' }); }} className="p-2 rounded hover:bg-[var(--card-2)] text-[var(--muted)] hover:text-[var(--text)] transition">
+                      <button onClick={() => { setEditingRecurring(recurring.id); setEditingRecurringData({ category: recurring.category, item: recurring.item, amount: recurring.amount.toString(), frequency: recurring.frequency, dayOfMonth: recurring.dayOfMonth?.toString() || '', fixed: !!recurring.fixed }); }} className="p-2 rounded hover:bg-[var(--card-2)] text-[var(--muted)] hover:text-[var(--text)] transition">
                         <I n="edit" size={16} />
                       </button>
                       <button
@@ -654,7 +668,7 @@ export default function SettingsPage() {
           <div className="space-y-3 border-t border-[var(--line)] pt-4">
             <select
               value={newRecurring.category}
-              onChange={(e) => setNewRecurring({ ...newRecurring, category: e.target.value })}
+              onChange={(e) => setNewRecurring({ ...newRecurring, category: e.target.value, fixed: isFixedCat(e.target.value) })}
               className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="">Select category...</option>
@@ -698,6 +712,20 @@ export default function SettingsPage() {
                 className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
               />
             )}
+            <label className="flex items-start gap-2 text-sm text-[var(--text)] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={newRecurring.fixed}
+                onChange={(e) => setNewRecurring({ ...newRecurring, fixed: e.target.checked })}
+                className="mt-1"
+              />
+              <span>
+                Fixed commitment
+                <span className="block text-xs text-[var(--muted)]">
+                  Big committed bills (rent, internet) are excluded from spending analytics so they don&apos;t skew your charts. Leave unchecked for small subscriptions like Netflix.
+                </span>
+              </span>
+            </label>
             <button
               onClick={addRecurringExpense}
               disabled={!newRecurring.category || !newRecurring.item || !newRecurring.amount}

@@ -3,7 +3,7 @@ import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
-import { isFixedExpense } from '@/lib/metrics'
+import { isFixedRecord } from '@/lib/metrics'
 
 export async function GET() {
   try {
@@ -23,7 +23,7 @@ export async function GET() {
     const groups: Record<string, { amt: number }> = {}
 
     for (const e of expenses) {
-      if (isFixedExpense(e.category, e.item)) continue
+      if (isFixedRecord(e)) continue
 
       // e.date is YYYY-MM-DD
       const monthKey = e.date.substring(0, 7) // YYYY-MM

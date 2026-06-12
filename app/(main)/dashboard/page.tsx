@@ -55,7 +55,7 @@ export default function DashboardPage() {
   const handleExpenseChange = useCallback((event: string, expense: any) => {
     if (event === 'add') {
       setExpenses((prev) => [
-        { id: expense.id, date: expense.date, cat: expense.category, item: expense.item, amt: expense.amount },
+        { id: expense.id, date: expense.date, cat: expense.category, item: expense.item, amt: expense.amount, fixed: expense.fixed },
         ...prev,
       ])
     } else if (event === 'delete') {
@@ -64,7 +64,7 @@ export default function DashboardPage() {
       setExpenses((prev) =>
         prev.map((e) =>
           e.id === expense.id
-            ? { id: expense.id, date: expense.date, cat: expense.category, item: expense.item, amt: expense.amount }
+            ? { id: expense.id, date: expense.date, cat: expense.category, item: expense.item, amt: expense.amount, fixed: expense.fixed }
             : e
         )
       )
@@ -100,12 +100,12 @@ export default function DashboardPage() {
         .then((d) => {
           if (Array.isArray(d)) {
             setExpenses(
-              d.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
+              d.map((e: { id: string; date: string; category: string; item: string; amount: number; fixed?: boolean | null }) => ({
                 id: e.id,
                 date: e.date,
                 cat: e.category,
                 item: e.item,
-                amt: e.amount,
+                amt: e.amount, fixed: e.fixed,
               }))
             )
           }

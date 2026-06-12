@@ -231,12 +231,12 @@ export default function AIPage() {
         setMemoryEnabled(userData.aiMemoryEnabled !== false)
         if (Array.isArray(expenseData)) {
           setExpenses(
-            expenseData.map((e: { id: string; date: string; category: string; item: string; amount: number }) => ({
+            expenseData.map((e: { id: string; date: string; category: string; item: string; amount: number; fixed?: boolean | null }) => ({
               id: e.id,
               date: e.date,
               cat: e.category,
               item: e.item,
-              amt: e.amount,
+              amt: e.amount, fixed: e.fixed,
             }))
           )
         }

@@ -178,6 +178,16 @@ async function runMigration() {
     } catch { console.log('  ⚠️  MonthlyBudget unique constraint may already exist') }
     console.log('  ✅ MonthlyBudget table ready')
 
+    // Step 10: Add fixed-bill flags
+    console.log('\n📌 Step 10: Adding fixed-bill columns...')
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "RecurringExpense" ADD COLUMN IF NOT EXISTS "fixed" BOOLEAN NOT NULL DEFAULT false`)
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Expense" ADD COLUMN IF NOT EXISTS "fixed" BOOLEAN`)
+      // Existing rent/internet recurring bills keep their current behaviour
+      await prisma.$executeRawUnsafe(`UPDATE "RecurringExpense" SET "fixed" = true WHERE "category" IN ('rent', 'internet') OR "item" ~* '\\yrent\\y'`)
+      console.log('  ✅ Fixed-bill columns ready')
+    } catch (e) { console.log(`  ⚠️  ${e.message?.split('\n')[0]}`) }
+
     // Verify
     console.log('\n🎉 Migration complete! Verifying...')
     const profileCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Profile"`

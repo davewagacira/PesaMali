@@ -50,6 +50,7 @@ model Expense {
   category  String
   item      String
   amount    Float
+  fixed     Boolean? // explicit fixed-bill flag; null = infer from category/item
   createdAt DateTime @default(now())
 
   @@index([profileId, date])
@@ -115,6 +116,7 @@ model RecurringExpense {
   frequency   String   // "monthly", "weekly", "biweekly"
   dayOfMonth  Int?     // for monthly: 1-31
   dayOfWeek   Int?     // for weekly: 0-6 (Sunday-Saturday)
+  fixed       Boolean  @default(false) // big committed bill — exclude from spending analytics
   lastRunDate String?  // YYYY-MM-DD
   nextRunDate String   // YYYY-MM-DD
   active      Boolean  @default(true)
