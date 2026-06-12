@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter } from 'next/navigation'
 import { I } from '@/components/Icons'
 
 const AVATARS = [
@@ -321,7 +320,6 @@ export default function ProfilesPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [userName, setUserName] = useState('')
-  const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -347,8 +345,8 @@ export default function ProfilesPage() {
         body: JSON.stringify({ profileId }),
       })
       if (res.ok) {
-        await new Promise(r => setTimeout(r, 500)) // let animation play
-        router.push('/dashboard')
+        await new Promise(r => setTimeout(r, 400)) // let animation play
+        window.location.href = '/dashboard'
       }
     } finally {
       setSelecting(null)
