@@ -10,17 +10,27 @@ import { DatePicker } from '@/components/DatePicker'
 import { LogSkeleton } from '@/components/LogSkeleton'
 import { listContainer, listItem } from '@/lib/motion'
 
+interface ExpenseDraft {
+  item: string
+  amount: number
+  category: string
+  date: string
+}
+
 function TxRow({
   e,
   onDelete,
-  onRename,
+  onSave,
 }: {
   e: MetricExpense
   onDelete?: (id: string) => void
-  onRename?: (id: string, item: string) => Promise<boolean>
+  onSave?: (id: string, draft: ExpenseDraft) => Promise<boolean>
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(e.item)
+  const [draftAmt, setDraftAmt] = useState(e.amt.toString())
+  const [draftCat, setDraftCat] = useState(e.cat)
+  const [draftDate, setDraftDate] = useState(e.date)
   const [saving, setSaving] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const c = catOf(e.cat)
@@ -30,11 +40,15 @@ function TxRow({
   })
 
   useEffect(() => {
-    if (!editing) setDraft(e.item)
-  }, [e.item, editing])
+    if (!editing) {
+      setDraft(e.item)
+      setDraftAmt(e.amt.toString())
+      setDraftCat(e.cat)
+      setDraftDate(e.date)
+    }
+  }, [e.item, e.amt, e.cat, e.date, editing])
 
   const cancel = () => {
-    setDraft(e.item)
     setEditing(false)
   }
 
@@ -44,13 +58,15 @@ function TxRow({
   }
 
   const save = async () => {
-    const next = draft.trim()
-    if (!next || next === e.item || !onRename) {
-      cancel()
-      return
+    if (!onSave) return cancel()
+    const nextItem = draft.trim()
+    const nextAmt = parseFloat(draftAmt)
+    if (!nextItem || !nextAmt || nextAmt <= 0) return
+    if (nextItem === e.item && nextAmt === e.amt && draftCat === e.cat && draftDate === e.date) {
+      return cancel()
     }
     setSaving(true)
-    const ok = await onRename(e.id, next)
+    const ok = await onSave(e.id, { item: nextItem, amount: nextAmt, category: draftCat, date: draftDate })
     setSaving(false)
     if (ok) setEditing(false)
   }
@@ -69,28 +85,64 @@ function TxRow({
           </div>
           <div>
             {editing ? (
-              <input
-                className="tx-edit-input"
-                value={draft}
-                autoFocus
-                disabled={saving}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') save()
-                  if (event.key === 'Escape') cancel()
-                }}
-              />
+              <div style={{ display: 'grid', gap: 6 }}>
+                <input
+                  className="tx-edit-input"
+                  value={draft}
+                  autoFocus
+                  disabled={saving}
+                  placeholder="Name"
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') save()
+                    if (event.key === 'Escape') cancel()
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <input
+                    className="tx-edit-input"
+                    style={{ width: 90 }}
+                    type="number"
+                    min="1"
+                    value={draftAmt}
+                    disabled={saving}
+                    placeholder="Amount"
+                    onChange={(event) => setDraftAmt(event.target.value)}
+                  />
+                  <select
+                    className="tx-edit-input"
+                    value={draftCat}
+                    disabled={saving}
+                    onChange={(event) => setDraftCat(event.target.value)}
+                  >
+                    {CATS.map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className="tx-edit-input"
+                    type="date"
+                    value={draftDate}
+                    disabled={saving}
+                    onChange={(event) => setDraftDate(event.target.value)}
+                  />
+                </div>
+              </div>
             ) : (
               <b>{e.item}</b>
             )}
-            <span>
-              {c.name} · {dt}
-            </span>
+            {!editing && (
+              <span>
+                {c.name} · {dt}
+              </span>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span className="amt">− {fmt(e.amt)}</span>
-          {onRename && (
+          {onSave && (
             editing ? (
               <>
                 <button
@@ -154,7 +206,7 @@ function TxRow({
               </div>
             )
           )}
-          {onDelete && !onRename && (
+          {onDelete && !onSave && (
             <button
               className="tx-action"
               onClick={() => onDelete(e.id)}
@@ -181,6 +233,8 @@ export default function LogPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [modalVariant, setModalVariant] = useState<'success' | 'warning'>('success')
   const [confirmDelete, setConfirmDelete] = useState<MetricExpense | null>(null)
+  const [undoExpense, setUndoExpense] = useState<MetricExpense | null>(null)
+  const [undoTimer, setUndoTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [dupBill, setDupBill] = useState<{ date: string; item: string; amount: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
@@ -259,11 +313,14 @@ export default function LogPage() {
     }
   }
 
-  const deleteExpense = async (id: string) => {
+  const deleteExpense = async (expense: MetricExpense) => {
     try {
-      const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' })
       if (res.ok) {
-        setExpenses((ex) => ex.filter((e) => e.id !== id))
+        setExpenses((ex) => ex.filter((e) => e.id !== expense.id))
+        setUndoExpense(expense)
+        if (undoTimer) clearTimeout(undoTimer)
+        setUndoTimer(setTimeout(() => setUndoExpense(null), 6000))
       } else {
         ping('Failed to delete')
       }
@@ -272,21 +329,48 @@ export default function LogPage() {
     }
   }
 
-  const renameExpense = async (id: string, nextItem: string) => {
-    if (!nextItem.trim()) {
-      ping('Expense name cannot be empty')
-      return false
+  const undoDelete = async () => {
+    if (!undoExpense) return
+    const exp = undoExpense
+    setUndoExpense(null)
+    if (undoTimer) clearTimeout(undoTimer)
+    try {
+      // force: true skips the duplicate-bill check when restoring a fixed bill
+      const res = await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: exp.date, category: exp.cat, item: exp.item, amount: exp.amt, force: true }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setExpenses((ex) => [
+          ...ex,
+          { id: data.id, date: data.date, cat: data.category, item: data.item, amt: data.amount, fixed: data.fixed },
+        ])
+        ping('Expense restored')
+      } else {
+        ping(data.error || 'Failed to restore expense')
+      }
+    } catch {
+      ping('Failed to restore expense')
     }
+  }
+
+  const saveExpense = async (id: string, draft: ExpenseDraft) => {
     try {
       const res = await fetch(`/api/expenses/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ item: nextItem.trim() }),
+        body: JSON.stringify(draft),
       })
       const data = await res.json()
       if (res.ok) {
-        setExpenses((ex) => ex.map((e) => (e.id === id ? { ...e, item: data.item } : e)))
-        setSuccessMessage('Expense name updated successfully.')
+        setExpenses((ex) =>
+          ex.map((e) =>
+            e.id === id ? { ...e, item: data.item, amt: data.amount, cat: data.category, date: data.date } : e
+          )
+        )
+        setSuccessMessage('Expense updated successfully.')
         setModalVariant('success')
         setShowSuccessModal(true)
         return true
@@ -379,7 +463,7 @@ export default function LogPage() {
                 <TxRow
                   key={e.id}
                   e={e}
-                  onRename={renameExpense}
+                  onSave={saveExpense}
                   onDelete={() => setConfirmDelete(e)}
                 />
               ))}
@@ -440,11 +524,39 @@ export default function LogPage() {
             : ''
         }
         onConfirm={() => {
-          if (confirmDelete) deleteExpense(confirmDelete.id)
+          if (confirmDelete) deleteExpense(confirmDelete)
           setConfirmDelete(null)
         }}
         onCancel={() => setConfirmDelete(null)}
       />
+
+      <AnimatePresence>
+        {undoExpense && (
+          <motion.div
+            className="toast"
+            initial={{ opacity: 0, y: 16, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 10, x: '-50%' }}
+          >
+            <I n="trash" size={15} />
+            Expense deleted
+            <button
+              onClick={undoDelete}
+              style={{
+                marginLeft: 10,
+                border: 'none',
+                background: 'none',
+                color: 'var(--primary)',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontSize: 13,
+              }}
+            >
+              Undo
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
