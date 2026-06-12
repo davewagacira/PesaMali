@@ -634,7 +634,7 @@ export default function AIPage() {
             transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
           >
             <div className="flex shrink-0 items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
-              <Orb small />
+              <img src="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png" alt="Gemini" className="h-6 w-6 shrink-0" />
               <div>
                 <b className="text-sm font-bold">PesaMali AI</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
