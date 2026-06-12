@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
-import { useMetrics, fmt, fmtN, catOf, iso, isFixedCat, MetricExpense } from '@/lib/metrics'
+import { useMetrics, fmt, fmtN, catOf, iso, MetricExpense } from '@/lib/metrics'
 import { DashboardSkeleton } from '@/components/DashboardSkeleton'
 import { AchievementsBadge } from '@/components/AchievementsBadge'
 import { useAblyExpenses } from '@/lib/useAbly'
@@ -175,7 +175,7 @@ export default function DashboardPage() {
   const weekTotal = m.last7.reduce((sum, d) => sum + d.amt, 0)
   const topCategory = m.byCat[0]
   // Advice targets a category the user can actually trim, never a fixed bill.
-  const topFlexCategory = m.byCat.find((c) => !isFixedCat(c.id))
+  const topFlexCategory = m.byFlexCat[0]
   const avgDaily = m.spent / Math.max(1, now.getDate())
   const availableAfterGoal = m.remaining - goal
   const moneyText = useCallback((value: number) => fmt(value), [])

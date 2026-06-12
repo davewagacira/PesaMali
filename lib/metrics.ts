@@ -16,8 +16,11 @@ export const CATS = [
 
 // Fixed monthly commitments (lump-sum bills) are excluded from the spend-pace
 // model so a rent payment on day 1 doesn't flag the whole month as over pace.
+// Rent is matched by item name too, since it's often logged under "Other".
 export const FIXED_CATEGORY_IDS = new Set(['rent', 'internet'])
+const FIXED_ITEM_RE = /\brent\b/i
 export const isFixedCat = (id: string) => FIXED_CATEGORY_IDS.has(id)
+export const isFixedExpense = (cat: string, item: string) => isFixedCat(cat) || FIXED_ITEM_RE.test(item)
 
 export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -54,6 +57,7 @@ export interface Metrics {
   status: 'ok' | 'warn' | 'danger'
   last7: { label: string; amt: number; today: boolean }[]
   byCat: { id: string; name: string; icon: string; color: string; amt: number }[]
+  byFlexCat: { id: string; name: string; icon: string; color: string; amt: number }[]
   topItems: { name: string; n: number; amt: number }[]
   dowOrdered: { label: string; amt: number }[]
   cum: { day: number; spent: number; ideal: number }[]
@@ -83,7 +87,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     const safe = dailyAllowance - todaySpent
     // Pace compares flexible (day-to-day) spending against what's left of the
     // budget after fixed bills, so lump-sum payments don't read as overspending.
-    const fixedSpent = expenses.filter((e) => isFixedCat(e.cat)).reduce((s, e) => s + e.amt, 0)
+    const fixedSpent = expenses.filter((e) => isFixedExpense(e.cat, e.item)).reduce((s, e) => s + e.amt, 0)
     const flexibleSpent = spent - fixedSpent
     const flexibleBudget = Math.max(budget - fixedSpent, 0)
     const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
@@ -109,6 +113,16 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       .filter((c) => c.amt > 0)
       .sort((a, b) => b.amt - a.amt)
 
+    // Same breakdown over controllable spending only — what advice should target.
+    const byFlexCat = CATS.map((c) => ({
+      ...c,
+      amt: expenses
+        .filter((e) => e.cat === c.id && !isFixedExpense(e.cat, e.item))
+        .reduce((s, e) => s + e.amt, 0),
+    }))
+      .filter((c) => c.amt > 0)
+      .sort((a, b) => b.amt - a.amt)
+
     const counts: Record<string, { n: number; amt: number; name: string }> = {}
     expenses.forEach((e) => {
       const k = e.item.toLowerCase()
@@ -130,7 +144,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     let run = 0
     for (let d = 1; d <= dayOfMonth; d++) {
       run += expenses
-        .filter((e) => e.date === dKey(d) && !isFixedCat(e.cat))
+        .filter((e) => e.date === dKey(d) && !isFixedExpense(e.cat, e.item))
         .reduce((s, e) => s + e.amt, 0)
       cum.push({ day: d, spent: run, ideal: (flexibleBudget * d) / daysInMonth })
     }
@@ -157,6 +171,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       status,
       last7,
       byCat,
+      byFlexCat,
       topItems,
       dowOrdered,
       cum,

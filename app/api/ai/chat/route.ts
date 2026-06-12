@@ -6,7 +6,7 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { isFixedCat } from '@/lib/metrics'
+import { isFixedExpense } from '@/lib/metrics'
 import { cleanString } from '@/lib/validate'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ function buildContext(
   const monthPace = dayOfMonth / daysInMonth
   // Mirror the dashboard's pace model: fixed bills (rent, internet) are
   // excluded so a lump-sum payment doesn't read as runaway spending.
-  const fixedSpent = expenses.filter((e) => isFixedCat(e.category)).reduce((s, e) => s + e.amount, 0)
+  const fixedSpent = expenses.filter((e) => isFixedExpense(e.category, e.item)).reduce((s, e) => s + e.amount, 0)
   const flexibleSpent = spent - fixedSpent
   const flexibleBudget = Math.max(user.monthlyBudget - fixedSpent, 0)
   const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
