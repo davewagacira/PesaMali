@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { publishExpenseEvent } from '@/lib/ably'
+import { cleanString } from '@/lib/validate'
 
 export async function PUT(
   req: NextRequest,
@@ -21,9 +22,9 @@ export async function PUT(
     }
 
     const { item } = await req.json()
-    const nextItem = typeof item === 'string' ? item.trim() : ''
+    const nextItem = cleanString(item, 120)
     if (!nextItem) {
-      return NextResponse.json({ error: 'Expense name required' }, { status: 400 })
+      return NextResponse.json({ error: 'Expense name required (max 120 characters)' }, { status: 400 })
     }
 
     const updated = await prisma.expense.update({

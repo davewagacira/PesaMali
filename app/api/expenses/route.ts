@@ -6,6 +6,7 @@ import { SessionData, sessionOptions } from '@/lib/session'
 import { publishExpenseEvent } from '@/lib/ably'
 import { checkAndAwardAchievements, createNotification } from '@/lib/achievements'
 import { processDueRecurringExpenses } from '@/lib/recurring'
+import { cleanString, cleanAmount, cleanDateKey, cleanCategory } from '@/lib/validate'
 
 function nairobiDateParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -52,9 +53,13 @@ export async function POST(req: NextRequest) {
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const { date, category, item, amount } = await req.json()
-    if (!date || !category || !item || !amount) {
-      return NextResponse.json({ error: 'All fields required' }, { status: 400 })
+    const body = await req.json()
+    const date = cleanDateKey(body.date)
+    const category = cleanCategory(body.category)
+    const item = cleanString(body.item, 120)
+    const numAmount = cleanAmount(body.amount)
+    if (!date || !category || !item || numAmount === null) {
+      return NextResponse.json({ error: 'A valid date, category, item and amount are required' }, { status: 400 })
     }
 
     // Get user and check category budget
@@ -62,8 +67,6 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
-
-    const numAmount = parseFloat(amount)
 
     const expense = await prisma.expense.create({
       data: {

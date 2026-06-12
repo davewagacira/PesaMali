@@ -4,12 +4,23 @@ import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
+import { cleanString, cleanEmail, cleanPassword, cleanAmount } from '@/lib/validate'
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, monthlyBudget } = await req.json()
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Name, email and password required' }, { status: 400 })
+    const body = await req.json()
+    const name = cleanString(body.name, 80)
+    const email = cleanEmail(body.email)
+    const password = cleanPassword(body.password)
+    if (!name || !email) {
+      return NextResponse.json({ error: 'A valid name and email are required' }, { status: 400 })
+    }
+    if (!password) {
+      return NextResponse.json({ error: 'Password must be 8-128 characters' }, { status: 400 })
+    }
+    const monthlyBudget = body.monthlyBudget === undefined ? 15000 : cleanAmount(body.monthlyBudget)
+    if (monthlyBudget === null) {
+      return NextResponse.json({ error: 'Invalid monthly budget' }, { status: 400 })
     }
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
@@ -21,7 +32,7 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: hashed,
-        monthlyBudget: monthlyBudget || 15000,
+        monthlyBudget,
         savingsGoal: 2000,
       },
     })

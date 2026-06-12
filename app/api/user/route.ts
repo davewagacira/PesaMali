@@ -3,6 +3,7 @@ import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
+import { cleanString, cleanPassword, cleanAmount } from '@/lib/validate'
 
 export async function GET() {
   try {
@@ -47,8 +48,11 @@ export async function PUT(req: NextRequest) {
     const bcrypt = await import('bcryptjs')
 
     // Validate current password if changing password
-    if (password) {
-      if (!currentPassword) {
+    if (password !== undefined) {
+      if (!cleanPassword(password)) {
+        return NextResponse.json({ error: 'Password must be 8-128 characters' }, { status: 400 })
+      }
+      if (!currentPassword || typeof currentPassword !== 'string') {
         return NextResponse.json({ error: 'Current password required' }, { status: 400 })
       }
       const valid = await bcrypt.default.compare(currentPassword, user.password)
@@ -58,14 +62,26 @@ export async function PUT(req: NextRequest) {
     }
 
     const updateData: any = {}
-    if (monthlyBudget !== undefined) updateData.monthlyBudget = monthlyBudget
-    if (savingsGoal !== undefined) updateData.savingsGoal = savingsGoal
-    if (name) updateData.name = name
-    if (aiMemoryEnabled !== undefined) updateData.aiMemoryEnabled = aiMemoryEnabled
-    if (notificationsEnabled !== undefined) updateData.notificationsEnabled = notificationsEnabled
-    if (pushNotificationsEnabled !== undefined) updateData.pushNotificationsEnabled = pushNotificationsEnabled
+    if (monthlyBudget !== undefined) {
+      const budget = cleanAmount(monthlyBudget)
+      if (budget === null) return NextResponse.json({ error: 'Invalid monthly budget' }, { status: 400 })
+      updateData.monthlyBudget = budget
+    }
+    if (savingsGoal !== undefined) {
+      const goal = cleanAmount(savingsGoal, { min: 0 })
+      if (goal === null) return NextResponse.json({ error: 'Invalid savings goal' }, { status: 400 })
+      updateData.savingsGoal = goal
+    }
+    if (name !== undefined) {
+      const cleanName = cleanString(name, 80)
+      if (!cleanName) return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+      updateData.name = cleanName
+    }
+    if (aiMemoryEnabled !== undefined) updateData.aiMemoryEnabled = Boolean(aiMemoryEnabled)
+    if (notificationsEnabled !== undefined) updateData.notificationsEnabled = Boolean(notificationsEnabled)
+    if (pushNotificationsEnabled !== undefined) updateData.pushNotificationsEnabled = Boolean(pushNotificationsEnabled)
     if (password) {
-      const hashedPassword = await bcrypt.default.hash(password, 10)
+      const hashedPassword = await bcrypt.default.hash(password, 12)
       updateData.password = hashedPassword
     }
 

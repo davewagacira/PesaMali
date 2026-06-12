@@ -36,10 +36,18 @@ export async function PATCH(req: NextRequest) {
     }
 
     const { id, read } = await req.json()
+    if (typeof id !== 'string') {
+      return NextResponse.json({ error: 'Notification id required' }, { status: 400 })
+    }
+
+    const existing = await prisma.notification.findUnique({ where: { id } })
+    if (!existing || existing.userId !== session.userId) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
 
     const notification = await prisma.notification.update({
       where: { id },
-      data: { read },
+      data: { read: Boolean(read) },
     })
 
     return NextResponse.json(notification)
@@ -57,6 +65,14 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { id } = await req.json()
+    if (typeof id !== 'string') {
+      return NextResponse.json({ error: 'Notification id required' }, { status: 400 })
+    }
+
+    const existing = await prisma.notification.findUnique({ where: { id } })
+    if (!existing || existing.userId !== session.userId) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
 
     await prisma.notification.delete({
       where: { id },

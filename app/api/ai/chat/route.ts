@@ -6,7 +6,8 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { isFixedCat } from '@/lib/metrics'
+import { isFixedExpense } from '@/lib/metrics'
+import { cleanString } from '@/lib/validate'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
 function getVertexClient(): GoogleGenAI | null {
@@ -97,7 +98,7 @@ function buildContext(
   const monthPace = dayOfMonth / daysInMonth
   // Mirror the dashboard's pace model: fixed bills (rent, internet) are
   // excluded so a lump-sum payment doesn't read as runaway spending.
-  const fixedSpent = expenses.filter((e) => isFixedCat(e.category)).reduce((s, e) => s + e.amount, 0)
+  const fixedSpent = expenses.filter((e) => isFixedExpense(e.category, e.item)).reduce((s, e) => s + e.amount, 0)
   const flexibleSpent = spent - fixedSpent
   const flexibleBudget = Math.max(user.monthlyBudget - fixedSpent, 0)
   const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
@@ -284,9 +285,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { question, conversationId, compressedContext } = await req.json()
-    if (!question?.trim()) {
-      return NextResponse.json({ error: 'Question required' }, { status: 400 })
+    const body = await req.json()
+    const question = cleanString(body.question, 2000)
+    const conversationId = typeof body.conversationId === 'string' ? body.conversationId : undefined
+    const compressedContext =
+      typeof body.compressedContext === 'string' ? body.compressedContext.slice(0, 8000) : undefined
+    if (!question) {
+      return NextResponse.json({ error: 'Question required (max 2000 characters)' }, { status: 400 })
     }
 
     // Layer 1: fast topic guard — block obvious off-topic questions before any AI call
