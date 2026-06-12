@@ -64,7 +64,7 @@ async function runMigration() {
       console.log(`  ✅ Created profiles for ${user.name}`)
     }
 
-    // Step 4: Add profileId columns to all tables
+    // Step 4: Add profileId columns and make old userId columns nullable
     console.log('\n📝 Step 4: Adding profileId columns...')
     const tables = ['Expense', 'Conversation', 'CategoryBudget', 'RecurringExpense', 'Achievement', 'Notification']
     for (const table of tables) {
@@ -72,6 +72,11 @@ async function runMigration() {
         await prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "profileId" TEXT`)
         console.log(`  ✅ Added profileId to ${table}`)
       } catch (e) { console.log(`  ⚠️  ${table}: ${e.message?.split('\n')[0]}`) }
+      
+      try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ALTER COLUMN "userId" DROP NOT NULL`)
+        console.log(`  ✅ Made userId nullable in ${table}`)
+      } catch (e) { console.log(`  ⚠️  Failed to make userId nullable in ${table}: ${e.message?.split('\n')[0]}`) }
     }
 
     // Step 5: Populate profileId from userId
