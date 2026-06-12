@@ -12,12 +12,12 @@ export async function PUT(
 ) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const expense = await prisma.expense.findUnique({ where: { id: params.id } })
-    if (!expense || expense.userId !== session.userId) {
+    if (!expense || expense.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -32,7 +32,7 @@ export async function PUT(
       data: { item: nextItem },
     })
 
-    await publishExpenseEvent(session.userId, 'update', updated)
+    await publishExpenseEvent(session.profileId, 'update', updated)
 
     return NextResponse.json(updated)
   } catch (e) {
@@ -47,12 +47,12 @@ export async function DELETE(
 ) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const expense = await prisma.expense.findUnique({ where: { id: params.id } })
-    if (!expense || expense.userId !== session.userId) {
+    if (!expense || expense.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -61,7 +61,7 @@ export async function DELETE(
     })
 
     // Publish real-time event
-    await publishExpenseEvent(session.userId, 'delete', { id: params.id })
+    await publishExpenseEvent(session.profileId, 'delete', { id: params.id })
 
     return NextResponse.json({ ok: true })
   } catch (e) {

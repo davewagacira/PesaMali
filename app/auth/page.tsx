@@ -44,7 +44,7 @@ export default function AuthPage() {
       } else if (data.mfaRequired) {
         router.push('/auth/mfa')
       } else {
-        router.push('/dashboard')
+        router.push('/profiles')
       }
     } catch {
       setError('Network error')

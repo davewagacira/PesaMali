@@ -9,14 +9,14 @@ import { cleanString, cleanAmount, cleanCategory, cleanInt } from '@/lib/validat
 export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await processDueRecurringExpenses(session.userId)
+    await processDueRecurringExpenses(session.profileId)
 
     const recurring = await prisma.recurringExpense.findMany({
-      where: { userId: session.userId, active: true },
+      where: { profileId: session.profileId, active: true },
     })
 
     return NextResponse.json(recurring)
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     const recurring = await prisma.recurringExpense.create({
       data: {
-        userId: session.userId,
+        profileId: session.profileId,
         category,
         item,
         amount,

@@ -385,7 +385,7 @@ function generateTitle(question: string): string {
 export async function POST(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -403,9 +403,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: OFF_TOPIC_REPLY, source: 'guard' })
     }
 
-    // Fetch user and check memory setting
-    const userRecord = await prisma.user.findUnique({ where: { id: session.userId } })
-    if (!userRecord) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    // Fetch profile and check memory setting
+    const userRecord = await prisma.profile.findUnique({ where: { id: session.profileId } })
+    if (!userRecord) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
     // If conversationId provided, validate ownership
     let conversation = null
@@ -415,7 +415,7 @@ export async function POST(req: NextRequest) {
         where: { id: conversationId },
         include: { messages: { orderBy: { createdAt: 'asc' } } },
       })
-      if (conversation && conversation.userId !== session.userId) {
+      if (conversation && conversation.profileId !== session.profileId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
     }
@@ -423,7 +423,7 @@ export async function POST(req: NextRequest) {
     // Pull live expenses
     const expenses = await prisma.expense.findMany({
       where: {
-        userId: session.userId,
+        profileId: session.profileId,
         date: {
           startsWith: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
         },
@@ -469,7 +469,7 @@ User: ${question}`
       // Create new conversation
       const newConv = await prisma.conversation.create({
         data: {
-          userId: session.userId,
+          profileId: session.profileId,
           title: generateTitle(question),
         },
       })

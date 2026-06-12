@@ -5,12 +5,23 @@ import { I } from './Icons'
 import { Skeleton } from './Skeleton'
 import { useState, useEffect } from 'react'
 
+const PROFILE_TYPE_LABELS: Record<string, string> = {
+  budget: '🎓 Budget',
+  personal: '💼 My Money',
+  business: '🚀 Business',
+  savings: '💎 Savings',
+}
+
 interface SidebarProps {
   userName: string
   theme: string
   onThemeToggle: () => void
   drawerOpen?: boolean
   onDrawerChange?: (open: boolean) => void
+  profileName?: string
+  profileAvatar?: string
+  profileColor?: string
+  profileType?: string
 }
 
 const NAV = [
@@ -23,10 +34,21 @@ const NAV = [
   { id: 'settings', label: 'Budget & settings', icon: 'settings', href: '/settings' },
 ]
 
-function SidebarContent({ userName, theme, onThemeToggle, onNav }: { userName: string; theme: string; onThemeToggle: () => void; onNav: () => void }) {
+function SidebarContent({
+  userName, theme, onThemeToggle, onNav,
+  profileName, profileAvatar, profileColor, profileType,
+}: {
+  userName: string; theme: string; onThemeToggle: () => void; onNav: () => void
+  profileName?: string; profileAvatar?: string; profileColor?: string; profileType?: string
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const isLoading = !userName
+
+  const handleSwitchProfile = () => {
+    onNav()
+    router.push('/profiles')
+  }
 
   return (
     <>
@@ -51,6 +73,31 @@ function SidebarContent({ userName, theme, onThemeToggle, onNav }: { userName: s
           )}
         </div>
       </div>
+
+      {/* Active profile pill */}
+      {profileName && (
+        <motion.button
+          className="sidebar-profile-pill"
+          onClick={handleSwitchProfile}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          title="Switch profile"
+          style={{ '--profile-color': profileColor || '#155EEF' } as React.CSSProperties}
+        >
+          <span
+            className="sidebar-profile-avatar"
+            style={{ background: `${profileColor || '#155EEF'}20`, border: `1.5px solid ${profileColor || '#155EEF'}30` }}
+          >
+            {profileAvatar || '😊'}
+          </span>
+          <div className="sidebar-profile-info">
+            <b>{profileName}</b>
+            <small>{PROFILE_TYPE_LABELS[profileType || 'personal'] || profileType}</small>
+          </div>
+          <I n="refreshCw" size={13} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+        </motion.button>
+      )}
+
       <nav className="nav">
         {isLoading ? (
           // Skeleton nav items
@@ -114,7 +161,7 @@ function SidebarContent({ userName, theme, onThemeToggle, onNav }: { userName: s
   )
 }
 
-export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen: controlledDrawerOpen, onDrawerChange }: SidebarProps) {
+export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen: controlledDrawerOpen, onDrawerChange, profileName, profileAvatar, profileColor, profileType }: SidebarProps) {
   const [internalDrawerOpen, setInternalDrawerOpen] = useState(false)
   const drawerOpen = controlledDrawerOpen ?? internalDrawerOpen
   const setDrawerOpen = onDrawerChange ?? setInternalDrawerOpen
@@ -128,6 +175,10 @@ export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen: co
           theme={theme}
           onThemeToggle={onThemeToggle}
           onNav={() => {}}
+          profileName={profileName}
+          profileAvatar={profileAvatar}
+          profileColor={profileColor}
+          profileType={profileType}
         />
       </aside>
 
@@ -160,6 +211,10 @@ export default function Sidebar({ userName, theme, onThemeToggle, drawerOpen: co
                 theme={theme}
                 onThemeToggle={onThemeToggle}
                 onNav={() => setDrawerOpen(false)}
+                profileName={profileName}
+                profileAvatar={profileAvatar}
+                profileColor={profileColor}
+                profileType={profileType}
               />
             </motion.aside>
           </>

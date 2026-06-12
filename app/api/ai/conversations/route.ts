@@ -7,12 +7,12 @@ import { SessionData, sessionOptions } from '@/lib/session'
 export async function GET() {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const conversations = await prisma.conversation.findMany({
-      where: { userId: session.userId },
+      where: { profileId: session.profileId },
       select: {
         id: true,
         title: true,
@@ -43,13 +43,13 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const conversation = await prisma.conversation.create({
       data: {
-        userId: session.userId,
+        profileId: session.profileId,
         title: 'New conversation',
       },
     })

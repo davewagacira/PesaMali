@@ -32,7 +32,17 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: hashed,
-        monthlyBudget,
+      },
+    })
+    // Auto-create the first default profile (Budget profile)
+    const profile = await prisma.profile.create({
+      data: {
+        userId: user.id,
+        name: `${name.split(' ')[0]}'s Budget`,
+        avatar: '🎓',
+        color: '#155EEF',
+        type: 'budget',
+        monthlyBudget: monthlyBudget || 15000,
         savingsGoal: 2000,
       },
     })
@@ -45,8 +55,7 @@ export async function POST(req: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
-      monthlyBudget: user.monthlyBudget,
-      savingsGoal: user.savingsGoal,
+      profileId: profile.id,
     })
   } catch (e) {
     console.error(e)

@@ -7,12 +7,12 @@ import { prisma } from '@/lib/prisma'
 export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const achievements = await prisma.achievement.findMany({
-      where: { userId: session.userId },
+      where: { profileId: session.profileId },
       orderBy: { unlockedAt: 'desc' },
     })
 

@@ -7,18 +7,18 @@ import { prisma } from '@/lib/prisma'
 export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const notifications = await prisma.notification.findMany({
-      where: { userId: session.userId },
+      where: { profileId: session.profileId },
       orderBy: { createdAt: 'desc' },
       take: 50,
     })
 
     const unread = await prisma.notification.count({
-      where: { userId: session.userId, read: false },
+      where: { profileId: session.profileId, read: false },
     })
 
     return NextResponse.json({ notifications, unread })
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

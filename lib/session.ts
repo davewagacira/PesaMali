@@ -4,6 +4,8 @@ export interface SessionData {
   userId: string
   userName: string
   isLoggedIn: boolean
+  profileId?: string
+  profileName?: string
   mfaVerified?: boolean
   mfaPending?: boolean
   mfaSetupSecret?: string

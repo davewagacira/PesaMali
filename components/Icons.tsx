@@ -58,6 +58,8 @@ export const PATHS: Record<string, React.ReactNode> = {
   eye: <g><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g>,
   eyeOff: <g><path d="M3 3l18 18"/><path d="M10.6 10.6A3 3 0 0 0 13.4 13.4"/><path d="M9.8 5.4A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a18.3 18.3 0 0 1-3.2 4.1"/><path d="M6.6 6.9C3.6 8.8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/></g>,
   x: <g><path d="M18 6L6 18M6 6l12 12"/></g>,
+  refreshCw: <g><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></g>,
+  plus: <path d="M12 5v14M5 12h14"/>,
 }
 
 interface IProps {

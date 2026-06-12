@@ -10,7 +10,7 @@ import { cleanInt } from '@/lib/validate'
 export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -25,14 +25,14 @@ export async function GET(req: NextRequest) {
     const monthStart = `${queryYear}-${String(queryMonth).padStart(2, '0')}-01`
     const monthEnd = new Date(queryYear, queryMonth, 0).toISOString().slice(0, 10)
 
-    const user = await prisma.user.findUnique({ where: { id: session.userId } })
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    const profile = await prisma.profile.findUnique({ where: { id: session.profileId } })
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     const expenses = await prisma.expense.findMany({
       where: {
-        userId: session.userId,
+        profileId: session.profileId,
         date: { gte: monthStart, lte: monthEnd },
       },
       orderBy: { date: 'desc' },
@@ -50,16 +50,16 @@ export async function GET(req: NextRequest) {
       const rows = [
         ['PesaMali - Monthly Expense Report'],
         [`Month: ${queryMonth}/${queryYear}`],
-        [`User: ${user.name} (${user.email})`],
+        [`User: ${profile.name} (${profile.email})`],
         [''],
         ['Date', 'Category', 'Item', 'Amount (KES)'],
         ...expenses.map((e) => [e.date, e.category, e.item, e.amount.toString()]),
         [''],
         ['Summary'],
-        ['Budget', user.monthlyBudget.toString()],
+        ['Budget', profile.monthlyBudget.toString()],
         ['Total Spent', totalSpent.toString()],
-        ['Remaining', (user.monthlyBudget - totalSpent).toString()],
-        ['Savings Goal', user.savingsGoal.toString()],
+        ['Remaining', (profile.monthlyBudget - totalSpent).toString()],
+        ['Savings Goal', profile.savingsGoal.toString()],
         [''],
         ['By Category'],
         ...Object.entries(categoryExpenses).map(([cat, amt]) => [cat, amt.toString()]),
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
       doc.setFontSize(11)
       doc.text(`Month: ${queryMonth}/${queryYear}`, 20, yPos)
       yPos += 7
-      doc.text(`User: ${user.name}`, 20, yPos)
+      doc.text(`User: ${profile.name}`, 20, yPos)
       yPos += 7
       doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, yPos)
       yPos += 15
@@ -100,11 +100,11 @@ export async function GET(req: NextRequest) {
 
       doc.setFontSize(10)
       const summary = [
-        `Budget: KES ${user.monthlyBudget.toLocaleString()}`,
+        `Budget: KES ${profile.monthlyBudget.toLocaleString()}`,
         `Total Spent: KES ${totalSpent.toLocaleString()}`,
-        `Remaining: KES ${(user.monthlyBudget - totalSpent).toLocaleString()}`,
-        `Savings Goal: KES ${user.savingsGoal.toLocaleString()}`,
-        `Status: ${totalSpent <= user.monthlyBudget ? '✓ On Track' : '✗ Over Budget'}`,
+        `Remaining: KES ${(profile.monthlyBudget - totalSpent).toLocaleString()}`,
+        `Savings Goal: KES ${profile.savingsGoal.toLocaleString()}`,
+        `Status: ${totalSpent <= profile.monthlyBudget ? '✓ On Track' : '✗ Over Budget'}`,
       ]
 
       for (const line of summary) {

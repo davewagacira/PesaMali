@@ -80,6 +80,7 @@ export async function middleware(request: NextRequest) {
     if (!result.ok) return rateLimitResponse(result.retryAfterSeconds)
   }
 
+  // Always allow public routes
   if (
     pathname === '/' ||
     pathname.startsWith('/auth') ||
@@ -106,6 +107,17 @@ export async function middleware(request: NextRequest) {
       if (session.mfaPending) return NextResponse.redirect(new URL('/auth/mfa', request.url))
       return NextResponse.redirect(new URL('/auth', request.url))
     }
+
+    // Allow profile API and profile page always (for logged in users)
+    if (pathname.startsWith('/api/profiles') || pathname === '/profiles') {
+      return NextResponse.next()
+    }
+
+    // If logged in but no profile selected, redirect to profiles page
+    if (!session.profileId) {
+      return NextResponse.redirect(new URL('/profiles', request.url))
+    }
+
   } catch {
     // Malformed session cookie — clear it and redirect
     if (isApi) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

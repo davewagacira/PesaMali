@@ -29,14 +29,14 @@ function nairobiDateParts(date = new Date()) {
 export async function GET() {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    if (session.userId) await processDueRecurringExpenses(session.userId)
+    if (session.profileId) await processDueRecurringExpenses(session.profileId)
     const prefix = nairobiDateParts().monthKey
     const expenses = await prisma.expense.findMany({
       where: {
-        userId: session.userId,
+        profileId: session.profileId,
         date: { startsWith: prefix },
       },
       orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
@@ -51,7 +51,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const body = await req.json()
@@ -63,10 +63,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'A valid date, category, item and amount are required' }, { status: 400 })
     }
 
-    // Get user and check category budget
-    const user = await prisma.user.findUnique({ where: { id: session.userId } })
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    const profileId = session.profileId
+
+    // Get profile and check category budget
+    const profile = await prisma.profile.findUnique({ where: { id: profileId } })
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     // Fixed bills (rent, internet) usually auto-log from a recurring template,
@@ -96,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     const expense = await prisma.expense.create({
       data: {
-        userId: session.userId,
+        profileId,
         date,
         category,
         item,
@@ -105,14 +107,13 @@ export async function POST(req: NextRequest) {
     })
 
     // Envelope status for this category (null when no budget is set)
-    const userId = session.userId
     const [categoryBudget, categorySpent] = await Promise.all([
       prisma.categoryBudget.findUnique({
-        where: { userId_category: { userId, category } },
+        where: { profileId_category: { profileId, category } },
       }),
       prisma.expense.aggregate({
         where: {
-          userId,
+          profileId,
           category,
           date: { startsWith: date.slice(0, 7) },
         },
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
       const total = categorySpent._sum.amount || 0
       envelope = { limit: categoryBudget.limit, spent: total, remaining: categoryBudget.limit - total }
       if (total > categoryBudget.limit) {
-        await createNotification(userId, {
+        await createNotification(profileId, {
           type: 'budget_warning',
           title: '⚠️ Category Budget Exceeded',
           message: `You've exceeded your ${category} budget (${total.toLocaleString()} / ${categoryBudget.limit.toLocaleString()})`,
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest) {
 
     // Non-critical side work runs after the response so logging feels instant
     const sideWork = async () => {
-      await publishExpenseEvent(userId, 'add', expense)
+      await publishExpenseEvent(profileId, 'add', expense)
 
       // Check daily safe spend
       const todayInfo = nairobiDateParts()
@@ -145,11 +146,11 @@ export async function POST(req: NextRequest) {
       const monthStart = `${todayInfo.monthKey}-01`
       const [todaySpent, monthExpenses] = await Promise.all([
         prisma.expense.aggregate({
-          where: { userId, date: today },
+          where: { profileId, date: today },
           _sum: { amount: true },
         }),
         prisma.expense.aggregate({
-          where: { userId, date: { gte: monthStart } },
+          where: { profileId, date: { gte: monthStart } },
           _sum: { amount: true },
         }),
       ])
@@ -159,11 +160,10 @@ export async function POST(req: NextRequest) {
       const daysInMonth = new Date(todayInfo.year, todayInfo.month, 0).getDate()
       const daysLeft = daysInMonth - todayInfo.day + 1
       const priorSpent = monthSpent - todayTotal
-      const remaining = user.monthlyBudget - monthSpent
-      const safeDaily = daysLeft > 0 ? (user.monthlyBudget - priorSpent - user.savingsGoal) / daysLeft : 0
+      const safeDaily = daysLeft > 0 ? (profile.monthlyBudget - priorSpent - profile.savingsGoal) / daysLeft : 0
 
       if (todayTotal > safeDaily && safeDaily > 0) {
-        await createNotification(userId, {
+        await createNotification(profileId, {
           type: 'budget_warning',
           title: 'Daily Safe Spend Exceeded',
           message: `Today's spending (KES ${todayTotal.toLocaleString()}) exceeds safe daily amount (KES ${safeDaily.toLocaleString()})`,
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Check and award achievements
-      await checkAndAwardAchievements(userId)
+      await checkAndAwardAchievements(profileId)
     }
     sideWork().catch((e) => console.error('[Expense side-work error]', e))
 

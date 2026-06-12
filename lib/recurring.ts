@@ -51,11 +51,11 @@ function nextRunDate(currentKey: string, frequency: string, dayOfMonth?: number 
   return nextMonthlyDate(currentKey, dayOfMonth)
 }
 
-export async function processDueRecurringExpenses(userId?: string) {
+export async function processDueRecurringExpenses(profileId?: string) {
   const today = nairobiDateKey()
   const dueRecurring = await prisma.recurringExpense.findMany({
     where: {
-      ...(userId ? { userId } : {}),
+      ...(profileId ? { profileId } : {}),
       active: true,
       nextRunDate: { lte: today },
     },
@@ -71,7 +71,7 @@ export async function processDueRecurringExpenses(userId?: string) {
     while (dueDate <= today && guard < 24) {
       const alreadyLogged = await prisma.expense.findFirst({
         where: {
-          userId: recurring.userId,
+          profileId: recurring.profileId,
           date: dueDate,
           category: recurring.category,
           item: recurring.item,
@@ -82,7 +82,7 @@ export async function processDueRecurringExpenses(userId?: string) {
       if (!alreadyLogged) {
         const expense = await prisma.expense.create({
           data: {
-            userId: recurring.userId,
+            profileId: recurring.profileId,
             date: dueDate,
             category: recurring.category,
             item: recurring.item,
@@ -90,8 +90,8 @@ export async function processDueRecurringExpenses(userId?: string) {
           },
         })
         createdCount++
-        await publishExpenseEvent(recurring.userId, 'add', expense)
-        await createNotification(recurring.userId, {
+        await publishExpenseEvent(recurring.profileId, 'add', expense)
+        await createNotification(recurring.profileId, {
           type: 'recurring_expense',
           title: 'Recurring expense logged',
           message: `${recurring.item} (${recurring.amount.toLocaleString()}) was added automatically.`,

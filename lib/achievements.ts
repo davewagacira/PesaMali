@@ -47,10 +47,10 @@ const achievements: Record<string, AchievementDefinition> = {
   },
 }
 
-export async function checkAndAwardAchievements(userId: string) {
+export async function checkAndAwardAchievements(profileId: string) {
   try {
-    const user = await prisma.user.findUnique({ where: { id: userId } })
-    if (!user) return
+    const profile = await prisma.profile.findUnique({ where: { id: profileId } })
+    if (!profile) return
 
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
@@ -58,32 +58,32 @@ export async function checkAndAwardAchievements(userId: string) {
 
     const expenses = await prisma.expense.findMany({
       where: {
-        userId,
+        profileId,
         date: { gte: monthStart },
       },
     })
 
     const spent = expenses.reduce((s, e) => s + e.amount, 0)
-    const remaining = user.monthlyBudget - spent
-    const saved = user.savingsGoal - (user.monthlyBudget - remaining)
+    const remaining = profile.monthlyBudget - spent
+    const saved = profile.savingsGoal - (profile.monthlyBudget - remaining)
 
     // Check for savings milestones
-    if (saved >= 100000 && !(await hasAchievement(userId, 'savings_100k'))) {
-      await awardAchievement(userId, 'savings_100k')
-    } else if (saved >= 50000 && !(await hasAchievement(userId, 'savings_50k'))) {
-      await awardAchievement(userId, 'savings_50k')
-    } else if (saved >= 25000 && !(await hasAchievement(userId, 'savings_25k'))) {
-      await awardAchievement(userId, 'savings_25k')
+    if (saved >= 100000 && !(await hasAchievement(profileId, 'savings_100k'))) {
+      await awardAchievement(profileId, 'savings_100k')
+    } else if (saved >= 50000 && !(await hasAchievement(profileId, 'savings_50k'))) {
+      await awardAchievement(profileId, 'savings_50k')
+    } else if (saved >= 25000 && !(await hasAchievement(profileId, 'savings_25k'))) {
+      await awardAchievement(profileId, 'savings_25k')
     }
 
     // Check if goal reached
-    if (remaining >= user.savingsGoal && !(await hasAchievement(userId, 'goal_reached'))) {
-      await awardAchievement(userId, 'goal_reached')
+    if (remaining >= profile.savingsGoal && !(await hasAchievement(profileId, 'goal_reached'))) {
+      await awardAchievement(profileId, 'goal_reached')
     }
 
     // Check for perfect day (stayed within safe daily spend)
     const todayExpense = expenses.find((e) => e.date === today)
-    const safeDaily = remaining > 0 ? (remaining - user.savingsGoal) / (new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()) : 0
+    const safeDaily = remaining > 0 ? (remaining - profile.savingsGoal) / (new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()) : 0
 
     if (todayExpense && todayExpense.amount <= safeDaily) {
       // Could track perfect days streak, for now just check current day
@@ -93,24 +93,24 @@ export async function checkAndAwardAchievements(userId: string) {
   }
 }
 
-async function hasAchievement(userId: string, achievementType: string): Promise<boolean> {
+async function hasAchievement(profileId: string, achievementType: string): Promise<boolean> {
   const existing = await prisma.achievement.findFirst({
     where: {
-      userId,
+      profileId,
       type: achievements[achievementType]?.type,
     },
   })
   return !!existing
 }
 
-async function awardAchievement(userId: string, achievementKey: string) {
+async function awardAchievement(profileId: string, achievementKey: string) {
   try {
     const def = achievements[achievementKey]
     if (!def) return
 
     const achievement = await prisma.achievement.create({
       data: {
-        userId,
+        profileId,
         type: def.type,
         title: def.title,
         description: def.description,
@@ -119,10 +119,10 @@ async function awardAchievement(userId: string, achievementKey: string) {
     })
 
     // Publish to Ably
-    await publishAchievement(userId, achievement)
+    await publishAchievement(profileId, achievement)
 
     // Create notification
-    await createNotification(userId, {
+    await createNotification(profileId, {
       type: 'achievement',
       title: `🎉 ${def.title}`,
       message: def.description,
@@ -133,11 +133,11 @@ async function awardAchievement(userId: string, achievementKey: string) {
   }
 }
 
-export async function createNotification(userId: string, data: { type: string; title: string; message: string; icon?: string; actionUrl?: string }) {
+export async function createNotification(profileId: string, data: { type: string; title: string; message: string; icon?: string; actionUrl?: string }) {
   try {
     const notification = await prisma.notification.create({
       data: {
-        userId,
+        profileId,
         type: data.type,
         title: data.title,
         message: data.message,
@@ -146,7 +146,7 @@ export async function createNotification(userId: string, data: { type: string; t
     })
 
     // Publish to Ably
-    await publishNotification(userId, notification)
+    await publishNotification(profileId, notification)
 
     return notification
   } catch (e) {

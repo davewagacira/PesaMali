@@ -8,12 +8,12 @@ import { cleanCategory, cleanAmount } from '@/lib/validate'
 export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const budgets = await prisma.categoryBudget.findMany({
-      where: { userId: session.userId },
+      where: { profileId: session.profileId },
     })
 
     return NextResponse.json(budgets)
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
     }
 
     const budget = await prisma.categoryBudget.upsert({
-      where: { userId_category: { userId: session.userId, category } },
-      create: { userId: session.userId, category, limit },
+      where: { profileId_category: { profileId: session.profileId, category } },
+      create: { profileId: session.profileId, category, limit },
       update: { limit },
     })
 
