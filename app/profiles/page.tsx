@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { I } from '@/components/Icons'
 
 const AVATARS = [
-  '😊', '😎', '🤑', '💰', '🎓', '💼', '🚀', '🌟', '🔥', '💎',
-  '🦁', '🐯', '🦊', '🐺', '🦅', '🦋', '🌈', '⚡', '🎯', '🏆',
-  '🎮', '🎵', '🌍', '🍀', '❤️', '💜', '🧠', '👑', '🌙', '☀️',
+  'wallet', 'piggy', 'chart', 'trophy', 'sparkles', 
+  'sun', 'moon', 'home', 'bus', 'film', 
+  'send', 'bulb', 'target', 'flame', 'shield', 
+  'crown', 'flag', 'coins', 'sprout', 'book', 
+  'bot', 'zap', 'shoppingBag', 'droplet', 'wifi'
 ]
 
 const COLORS = [
@@ -16,11 +18,24 @@ const COLORS = [
 ]
 
 const PROFILE_TYPES = [
-  { id: 'budget', label: 'Budget', icon: '🎓', desc: 'Track a given budget (e.g. from parents)' },
-  { id: 'personal', label: 'My Money', icon: '💼', desc: 'Track your own earned income' },
-  { id: 'business', label: 'Business', icon: '🚀', desc: 'Business & freelance finances' },
-  { id: 'savings', label: 'Savings', icon: '💎', desc: 'Dedicated savings tracking' },
+  { id: 'budget', label: 'Budget', icon: 'wallet', desc: 'Track a given budget (e.g. from parents)' },
+  { id: 'personal', label: 'My Money', icon: 'user', desc: 'Track your own earned income' },
+  { id: 'business', label: 'Business', icon: 'chart', desc: 'Business & freelance finances' },
+  { id: 'savings', label: 'Savings', icon: 'piggy', desc: 'Dedicated savings tracking' },
 ]
+
+// Helper to map old emojis from DB to new Lucide icons if they exist
+const mapLegacyAvatar = (avatar: string) => {
+  const map: Record<string, string> = {
+    '🎓': 'book',
+    '💻': 'bot',
+    '💼': 'wallet',
+    '🚀': 'zap',
+    '💎': 'sparkles',
+    '😊': 'user',
+  }
+  return map[avatar] || avatar
+}
 
 interface Profile {
   id: string
@@ -58,7 +73,7 @@ function ProfileCard({ profile, onClick, selected }: { profile: Profile; onClick
         transition={{ duration: 0.2 }}
         style={{ background: `${profile.color}18`, border: `2px solid ${profile.color}30` }}
       >
-        <span className="profile-avatar-emoji">{profile.avatar}</span>
+        <span className="profile-avatar-emoji" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><I n={mapLegacyAvatar(profile.avatar)} size={32} /></span>
         {selected && (
           <motion.span
             className="profile-avatar-check"
@@ -183,7 +198,7 @@ function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCrea
                     className={'profile-type-btn' + (type === t.id ? ' sel' : '')}
                     onClick={() => setType(t.id)}
                   >
-                    <span className="profile-type-icon">{t.icon}</span>
+                    <span className="profile-type-icon"><I n={t.icon} size={20} /></span>
                     <b>{t.label}</b>
                     <p>{t.desc}</p>
                   </button>
@@ -206,11 +221,11 @@ function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCrea
                   className="profile-modal-avatar"
                   style={{ background: `${color}18`, border: `2px solid ${color}40`, boxShadow: `0 8px 24px ${color}30` }}
                 >
-                  <span style={{ fontSize: 40 }}>{avatar}</span>
+                  <span style={{ fontSize: 40, display: 'flex' }}><I n={mapLegacyAvatar(avatar)} size={40} /></span>
                 </div>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 750, color: 'var(--text)' }}>{name || 'My Profile'}</div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>{selectedType.icon} {selectedType.label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><I n={selectedType.icon} size={14} /> {selectedType.label}</div>
                 </div>
               </div>
 
@@ -238,7 +253,7 @@ function CreateProfileModal({ onClose, onCreate }: { onClose: () => void; onCrea
                       onClick={() => setAvatar(em)}
                       style={avatar === em ? { background: `${color}20`, borderColor: color } : {}}
                     >
-                      {em}
+                      <I n={mapLegacyAvatar(em)} size={24} />
                     </button>
                   ))}
                 </div>
@@ -356,8 +371,8 @@ export default function ProfilesPage() {
       {/* Logo + brand */}
       <motion.div
         className="profiles-brand"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: -20, x: "-50%" }}
+        animate={{ opacity: 1, y: 0, x: "-50%" }}
         transition={{ duration: 0.5 }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -373,7 +388,7 @@ export default function ProfilesPage() {
       >
         <div className="profiles-header">
           <h1 className="profiles-title">
-            {loading ? 'Loading…' : "Who's managing money today?"}
+            {loading ? 'Loading…' : "Which space are we focusing on?"}
           </h1>
           {userName && (
             <p className="profiles-subtitle">Welcome back, <strong>{userName}</strong> 👋</p>
