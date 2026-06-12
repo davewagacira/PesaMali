@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
 
@@ -20,11 +20,20 @@ interface UserProfile {
   profileId?: string
 }
 
+type MfaStep = 'idle' | 'scanning' | 'confirming' | 'disabling'
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [formData, setFormData] = useState<Partial<UserProfile>>({})
+
+  const [mfaStep, setMfaStep] = useState<MfaStep>('idle')
+  const [qrDataUrl, setQrDataUrl] = useState('')
+  const [mfaSecret, setMfaSecret] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaBusy, setMfaBusy] = useState(false)
+  const [mfaError, setMfaError] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -62,6 +71,77 @@ export default function ProfilePage() {
     } catch (e) {
       console.error(e)
     }
+  }
+
+  const startMfaSetup = async () => {
+    setMfaBusy(true)
+    setMfaError('')
+    try {
+      const res = await fetch('/api/mfa/setup', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) { setMfaError(data.error || 'Failed to start setup'); return }
+      setQrDataUrl(data.qrDataUrl)
+      setMfaSecret(data.secret)
+      setMfaStep('scanning')
+    } catch {
+      setMfaError('Network error')
+    } finally {
+      setMfaBusy(false)
+    }
+  }
+
+  const confirmMfaSetup = async () => {
+    if (!mfaCode.trim()) return
+    setMfaBusy(true)
+    setMfaError('')
+    try {
+      const res = await fetch('/api/mfa/enable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: mfaCode.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setMfaError(data.error || 'Invalid code'); return }
+      setProfile((p) => p ? { ...p, mfaEnabled: true } : p)
+      setMfaStep('idle')
+      setMfaCode('')
+      setQrDataUrl('')
+      setMfaSecret('')
+    } catch {
+      setMfaError('Network error')
+    } finally {
+      setMfaBusy(false)
+    }
+  }
+
+  const disableMfa = async () => {
+    if (!mfaCode.trim()) return
+    setMfaBusy(true)
+    setMfaError('')
+    try {
+      const res = await fetch('/api/mfa/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: mfaCode.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setMfaError(data.error || 'Invalid code'); return }
+      setProfile((p) => p ? { ...p, mfaEnabled: false } : p)
+      setMfaStep('idle')
+      setMfaCode('')
+    } catch {
+      setMfaError('Network error')
+    } finally {
+      setMfaBusy(false)
+    }
+  }
+
+  const cancelMfa = () => {
+    setMfaStep('idle')
+    setMfaCode('')
+    setMfaError('')
+    setQrDataUrl('')
+    setMfaSecret('')
   }
 
   if (isLoading || !profile) {
@@ -152,17 +232,124 @@ export default function ProfilePage() {
             <I n="shield" size={14} />
             Security
           </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm">Two-Factor Authentication</h4>
-                <p className="text-xs text-[var(--muted)] mt-1">{profile.mfaEnabled ? 'Enabled' : 'Disabled'}</p>
-              </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${profile.mfaEnabled ? 'bg-[var(--green-soft)] text-[var(--green)]' : 'bg-[var(--amber-soft)] text-[var(--amber)]'}`}>
-                {profile.mfaEnabled ? '✓ Active' : 'Not set up'}
-              </span>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-semibold text-sm">Two-Factor Authentication</h4>
+              <p className="text-xs text-[var(--muted)] mt-1">
+                {profile.mfaEnabled ? 'Your account is protected with an authenticator app.' : 'Add an extra layer of security to your account.'}
+              </p>
             </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${profile.mfaEnabled ? 'bg-[var(--green-soft)] text-[var(--green)]' : 'bg-[var(--amber-soft)] text-[var(--amber)]'}`}>
+              {profile.mfaEnabled ? '✓ Active' : 'Not set up'}
+            </span>
           </div>
+
+          <AnimatePresence mode="wait">
+            {mfaStep === 'idle' && (
+              <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-4">
+                {!profile.mfaEnabled ? (
+                  <button
+                    onClick={startMfaSetup}
+                    disabled={mfaBusy}
+                    className="flex items-center gap-2 rounded-lg [background:var(--primary-grad)] px-4 py-2 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60"
+                  >
+                    <I n="shield" size={14} />
+                    {mfaBusy ? 'Loading...' : 'Set up authenticator'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setMfaStep('disabling'); setMfaError('') }}
+                    className="flex items-center gap-2 rounded-lg border border-[var(--red)] px-4 py-2 text-sm font-semibold text-[var(--red)] transition hover:bg-[var(--red-soft)]"
+                  >
+                    <I n="trash" size={14} />
+                    Disable 2FA
+                  </button>
+                )}
+              </motion.div>
+            )}
+
+            {mfaStep === 'scanning' && (
+              <motion.div key="scanning" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5 space-y-4">
+                <p className="text-sm text-[var(--muted)]">Scan this QR code with <b className="text-[var(--text)]">Google Authenticator</b>, <b className="text-[var(--text)]">Authy</b>, or any TOTP app.</p>
+                {qrDataUrl && (
+                  <div className="flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrDataUrl} alt="MFA QR code" className="rounded-xl border border-[var(--line)] p-2" width={220} height={220} />
+                  </div>
+                )}
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase text-[var(--muted)]">Or enter this key manually</p>
+                  <code className="block rounded-lg border border-[var(--line)] bg-[var(--card-2)] px-3 py-2 text-xs tracking-widest text-[var(--text)] break-all">{mfaSecret}</code>
+                </div>
+                <button
+                  onClick={() => { setMfaStep('confirming'); setMfaError('') }}
+                  className="w-full rounded-lg [background:var(--primary-grad)] py-2 text-sm font-semibold text-white transition active:scale-95"
+                >
+                  I've scanned it — next
+                </button>
+                <button onClick={cancelMfa} className="w-full rounded-lg border border-[var(--line)] py-2 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)]">
+                  Cancel
+                </button>
+              </motion.div>
+            )}
+
+            {mfaStep === 'confirming' && (
+              <motion.div key="confirming" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5 space-y-3">
+                <p className="text-sm text-[var(--muted)]">Enter the 6-digit code from your authenticator app to confirm setup.</p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                  onKeyDown={(e) => e.key === 'Enter' && confirmMfaSetup()}
+                  placeholder="000000"
+                  autoFocus
+                  className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-center text-lg font-mono tracking-[0.5em] text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--primary-soft)]"
+                />
+                {mfaError && <p className="text-xs text-[var(--red)]">{mfaError}</p>}
+                <button
+                  onClick={confirmMfaSetup}
+                  disabled={mfaBusy || mfaCode.length < 6}
+                  className="w-full rounded-lg [background:var(--primary-grad)] py-2 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60"
+                >
+                  {mfaBusy ? 'Verifying...' : 'Enable 2FA'}
+                </button>
+                <button onClick={() => setMfaStep('scanning')} className="w-full rounded-lg border border-[var(--line)] py-2 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)]">
+                  Back to QR code
+                </button>
+              </motion.div>
+            )}
+
+            {mfaStep === 'disabling' && (
+              <motion.div key="disabling" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-5 space-y-3">
+                <p className="text-sm text-[var(--muted)]">Enter your authenticator code to confirm you want to disable 2FA.</p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                  onKeyDown={(e) => e.key === 'Enter' && disableMfa()}
+                  placeholder="000000"
+                  autoFocus
+                  className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-center text-lg font-mono tracking-[0.5em] text-[var(--text)] outline-none transition focus:border-[var(--red)] focus:shadow-[0_0_0_3px_var(--red-soft)]"
+                />
+                {mfaError && <p className="text-xs text-[var(--red)]">{mfaError}</p>}
+                <button
+                  onClick={disableMfa}
+                  disabled={mfaBusy || mfaCode.length < 6}
+                  className="w-full rounded-lg bg-[var(--red)] py-2 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60"
+                >
+                  {mfaBusy ? 'Disabling...' : 'Disable 2FA'}
+                </button>
+                <button onClick={cancelMfa} className="w-full rounded-lg border border-[var(--line)] py-2 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--card-2)]">
+                  Cancel
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 
