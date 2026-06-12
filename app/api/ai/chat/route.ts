@@ -8,6 +8,7 @@ import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { isFixedExpense, catOf } from '@/lib/metrics'
 import { cleanString } from '@/lib/validate'
+import { getEffectiveBudget, nairobiYearMonth } from '@/lib/monthlyBudget'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
 function getVertexClient(): GoogleGenAI | null {
@@ -432,7 +433,14 @@ export async function POST(req: NextRequest) {
     })
 
     const now = new Date()
-    const ctx = buildContext(userRecord, expenses, now)
+    // Budgets can vary month to month — use this month's effective values
+    const { year: bYear, month: bMonth } = nairobiYearMonth(now)
+    const monthBudget = await getEffectiveBudget(session.profileId, bYear, bMonth, userRecord)
+    const ctx = buildContext(
+      { ...userRecord, monthlyBudget: monthBudget.budget, savingsGoal: monthBudget.savingsGoal },
+      expenses,
+      now
+    )
 
     // Build conversation history if memory enabled
     let conversationHistory = ''

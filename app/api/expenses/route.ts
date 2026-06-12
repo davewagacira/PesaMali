@@ -8,6 +8,7 @@ import { checkAndAwardAchievements, createNotification } from '@/lib/achievement
 import { processDueRecurringExpenses } from '@/lib/recurring'
 import { cleanString, cleanAmount, cleanDateKey, cleanCategory } from '@/lib/validate'
 import { isFixedExpense, isRentItem } from '@/lib/metrics'
+import { getEffectiveBudget } from '@/lib/monthlyBudget'
 
 function nairobiDateParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -160,7 +161,8 @@ export async function POST(req: NextRequest) {
       const daysInMonth = new Date(todayInfo.year, todayInfo.month, 0).getDate()
       const daysLeft = daysInMonth - todayInfo.day + 1
       const priorSpent = monthSpent - todayTotal
-      const safeDaily = daysLeft > 0 ? (profile.monthlyBudget - priorSpent - profile.savingsGoal) / daysLeft : 0
+      const monthBudget = await getEffectiveBudget(profileId, todayInfo.year, todayInfo.month, profile)
+      const safeDaily = daysLeft > 0 ? (monthBudget.budget - priorSpent - monthBudget.savingsGoal) / daysLeft : 0
 
       if (todayTotal > safeDaily && safeDaily > 0) {
         await createNotification(profileId, {

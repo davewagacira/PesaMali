@@ -148,6 +148,36 @@ async function runMigration() {
     } catch { console.log('  ⚠️  WishlistItem FK may already exist') }
     console.log('  ✅ WishlistItem table ready')
 
+    // Step 9: Add MonthlyBudget table (per-month budget overrides)
+    console.log('\n📋 Step 9: Creating MonthlyBudget table...')
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "MonthlyBudget" (
+        "id"          TEXT NOT NULL,
+        "profileId"   TEXT NOT NULL,
+        "year"        INTEGER NOT NULL,
+        "month"       INTEGER NOT NULL,
+        "budget"      DOUBLE PRECISION NOT NULL,
+        "savingsGoal" DOUBLE PRECISION NOT NULL,
+        "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "MonthlyBudget_pkey" PRIMARY KEY ("id")
+      )
+    `)
+    try {
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "MonthlyBudget"
+          ADD CONSTRAINT "MonthlyBudget_profileId_fkey"
+          FOREIGN KEY ("profileId") REFERENCES "Profile"("id")
+          ON DELETE CASCADE ON UPDATE CASCADE
+      `)
+    } catch { console.log('  ⚠️  MonthlyBudget FK may already exist') }
+    try {
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "MonthlyBudget" ADD CONSTRAINT "MonthlyBudget_profileId_year_month_key" UNIQUE ("profileId", "year", "month")
+      `)
+    } catch { console.log('  ⚠️  MonthlyBudget unique constraint may already exist') }
+    console.log('  ✅ MonthlyBudget table ready')
+
     // Verify
     console.log('\n🎉 Migration complete! Verifying...')
     const profileCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Profile"`
