@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { publishExpenseEvent } from '@/lib/ably'
-import { cleanString } from '@/lib/validate'
+import { cleanString, cleanAmount, cleanCategory, cleanDateKey } from '@/lib/validate'
 
 export async function PUT(
   req: NextRequest,
@@ -21,15 +21,35 @@ export async function PUT(
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    const { item } = await req.json()
-    const nextItem = cleanString(item, 120)
-    if (!nextItem) {
-      return NextResponse.json({ error: 'Expense name required (max 120 characters)' }, { status: 400 })
+    const body = await req.json()
+    const data: { item?: string; amount?: number; category?: string; date?: string } = {}
+    if (body.item !== undefined) {
+      const item = cleanString(body.item, 120)
+      if (!item) return NextResponse.json({ error: 'Expense name required (max 120 characters)' }, { status: 400 })
+      data.item = item
+    }
+    if (body.amount !== undefined) {
+      const amount = cleanAmount(body.amount)
+      if (amount === null) return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+      data.amount = amount
+    }
+    if (body.category !== undefined) {
+      const category = cleanCategory(body.category)
+      if (!category) return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
+      data.category = category
+    }
+    if (body.date !== undefined) {
+      const date = cleanDateKey(body.date)
+      if (!date) return NextResponse.json({ error: 'Invalid date' }, { status: 400 })
+      data.date = date
+    }
+    if (!Object.keys(data).length) {
+      return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
     }
 
     const updated = await prisma.expense.update({
       where: { id: params.id },
-      data: { item: nextItem },
+      data,
     })
 
     await publishExpenseEvent(session.profileId, 'update', updated)
