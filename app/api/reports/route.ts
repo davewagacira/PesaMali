@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
         if (fs.existsSync(logoPath)) {
           const logoBuffer = fs.readFileSync(logoPath)
           const logoBase64 = 'data:image/png;base64,' + logoBuffer.toString('base64')
-          doc.addImage(logoBase64, 'PNG', pageWidth - 44, 8, 24, 24)
+          doc.addImage(logoBase64, 'PNG', pageWidth - 44, 8, 24, 24, 'logo', 'FAST')
         }
       } catch (e) {
         console.error("Could not load logo for PDF", e)
