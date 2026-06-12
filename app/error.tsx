@@ -12,7 +12,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       <div style={{ textAlign: 'center', maxWidth: 420 }}>
         <h2 style={{ marginBottom: 8 }}>Something went wrong</h2>
         <p style={{ marginBottom: 20, opacity: 0.7 }}>
-          An unexpected error occurred. Your data is safe — try again or reload the page.
+          An unexpected error occurred. Your data is safe. Try again or reload the page.
         </p>
         <button
           onClick={reset}

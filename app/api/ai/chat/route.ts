@@ -125,7 +125,7 @@ function buildContext(
   const status =
     spendPace <= monthPace ? 'on track' :
     spendPace <= monthPace + 0.15 ? 'slightly ahead of pace' :
-    'danger zone — overspending'
+    'danger zone, overspending'
 
   // Category breakdown
   const byCat: Record<string, number> = {}
@@ -181,7 +181,7 @@ function buildContext(
 
   // Recent expenses (last 15)
   const recent = expenses.slice(0, 15)
-    .map((e) => `[${e.date}] ${e.category} — ${e.item}: KES ${e.amount.toLocaleString()}`)
+    .map((e) => `[${e.date}] ${e.category}, ${e.item}: KES ${e.amount.toLocaleString()}`)
 
   return {
     user: user.name,
@@ -216,7 +216,7 @@ function buildContext(
   }
 }
 
-const OFF_TOPIC_REPLY = "I'm sorry, I can't help with that. I'm PesaMali AI — I only discuss your personal finances. Ask me about your spending, budget, savings goal, or expense habits."
+const OFF_TOPIC_REPLY = "I'm sorry, I can't help with that. I'm PesaMali AI, and I only discuss your personal finances. Ask me about your spending, budget, savings goal, or expense habits."
 
 // ── Topic guard ────────────────────────────────────────────────────────────────
 // Returns true when the question is clearly unrelated to personal finance.
@@ -301,16 +301,16 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
   const moodLine =
     ctx.status === 'on track'
       ? pickOne([
-          `you're in good shape — only **${ctx.spendPacePct}%** of your day-to-day money is used and we're already ${ctx.monthProgressPct}% through the month`,
+          `you're in good shape. Only **${ctx.spendPacePct}%** of your day-to-day money is used and we're already ${ctx.monthProgressPct}% through the month`,
           `your pace is honestly solid: **${ctx.spendPacePct}%** of flexible budget used against ${ctx.monthProgressPct}% of the month gone`,
         ])
       : ctx.status === 'slightly ahead of pace'
       ? pickOne([
-          `you're moving a little faster than the month is (**${ctx.spendPacePct}%** used, ${ctx.monthProgressPct}% of the month done) — not a crisis, just worth a couple of calm days`,
+          `you're moving a little faster than the month is (**${ctx.spendPacePct}%** used, ${ctx.monthProgressPct}% of the month done). Not a crisis, just worth a couple of calm days`,
           `spending is slightly ahead of the calendar (**${ctx.spendPacePct}%** vs ${ctx.monthProgressPct}%), so a quiet stretch would set you right`,
         ])
       : pickOne([
-          `we need to pump the brakes — **${ctx.spendPacePct}%** of your day-to-day money is gone with only ${ctx.monthProgressPct}% of the month behind you`,
+          `we need to pump the brakes. **${ctx.spendPacePct}%** of your day-to-day money is gone with only ${ctx.monthProgressPct}% of the month behind you`,
           `the pace is running hot: **${ctx.spendPacePct}%** of flexible budget used and we're just ${ctx.monthProgressPct}% in`,
         ])
 
@@ -321,10 +321,10 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
       `Here's how your week actually went.`,
     ])
     const dayToDay = ctx.weekFlexible > 0
-      ? `Day to day you spent **${kes(ctx.weekFlexible)}** — roughly ${kes(ctx.weekFlexible / 7)} a day.`
-      : `You barely touched your day-to-day money — nice and quiet.`
+      ? `Day to day you spent **${kes(ctx.weekFlexible)}**, roughly ${kes(ctx.weekFlexible / 7)} a day.`
+      : `You barely touched your day-to-day money. Nice and quiet.`
     const fixedNote = ctx.weekFixed > 0
-      ? ` ${kes(ctx.weekFixed)} also went out for fixed bills (rent and the like), but that's a commitment, not a habit — I don't count it against you.`
+      ? ` ${kes(ctx.weekFixed)} also went out for fixed bills (rent and the like), but that's a commitment, not a habit, so I don't count it against you.`
       : ''
     const colour = [
       flexCat ? `Most of the flexible money went to **${flexCat.name}** (${kes(flexCat.amount)}).` : '',
@@ -335,10 +335,10 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
 
   if (ql.includes('cut') || ql.includes('overspend') || ql.includes('stop')) {
     const target = flexCat
-      ? `If you want one lever to pull, it's **${flexCat.name}** — that's where ${kes(flexCat.amount)} of your controllable money has gone. Trimming it by about 20% frees roughly ${kes(flexCat.amount * 0.2)} for the rest of the month.`
+      ? `If you want one lever to pull, it's **${flexCat.name}**. That's where ${kes(flexCat.amount)} of your controllable money has gone. Trimming it by about 20% frees roughly ${kes(flexCat.amount * 0.2)} for the rest of the month.`
       : `There's not much logged yet, so log a few days of spending and I'll point at the exact category to squeeze.`
     const habits = ctx.topRepeatPurchases.length
-      ? ` Your usual suspects: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')} — small things, but they repeat.`
+      ? ` Your usual suspects: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')}. Small things, but they repeat.`
       : ''
     return `${target}${habits}\n\nFor context, ${moodLine}.`
   }
@@ -348,7 +348,7 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
     const ending = margin >= ctx.savingsGoal
       ? `at this rate you'd finish around **${kes(ctx.projectedMonthEnd)}** spent, which lands inside your ${kes(ctx.budget)} budget with your savings intact. Keep doing what you're doing.`
       : margin >= 0
-      ? `you're projected to finish around **${kes(ctx.projectedMonthEnd)}** — inside the ${kes(ctx.budget)} budget, but it squeezes your ${kes(ctx.savingsGoal)} savings goal. A few lighter days buys that back.`
+      ? `you're projected to finish around **${kes(ctx.projectedMonthEnd)}**, inside the ${kes(ctx.budget)} budget, but it squeezes your ${kes(ctx.savingsGoal)} savings goal. A few lighter days buys that back.`
       : `the current path lands around **${kes(ctx.projectedMonthEnd)}**, which overshoots your ${kes(ctx.budget)} budget. Holding today near ${kes(ctx.safeToSpendToday)} starts bending that curve back.`
     return `So, ${moodLine}. Looking ahead, ${ending}`
   }
@@ -358,8 +358,8 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
       ? `your biggest controllable spend is **${flexCat.name}**, so that's where a 15% trim hurts least and saves most (about ${kes(flexCat.amount * 0.15)})`
       : `once a few more expenses are logged I can point at the exact category worth trimming`
     return pickOne([
-      `Honestly? Just two things. One number to live by — **${kes(ctx.safeToSpendToday)}** today — and one habit: log the expense *before* you buy, because seeing the number first kills most impulse buys. Beyond that, ${catTip}.\n\nAnd for the record, ${moodLine}.`,
-      `Keep it simple: treat **${kes(ctx.safeToSpendToday)}** as today's ceiling, and log purchases before you make them — it's the cheapest self-control trick there is. If you want a bigger win, ${catTip}.\n\nRight now, ${moodLine}.`,
+      `Honestly? Just two things. One number to live by: **${kes(ctx.safeToSpendToday)}** today. And one habit: log the expense *before* you buy, because seeing the number first kills most impulse buys. Beyond that, ${catTip}.\n\nAnd for the record, ${moodLine}.`,
+      `Keep it simple: treat **${kes(ctx.safeToSpendToday)}** as today's ceiling, and log purchases before you make them. It's the cheapest self-control trick there is. If you want a bigger win, ${catTip}.\n\nRight now, ${moodLine}.`,
     ])
   }
 
@@ -456,19 +456,19 @@ export async function POST(req: NextRequest) {
         .join('\n')
     }
 
-    const systemPrompt = `You are PesaMali, a personal-finance coach inside the PesaMali app. You're casual, direct, and helpful — more like a friend than a robot. Currency is KES.
+    const systemPrompt = `You are PesaMali, a personal-finance coach inside the PesaMali app. You're casual, direct, and helpful, more like a friend than a robot. Currency is KES.
 
-SCOPE RULE: Only discuss personal finances (spending, budget, savings, categories, habits). If asked anything else (health, politics, relationships, general knowledge, coding, entertainment) reply: "I can't help with that — I only discuss personal finances."
+SCOPE RULE: Only discuss personal finances (spending, budget, savings, categories, habits). If asked anything else (health, politics, relationships, general knowledge, coding, entertainment) reply: "I can't help with that. I only discuss personal finances."
 
-STYLE: Talk like a sharp friend texting back, never like a report. React to their situation first, then weave at most 3-4 numbers naturally into sentences. NEVER answer in "Label: value" format and never dump stats line by line. Vary your responses — sometimes ask a short follow-up question, sometimes just react. Treat fixed bills (rent, internet) as commitments, not bad habits — never scold the user for them. Keep it under 200 words. Use **bold** only for the numbers that matter.
-GREETING: If you use the user's name, greet with "Hey [casual first name]" — never "Yo", never the full name. Shorten long names naturally (David → Dave, Alexander → Alex, etc.).
+STYLE: Talk like a sharp friend texting back, never like a report. React to their situation first, then weave at most 3-4 numbers naturally into sentences. NEVER answer in "Label: value" format and never dump stats line by line. Never use em dashes. Vary your responses: sometimes ask a short follow-up question, sometimes just react. Treat fixed bills (rent, internet) as commitments, not bad habits, and never scold the user for them. Keep it under 200 words. Use **bold** only for the numbers that matter.
+GREETING: If you use the user's name, greet with "Hey [casual first name]". Never "Yo", never the full name. Shorten long names naturally (David → Dave, Alexander → Alex, etc.).
 ${compressedContext ? `\n\n${compressedContext}\n` : ''}
 ${conversationHistory ? `\n\nPrevious chat history:\n${conversationHistory}\n` : ''}
-Live data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
+Live data for ${ctx.user}, ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
 Budget: KES ${ctx.budget.toLocaleString()} | Savings goal: KES ${ctx.savingsGoal.toLocaleString()}
 Spent: **KES ${ctx.spent.toLocaleString()}** | Remaining: **KES ${ctx.remaining.toLocaleString()}**
 Fixed bills paid (rent, internet): KES ${ctx.fixedSpent.toLocaleString()} | Flexible spend: KES ${ctx.flexibleSpent.toLocaleString()} of KES ${ctx.flexibleBudget.toLocaleString()} flexible budget (${ctx.spendPacePct}%)
-Month: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} | Status: ${ctx.status} (pace is judged on flexible spend only — fixed bills don't count against pace)
+Month: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} | Status: ${ctx.status} (pace is judged on flexible spend only; fixed bills don't count against pace)
 Safe daily spend: KES ${ctx.safeToSpendToday.toLocaleString()} | Projected end: KES ${ctx.projectedMonthEnd.toLocaleString()}
 Top spend: ${ctx.categoryBreakdown[0] || 'none yet'} | Top flexible category: ${ctx.topFlexCategory ? `${ctx.topFlexCategory.name} (KES ${ctx.topFlexCategory.amount.toLocaleString()})` : 'none yet'}
 This week: KES ${ctx.weekFlexible.toLocaleString()} day-to-day + KES ${ctx.weekFixed.toLocaleString()} fixed bills | Last 7 days: ${ctx.last7Days}

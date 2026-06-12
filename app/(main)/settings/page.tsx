@@ -606,7 +606,7 @@ export default function SettingsPage() {
                         checked={editingRecurringData.fixed}
                         onChange={(e) => setEditingRecurringData({ ...editingRecurringData, fixed: e.target.checked })}
                       />
-                      Fixed commitment — exclude from spending analytics
+                      Fixed commitment, excluded from spending analytics
                     </label>
                   </div>
                 ) : (

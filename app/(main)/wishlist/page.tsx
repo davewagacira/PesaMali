@@ -306,7 +306,7 @@ export default function WishlistPage() {
                           onClick={() => setBuyItem(item)}
                         >
                           <I n="check" size={13} />
-                          Bought it — log expense
+                          Bought it, log expense
                         </button>
                       )}
                       <button

@@ -1,6 +1,6 @@
 // PesaMali service worker: app shell + last-known data so the app still
 // opens and shows your numbers without a connection.
-const VERSION = 'pesamali-v2'
+const VERSION = 'pesamali-v3'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGE_CACHE = `${VERSION}-pages`
 const API_CACHE = `${VERSION}-api`

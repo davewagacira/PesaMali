@@ -220,7 +220,7 @@ export default function DashboardPage() {
             marginBottom: 14,
           }}
         >
-          <span>Some of your data failed to load — figures below may be incomplete.</span>
+          <span>Some of your data failed to load. Figures below may be incomplete.</span>
           <button
             type="button"
             onClick={() => refreshData(false)}

@@ -504,7 +504,7 @@ export default function LogPage() {
         title="Already logged this month?"
         message={
           dupBill
-            ? `"${dupBill.item}" (${fmt(dupBill.amount)}) was already logged on ${dupBill.date} — possibly automatically from your recurring expenses. Logging this would count the bill twice.`
+            ? `"${dupBill.item}" (${fmt(dupBill.amount)}) was already logged on ${dupBill.date}, possibly automatically from your recurring expenses. Logging this would count the bill twice.`
             : ''
         }
         confirmLabel="Log anyway"

@@ -50,6 +50,38 @@ const SPACED_PINNED_CONVERSATIONS_KEY = 'pesa-mali:pinned-ai-conversations'
 const PREVIOUS_PINNED_CONVERSATIONS_KEY = ['pes', 'arly:pinned-ai-conversations'].join('')
 const LEGACY_PINNED_CONVERSATIONS_KEY = ['aki', 'ba:pinned-ai-conversations'].join('')
 
+function buildWelcomeMessage({
+  name,
+  spent,
+  remaining,
+  category,
+  fresh = false,
+}: {
+  name: string
+  spent: number
+  remaining: number
+  category?: string
+  fresh?: boolean
+}): string {
+  const first = name.trim().split(/\s+/)[0] || name || 'there'
+
+  const categoryBit = category
+    ? ` Most of your flexible spending has been going to **${category}**.`
+    : ''
+
+  if (fresh) {
+    return (
+      `Habari ${first}. I've pulled up your numbers again. You've spent **${fmt(spent)}** this month and you've got **${fmt(remaining)}** left.${categoryBit}\n\n` +
+      `What's on your mind? We can talk through your week, where you might want to pull back, or whether you're on track. Just type away, or tap a suggestion if you'd rather start there.`
+    )
+  }
+
+  return (
+    `Habari ${first}. I've been looking at how your month is going. You've spent **${fmt(spent)}** so far and you still have **${fmt(remaining)}** to work with.${categoryBit}\n\n` +
+    `If you'd like, we can walk through how your week went, where you might ease off, or whether you're on track for the rest of the month. Ask me anything, or tap a suggestion below.`
+  )
+}
+
 function render(t: string) {
   return t.split(/(\*\*[^*]+\*\*)/g).map((s, i) =>
     s.startsWith('**') ? <b key={i}>{s.slice(2, -2)}</b> : s
@@ -282,11 +314,15 @@ export default function AIPage() {
   useEffect(() => {
     if (isLoading || initializedWelcome.current) return
     initializedWelcome.current = true
-    const category = topCategory?.name || 'your flexible spending'
     setMsgs([
       {
         who: 'ai',
-        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining, biggest category **${category}**. Ask me anything, or tap a suggestion below.`,
+        text: buildWelcomeMessage({
+          name: userName,
+          spent: metrics.spent,
+          remaining: metrics.remaining,
+          category: topCategory?.name,
+        }),
       },
     ])
   }, [isLoading, metrics.remaining, metrics.spent, topCategory?.name, userName])
@@ -308,7 +344,13 @@ export default function AIPage() {
     setMsgs([
       {
         who: 'ai',
-        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
+        text: buildWelcomeMessage({
+          name: userName,
+          spent: metrics.spent,
+          remaining: metrics.remaining,
+          category: topCategory?.name,
+          fresh: true,
+        }),
       },
     ])
     requestAnimationFrame(() => {

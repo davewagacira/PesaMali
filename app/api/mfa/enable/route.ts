@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     const result = verifySync({ token: code.replace(/\s/g, ''), secret: session.mfaSetupSecret })
     if (!result?.valid) {
-      return NextResponse.json({ error: 'Invalid code — check your authenticator app and try again' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid code. Check your authenticator app and try again.' }, { status: 400 })
     }
 
     await prisma.user.update({

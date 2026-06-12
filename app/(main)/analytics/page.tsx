@@ -70,7 +70,7 @@ export default function AnalyticsPage() {
         </motion.div>
         <motion.div className="card" variants={listItem}>
           <h3><I n="search" size={14} />Most frequent expense</h3>
-          <div className="kpi" style={{ fontSize: 19 }}>{top ? top.name : '—'}</div>
+          <div className="kpi" style={{ fontSize: 19 }}>{top ? top.name : 'None'}</div>
           <div className="delta">{top ? `${top.n} entries · ${fmt(top.amt)} total` : ''}</div>
         </motion.div>
         <motion.div className="card" variants={listItem}>
