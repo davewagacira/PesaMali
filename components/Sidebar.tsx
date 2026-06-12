@@ -30,7 +30,7 @@ const NAV = [
   { id: 'wishlist', label: 'Wishlist', icon: 'target', href: '/wishlist' },
   { id: 'analytics', label: 'Analytics', icon: 'chart', href: '/analytics' },
   { id: 'achievements', label: 'Achievements', icon: 'trophy', href: '/achievements' },
-  { id: 'ai', label: 'PesaMali AI', icon: 'sparkles', href: '/ai' },
+  { id: 'ai', label: 'AI Coach', icon: 'bot', href: '/ai' },
   { id: 'settings', label: 'Budget & settings', icon: 'settings', href: '/settings' },
 ]
 
