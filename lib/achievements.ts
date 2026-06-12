@@ -1,5 +1,6 @@
 import { prisma } from './prisma'
 import { publishAchievement, publishNotification } from './ably'
+import { getEffectiveBudget } from './monthlyBudget'
 
 interface AchievementDefinition {
   type: string
@@ -63,9 +64,15 @@ export async function checkAndAwardAchievements(profileId: string) {
       },
     })
 
+    const { budget, savingsGoal } = await getEffectiveBudget(
+      profileId,
+      now.getFullYear(),
+      now.getMonth() + 1,
+      profile
+    )
     const spent = expenses.reduce((s, e) => s + e.amount, 0)
-    const remaining = profile.monthlyBudget - spent
-    const saved = profile.savingsGoal - (profile.monthlyBudget - remaining)
+    const remaining = budget - spent
+    const saved = savingsGoal - (budget - remaining)
 
     // Check for savings milestones
     if (saved >= 100000 && !(await hasAchievement(profileId, 'savings_100k'))) {
@@ -77,13 +84,13 @@ export async function checkAndAwardAchievements(profileId: string) {
     }
 
     // Check if goal reached
-    if (remaining >= profile.savingsGoal && !(await hasAchievement(profileId, 'goal_reached'))) {
+    if (remaining >= savingsGoal && !(await hasAchievement(profileId, 'goal_reached'))) {
       await awardAchievement(profileId, 'goal_reached')
     }
 
     // Check for perfect day (stayed within safe daily spend)
     const todayExpense = expenses.find((e) => e.date === today)
-    const safeDaily = remaining > 0 ? (remaining - profile.savingsGoal) / (new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()) : 0
+    const safeDaily = remaining > 0 ? (remaining - savingsGoal) / (new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate()) : 0
 
     if (todayExpense && todayExpense.amount <= safeDaily) {
       // Could track perfect days streak, for now just check current day

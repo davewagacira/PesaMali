@@ -7,6 +7,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import Papa from 'papaparse'
 import { cleanInt } from '@/lib/validate'
+import { getEffectiveBudget } from '@/lib/monthlyBudget'
 import fs from 'fs'
 import path from 'path'
 
@@ -41,6 +42,9 @@ export async function GET(req: NextRequest) {
       orderBy: { date: 'desc' },
     })
 
+    // Budgets can differ per month, so report against that month's budget
+    const monthBudget = await getEffectiveBudget(session.profileId, queryYear, queryMonth, profile)
+
     const categoryExpenses: Record<string, number> = {}
     let totalSpent = 0
 
@@ -59,10 +63,10 @@ export async function GET(req: NextRequest) {
         ...expenses.map((e) => [e.date, e.category, e.item, e.amount.toString()]),
         [''],
         ['Summary'],
-        ['Budget', profile.monthlyBudget.toString()],
+        ['Budget', monthBudget.budget.toString()],
         ['Total Spent', totalSpent.toString()],
-        ['Remaining', (profile.monthlyBudget - totalSpent).toString()],
-        ['Savings Goal', profile.savingsGoal.toString()],
+        ['Remaining', (monthBudget.budget - totalSpent).toString()],
+        ['Savings Goal', monthBudget.savingsGoal.toString()],
         [''],
         ['By Category'],
         ...Object.entries(categoryExpenses).map(([cat, amt]) => [cat, amt.toString()]),
@@ -123,16 +127,16 @@ export async function GET(req: NextRequest) {
       doc.text('Summary', 20, yPos)
       yPos += 8
       
-      const onTrack = totalSpent <= profile.monthlyBudget
+      const onTrack = totalSpent <= monthBudget.budget
       
       autoTable(doc, {
         startY: yPos,
         head: [['Metric', 'Amount (KES)']],
         body: [
-          ['Monthly Budget', profile.monthlyBudget.toLocaleString()],
+          ['Monthly Budget', monthBudget.budget.toLocaleString()],
           ['Total Spent', totalSpent.toLocaleString()],
-          ['Remaining', (profile.monthlyBudget - totalSpent).toLocaleString()],
-          ['Savings Goal', profile.savingsGoal.toLocaleString()],
+          ['Remaining', (monthBudget.budget - totalSpent).toLocaleString()],
+          ['Savings Goal', monthBudget.savingsGoal.toLocaleString()],
           ['Status', onTrack ? 'On Track' : 'Over Budget'],
         ],
         theme: 'grid',

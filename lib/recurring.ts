@@ -87,6 +87,9 @@ export async function processDueRecurringExpenses(profileId?: string) {
             category: recurring.category,
             item: recurring.item,
             amount: recurring.amount,
+            // Carry the user's fixed-bill choice onto the logged expense so
+            // analytics respect it (e.g. Netflix stays in, rent stays out)
+            fixed: recurring.fixed,
           },
         })
         createdCount++

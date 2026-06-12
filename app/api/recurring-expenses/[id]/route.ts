@@ -55,6 +55,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       data.dayOfWeek = dayOfWeek
     }
     if (body.active !== undefined) data.active = Boolean(body.active)
+    if (body.fixed !== undefined) data.fixed = Boolean(body.fixed)
 
     const recurring = await prisma.recurringExpense.update({
       where: { id: params.id },

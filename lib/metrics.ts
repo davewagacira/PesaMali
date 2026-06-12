@@ -22,6 +22,12 @@ const FIXED_ITEM_RE = /\brent\b/i
 export const isFixedCat = (id: string) => FIXED_CATEGORY_IDS.has(id)
 export const isRentItem = (item: string) => FIXED_ITEM_RE.test(item)
 export const isFixedExpense = (cat: string, item: string) => isFixedCat(cat) || isRentItem(item)
+// An expense carries an explicit `fixed` flag when it came from a recurring
+// template (the user chose); null/undefined falls back to the heuristic so a
+// manually logged rent payment is still treated as a fixed bill.
+export const isFixedRecord = (e: { category: string; item: string; fixed?: boolean | null }) =>
+  e.fixed ?? isFixedExpense(e.category, e.item)
+const isFixedTx = (e: MetricExpense) => e.fixed ?? isFixedExpense(e.cat, e.item)
 
 export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -41,6 +47,7 @@ export interface MetricExpense {
   cat: string
   item: string
   amt: number
+  fixed?: boolean | null
 }
 
 export interface Metrics {
@@ -88,7 +95,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     const safe = dailyAllowance - todaySpent
     // Pace compares flexible (day-to-day) spending against what's left of the
     // budget after fixed bills, so lump-sum payments don't read as overspending.
-    const fixedSpent = expenses.filter((e) => isFixedExpense(e.cat, e.item)).reduce((s, e) => s + e.amt, 0)
+    const fixedSpent = expenses.filter((e) => isFixedTx(e)).reduce((s, e) => s + e.amt, 0)
     const flexibleSpent = spent - fixedSpent
     const flexibleBudget = Math.max(budget - fixedSpent, 0)
     const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
@@ -103,7 +110,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       last7.push({
         label: DOW[dt.getDay()],
         amt: expenses
-          .filter((e) => e.date === k && !isFixedExpense(e.cat, e.item))
+          .filter((e) => e.date === k && !isFixedTx(e))
           .reduce((s, e) => s + e.amt, 0),
         today: i === 0,
       })
@@ -120,7 +127,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     const byFlexCat = CATS.map((c) => ({
       ...c,
       amt: expenses
-        .filter((e) => e.cat.toLowerCase() === c.id.toLowerCase() && !isFixedExpense(e.cat, e.item))
+        .filter((e) => e.cat.toLowerCase() === c.id.toLowerCase() && !isFixedTx(e))
         .reduce((s, e) => s + e.amt, 0),
     }))
       .filter((c) => c.amt > 0)
@@ -137,7 +144,7 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
 
     const byDow = DOW.map((l) => ({ label: l, amt: 0 }))
     expenses.forEach((e) => {
-      if (!isFixedExpense(e.cat, e.item)) {
+      if (!isFixedTx(e)) {
         byDow[new Date(e.date + 'T00:00:00').getDay()].amt += e.amt
       }
     })
@@ -149,13 +156,13 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     let run = 0
     for (let d = 1; d <= dayOfMonth; d++) {
       run += expenses
-        .filter((e) => e.date === dKey(d) && !isFixedExpense(e.cat, e.item))
+        .filter((e) => e.date === dKey(d) && !isFixedTx(e))
         .reduce((s, e) => s + e.amt, 0)
       cum.push({ day: d, spent: run, ideal: (flexibleBudget * d) / daysInMonth })
     }
 
     const daysWithSpend = new Set(
-      expenses.filter((e) => !isFixedExpense(e.cat, e.item)).map((e) => e.date)
+      expenses.filter((e) => !isFixedTx(e)).map((e) => e.date)
     ).size || 1
     // Fixed bills are one-off, so only flexible spend is extrapolated to month end.
     const projected = fixedSpent + (flexibleSpent / dayOfMonth) * daysInMonth

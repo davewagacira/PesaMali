@@ -6,7 +6,7 @@ import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { listContainer, listItem } from '@/lib/motion'
-import { CATS } from '@/lib/metrics'
+import { CATS, isFixedCat } from '@/lib/metrics'
 
 interface CategoryBudget {
   category: string
@@ -21,6 +21,7 @@ interface RecurringExpense {
   frequency: string
   dayOfMonth?: number
   active: boolean
+  fixed: boolean
 }
 
 interface UserSettings {
@@ -28,11 +29,32 @@ interface UserSettings {
   savingsGoal?: number
 }
 
+// Budgets can change month to month, so the user picks which month they're
+// setting: the profile default, this month, or an upcoming month.
+function budgetMonthOptions() {
+  const now = new Date()
+  const options: { value: string; label: string }[] = [
+    { value: 'default', label: 'Default (all months)' },
+  ]
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    const label = d.toLocaleDateString('en-KE', { month: 'long', year: 'numeric' })
+    options.push({
+      value: `${d.getFullYear()}-${d.getMonth() + 1}`,
+      label: i === 0 ? `${label} (this month)` : label,
+    })
+  }
+  return options
+}
+
 export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true)
   const [monthlyBudget, setMonthlyBudget] = useState('')
   const [savingsGoal, setSavingsGoal] = useState('')
+  const [budgetMonth, setBudgetMonth] = useState('default')
+  const [budgetIsOverride, setBudgetIsOverride] = useState(false)
+  const monthOptions = budgetMonthOptions()
   const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([])
   const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([])
   const [newCategoryBudget, setNewCategoryBudget] = useState({ category: '', limit: '' })
@@ -42,6 +64,7 @@ export default function SettingsPage() {
     amount: '',
     frequency: 'monthly',
     dayOfMonth: '',
+    fixed: false,
   })
 
   // Editing states
@@ -55,6 +78,7 @@ export default function SettingsPage() {
     amount: '',
     frequency: 'monthly',
     dayOfMonth: '',
+    fixed: false,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -74,8 +98,10 @@ export default function SettingsPage() {
         if (userData.notificationsEnabled !== undefined) setNotificationsEnabled(userData.notificationsEnabled)
         if (userData.pushNotificationsEnabled !== undefined) setPushNotificationsEnabled(userData.pushNotificationsEnabled)
         if (profileData.id) setProfileId(profileData.id)
-        if (profileData.monthlyBudget !== undefined) setMonthlyBudget(profileData.monthlyBudget.toString())
-        if (profileData.savingsGoal !== undefined) setSavingsGoal(profileData.savingsGoal.toString())
+        const initBudget = profileData.defaultMonthlyBudget ?? profileData.monthlyBudget
+        const initGoal = profileData.defaultSavingsGoal ?? profileData.savingsGoal
+        if (initBudget !== undefined) setMonthlyBudget(initBudget.toString())
+        if (initGoal !== undefined) setSavingsGoal(initGoal.toString())
         if (Array.isArray(budgets)) setCategoryBudgets(budgets)
         if (Array.isArray(recurring)) setRecurringExpenses(recurring)
       })
@@ -113,20 +139,75 @@ export default function SettingsPage() {
     }
   }
 
+  const selectBudgetMonth = async (value: string) => {
+    setBudgetMonth(value)
+    try {
+      if (value === 'default') {
+        const p = await fetch('/api/profiles/current').then((r) => r.json())
+        const b = p.defaultMonthlyBudget ?? p.monthlyBudget
+        const g = p.defaultSavingsGoal ?? p.savingsGoal
+        if (b !== undefined) setMonthlyBudget(b.toString())
+        if (g !== undefined) setSavingsGoal(g.toString())
+        setBudgetIsOverride(false)
+      } else {
+        const [year, month] = value.split('-')
+        const d = await fetch(`/api/monthly-budgets?year=${year}&month=${month}`).then((r) => r.json())
+        if (d.budget !== undefined) setMonthlyBudget(d.budget.toString())
+        if (d.savingsGoal !== undefined) setSavingsGoal(d.savingsGoal.toString())
+        setBudgetIsOverride(!!d.isOverride)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const saveBudgetGoals = async () => {
     if (!monthlyBudget && !savingsGoal) return
     if (!profileId) return
     try {
-      const body: UserSettings = {}
-      if (monthlyBudget) body.monthlyBudget = parseFloat(monthlyBudget)
-      if (savingsGoal) body.savingsGoal = parseFloat(savingsGoal)
+      if (budgetMonth === 'default') {
+        const body: UserSettings = {}
+        if (monthlyBudget) body.monthlyBudget = parseFloat(monthlyBudget)
+        if (savingsGoal) body.savingsGoal = parseFloat(savingsGoal)
+        await fetch(`/api/profiles/${profileId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        setSuccessMessage('Default budget and goals updated')
+      } else {
+        const [year, month] = budgetMonth.split('-')
+        const body: { year: number; month: number; budget?: number; savingsGoal?: number } = {
+          year: parseInt(year),
+          month: parseInt(month),
+        }
+        if (monthlyBudget) body.budget = parseFloat(monthlyBudget)
+        if (savingsGoal) body.savingsGoal = parseFloat(savingsGoal)
+        const res = await fetch('/api/monthly-budgets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) throw new Error('Failed to save monthly budget')
+        setBudgetIsOverride(true)
+        const label = monthOptions.find((o) => o.value === budgetMonth)?.label || 'month'
+        setSuccessMessage(`Budget for ${label.replace(' (this month)', '')} updated`)
+      }
+      setShowSuccess(true)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
-      await fetch(`/api/profiles/${profileId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      setSuccessMessage('Budget and goals updated')
+  const resetMonthBudget = async () => {
+    if (budgetMonth === 'default') return
+    try {
+      const [year, month] = budgetMonth.split('-')
+      const d = await fetch(`/api/monthly-budgets?year=${year}&month=${month}`, { method: 'DELETE' }).then((r) => r.json())
+      if (d.budget !== undefined) setMonthlyBudget(d.budget.toString())
+      if (d.savingsGoal !== undefined) setSavingsGoal(d.savingsGoal.toString())
+      setBudgetIsOverride(false)
+      setSuccessMessage('Month reverted to default budget')
       setShowSuccess(true)
     } catch (e) {
       console.error(e)
@@ -203,12 +284,13 @@ export default function SettingsPage() {
           amount: parseFloat(newRecurring.amount),
           frequency: newRecurring.frequency,
           dayOfMonth: newRecurring.frequency === 'monthly' && newRecurring.dayOfMonth ? parseInt(newRecurring.dayOfMonth) : undefined,
+          fixed: newRecurring.fixed,
         }),
       })
       const recurring = await res.json()
       if (!res.ok) throw new Error(recurring.error || 'Failed to add recurring expense')
       setRecurringExpenses((prev) => [...prev, recurring])
-      setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly', dayOfMonth: '' })
+      setNewRecurring({ category: '', item: '', amount: '', frequency: 'monthly', dayOfMonth: '', fixed: false })
       setSuccessMessage('Recurring expense added')
       setShowSuccess(true)
     } catch (e) {
@@ -254,6 +336,7 @@ export default function SettingsPage() {
           amount: parseFloat(editingRecurringData.amount),
           frequency: editingRecurringData.frequency,
           dayOfMonth: editingRecurringData.frequency === 'monthly' && editingRecurringData.dayOfMonth ? parseInt(editingRecurringData.dayOfMonth) : null,
+          fixed: editingRecurringData.fixed,
         }),
       })
       const recurring = await res.json()
@@ -294,9 +377,32 @@ export default function SettingsPage() {
             <I n="wallet" size={14} />
             Budget & Goals
           </h3>
-          <p className="text-sm text-[var(--muted)] mb-4">Set your monthly budget and savings goal</p>
+          <p className="text-sm text-[var(--muted)] mb-4">
+            Set your default budget, or a different budget for a specific month — it doesn&apos;t have to be the same every month
+          </p>
 
           <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--muted)] uppercase mb-2">Applies To</label>
+              <select
+                value={budgetMonth}
+                onChange={(e) => selectBudgetMonth(e.target.value)}
+                className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
+              >
+                {monthOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              {budgetMonth !== 'default' && (
+                <p className="text-xs text-[var(--muted)] mt-1">
+                  {budgetIsOverride
+                    ? 'This month has its own budget'
+                    : 'This month is currently using your default budget'}
+                </p>
+              )}
+            </div>
             <div>
               <label className="block text-xs font-semibold text-[var(--muted)] uppercase mb-2">Monthly Budget (KES)</label>
               <input
@@ -326,8 +432,16 @@ export default function SettingsPage() {
               disabled={!monthlyBudget && !savingsGoal}
               className="w-full rounded-lg [background:var(--primary-grad)] px-4 py-2 font-semibold text-white transition active:scale-95 disabled:opacity-50"
             >
-              Save Budget & Goals
+              {budgetMonth === 'default' ? 'Save Default Budget & Goals' : 'Save Budget for This Month'}
             </button>
+            {budgetMonth !== 'default' && budgetIsOverride && (
+              <button
+                onClick={resetMonthBudget}
+                className="w-full rounded-lg border border-[var(--line)] bg-[var(--card-2)] px-4 py-2 font-semibold text-[var(--text)] transition hover:border-[var(--primary)] active:scale-95"
+              >
+                Revert This Month to Default
+              </button>
+            )}
           </div>
         </div>
       </motion.div>
@@ -494,6 +608,14 @@ export default function SettingsPage() {
                         <input type="number" min="1" max="31" placeholder="Day (1-31)" value={editingRecurringData.dayOfMonth} onChange={(e) => setEditingRecurringData({ ...editingRecurringData, dayOfMonth: e.target.value })} className="w-1/3 rounded border border-[var(--line)] bg-[var(--card-2)] px-2 py-1 text-sm outline-none focus:border-[var(--primary)]" />
                       )}
                     </div>
+                    <label className="flex items-center gap-2 text-xs text-[var(--muted)] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editingRecurringData.fixed}
+                        onChange={(e) => setEditingRecurringData({ ...editingRecurringData, fixed: e.target.checked })}
+                      />
+                      Fixed commitment — exclude from spending analytics
+                    </label>
                   </div>
                 ) : (
                   <div className="flex-1">
@@ -501,6 +623,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-[var(--muted)]">
                       {catName(recurring.category)} • KES {recurring.amount.toLocaleString()} • {recurring.frequency}
                       {recurring.frequency === 'monthly' && recurring.dayOfMonth ? ` (Day ${recurring.dayOfMonth})` : ''}
+                      {recurring.fixed ? ' • Fixed bill' : ''}
                     </p>
                   </div>
                 )}
@@ -526,7 +649,7 @@ export default function SettingsPage() {
                       >
                         {recurring.active ? 'Active' : 'Paused'}
                       </button>
-                      <button onClick={() => { setEditingRecurring(recurring.id); setEditingRecurringData({ category: recurring.category, item: recurring.item, amount: recurring.amount.toString(), frequency: recurring.frequency, dayOfMonth: recurring.dayOfMonth?.toString() || '' }); }} className="p-2 rounded hover:bg-[var(--card-2)] text-[var(--muted)] hover:text-[var(--text)] transition">
+                      <button onClick={() => { setEditingRecurring(recurring.id); setEditingRecurringData({ category: recurring.category, item: recurring.item, amount: recurring.amount.toString(), frequency: recurring.frequency, dayOfMonth: recurring.dayOfMonth?.toString() || '', fixed: !!recurring.fixed }); }} className="p-2 rounded hover:bg-[var(--card-2)] text-[var(--muted)] hover:text-[var(--text)] transition">
                         <I n="edit" size={16} />
                       </button>
                       <button
@@ -545,7 +668,7 @@ export default function SettingsPage() {
           <div className="space-y-3 border-t border-[var(--line)] pt-4">
             <select
               value={newRecurring.category}
-              onChange={(e) => setNewRecurring({ ...newRecurring, category: e.target.value })}
+              onChange={(e) => setNewRecurring({ ...newRecurring, category: e.target.value, fixed: isFixedCat(e.target.value) })}
               className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] py-2 pl-4 pr-10 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
             >
               <option value="">Select category...</option>
@@ -589,6 +712,20 @@ export default function SettingsPage() {
                 className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
               />
             )}
+            <label className="flex items-start gap-2 text-sm text-[var(--text)] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={newRecurring.fixed}
+                onChange={(e) => setNewRecurring({ ...newRecurring, fixed: e.target.checked })}
+                className="mt-1"
+              />
+              <span>
+                Fixed commitment
+                <span className="block text-xs text-[var(--muted)]">
+                  Big committed bills (rent, internet) are excluded from spending analytics so they don&apos;t skew your charts. Leave unchecked for small subscriptions like Netflix.
+                </span>
+              </span>
+            </label>
             <button
               onClick={addRecurringExpense}
               disabled={!newRecurring.category || !newRecurring.item || !newRecurring.amount}

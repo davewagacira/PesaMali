@@ -6,8 +6,9 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { isFixedExpense, catOf } from '@/lib/metrics'
+import { isFixedRecord, catOf } from '@/lib/metrics'
 import { cleanString } from '@/lib/validate'
+import { getEffectiveBudget, nairobiYearMonth } from '@/lib/monthlyBudget'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
 function getVertexClient(): GoogleGenAI | null {
@@ -102,7 +103,7 @@ async function callAI(prompt: string): Promise<string | null> {
 // ── Context builder (reads live DB data) ──────────────────────────────────────
 function buildContext(
   user: { name: string; monthlyBudget: number; savingsGoal: number },
-  expenses: { date: string; category: string; item: string; amount: number }[],
+  expenses: { date: string; category: string; item: string; amount: number; fixed?: boolean | null }[],
   now: Date
 ) {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
@@ -114,7 +115,7 @@ function buildContext(
   const monthPace = dayOfMonth / daysInMonth
   // Mirror the dashboard's pace model: fixed bills (rent, internet) are
   // excluded so a lump-sum payment doesn't read as runaway spending.
-  const fixedSpent = expenses.filter((e) => isFixedExpense(e.category, e.item)).reduce((s, e) => s + e.amount, 0)
+  const fixedSpent = expenses.filter((e) => isFixedRecord(e)).reduce((s, e) => s + e.amount, 0)
   const flexibleSpent = spent - fixedSpent
   const flexibleBudget = Math.max(user.monthlyBudget - fixedSpent, 0)
   const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
@@ -153,7 +154,7 @@ function buildContext(
   for (const e of expenses) {
     if (last7[e.date] === undefined) continue
     weekTotal += e.amount
-    if (isFixedExpense(e.category, e.item)) weekFixed += e.amount
+    if (isFixedRecord(e)) weekFixed += e.amount
     else last7Flex[e.date] += e.amount
   }
   const weekFlexible = weekTotal - weekFixed
@@ -161,7 +162,7 @@ function buildContext(
 
   const byFlexCat: Record<string, number> = {}
   for (const e of expenses) {
-    if (!isFixedExpense(e.category, e.item)) byFlexCat[e.category] = (byFlexCat[e.category] || 0) + e.amount
+    if (!isFixedRecord(e)) byFlexCat[e.category] = (byFlexCat[e.category] || 0) + e.amount
   }
   const topFlex = Object.entries(byFlexCat).sort((a, b) => b[1] - a[1])[0]
   const topFlexCategory = topFlex ? { name: catOf(topFlex[0]).name, amount: Math.round(topFlex[1]) } : null
@@ -432,7 +433,14 @@ export async function POST(req: NextRequest) {
     })
 
     const now = new Date()
-    const ctx = buildContext(userRecord, expenses, now)
+    // Budgets can vary month to month — use this month's effective values
+    const { year: bYear, month: bMonth } = nairobiYearMonth(now)
+    const monthBudget = await getEffectiveBudget(session.profileId, bYear, bMonth, userRecord)
+    const ctx = buildContext(
+      { ...userRecord, monthlyBudget: monthBudget.budget, savingsGoal: monthBudget.savingsGoal },
+      expenses,
+      now
+    )
 
     // Build conversation history if memory enabled
     let conversationHistory = ''
