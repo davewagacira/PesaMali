@@ -14,6 +14,11 @@ export const CATS = [
   { id: 'other', name: 'Other', icon: 'receipt', color: '#94A3B8' },
 ]
 
+// Fixed monthly commitments (lump-sum bills) are excluded from the spend-pace
+// model so a rent payment on day 1 doesn't flag the whole month as over pace.
+export const FIXED_CATEGORY_IDS = new Set(['rent', 'internet'])
+export const isFixedCat = (id: string) => FIXED_CATEGORY_IDS.has(id)
+
 export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export const iso = (dt: Date) => {
@@ -41,8 +46,11 @@ export interface Metrics {
   safe: number          // how much MORE you can spend today (resets daily)
   dailyAllowance: number // full daily allowance for today before any spending
   todaySpent: number
-  spendPace: number
+  spendPace: number      // flexible spend vs flexible budget (fixed bills excluded)
   monthPace: number
+  fixedSpent: number     // total paid into fixed categories (rent, internet)
+  flexibleSpent: number
+  flexibleBudget: number // budget minus fixed bills already paid
   status: 'ok' | 'warn' | 'danger'
   last7: { label: string; amt: number; today: boolean }[]
   byCat: { id: string; name: string; icon: string; color: string; amt: number }[]
@@ -73,7 +81,12 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     const priorSpent = spent - todaySpent
     const dailyAllowance = Math.max(0, (budget - priorSpent - goal) / daysLeft)
     const safe = dailyAllowance - todaySpent
-    const spendPace = spent / budget
+    // Pace compares flexible (day-to-day) spending against what's left of the
+    // budget after fixed bills, so lump-sum payments don't read as overspending.
+    const fixedSpent = expenses.filter((e) => isFixedCat(e.cat)).reduce((s, e) => s + e.amt, 0)
+    const flexibleSpent = spent - fixedSpent
+    const flexibleBudget = Math.max(budget - fixedSpent, 0)
+    const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
     const monthPace = dayOfMonth / daysInMonth
     const status: 'ok' | 'warn' | 'danger' =
       spendPace <= monthPace ? 'ok' : spendPace <= monthPace * 1.15 ? 'warn' : 'danger'
@@ -111,15 +124,20 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
     })
     const dowOrdered = [...byDow.slice(1), byDow[0]]
 
+    // The pace chart tracks flexible spend only; fixed bills would dwarf the
+    // even-spread ideal line the moment they're paid.
     const cum: { day: number; spent: number; ideal: number }[] = []
     let run = 0
     for (let d = 1; d <= dayOfMonth; d++) {
-      run += expenses.filter((e) => e.date === dKey(d)).reduce((s, e) => s + e.amt, 0)
-      cum.push({ day: d, spent: run, ideal: (budget * d) / daysInMonth })
+      run += expenses
+        .filter((e) => e.date === dKey(d) && !isFixedCat(e.cat))
+        .reduce((s, e) => s + e.amt, 0)
+      cum.push({ day: d, spent: run, ideal: (flexibleBudget * d) / daysInMonth })
     }
 
     const daysWithSpend = new Set(expenses.map((e) => e.date)).size || 1
-    const projected = (spent / dayOfMonth) * daysInMonth
+    // Fixed bills are one-off, so only flexible spend is extrapolated to month end.
+    const projected = fixedSpent + (flexibleSpent / dayOfMonth) * daysInMonth
     const recentTx = [...expenses]
       .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
       .slice(0, 6)
@@ -133,6 +151,9 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       todaySpent,
       spendPace,
       monthPace,
+      fixedSpent,
+      flexibleSpent,
+      flexibleBudget,
       status,
       last7,
       byCat,
