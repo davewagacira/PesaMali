@@ -6,11 +6,19 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { isFixedExpense } from '@/lib/metrics'
+import { isFixedExpense, catOf } from '@/lib/metrics'
 import { cleanString } from '@/lib/validate'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
 function getVertexClient(): GoogleGenAI | null {
+  // Express mode: API key only. This is the path that works on Vercel, where
+  // there is no service-account key file on disk.
+  const apiKey = process.env.GOOGLE_VERTEX_API_KEY
+  if (apiKey) {
+    return new GoogleGenAI({ vertexai: true, apiKey })
+  }
+
+  // Service-account mode for local development.
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID
   if (!project) return null
 
@@ -20,6 +28,9 @@ function getVertexClient(): GoogleGenAI | null {
   const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
   const absCredPath = credPath ? resolve(process.cwd(), credPath) : null
   const keyFilename = absCredPath && existsSync(absCredPath) ? absCredPath : undefined
+  if (!keyFilename) {
+    console.warn('[AI chat] GOOGLE_CLOUD_PROJECT_ID is set but no service-account key file was found — Vertex auth will likely fail. On serverless, set GOOGLE_VERTEX_API_KEY instead.')
+  }
 
   return new GoogleGenAI({
     vertexai: true,
@@ -67,7 +78,7 @@ async function callAI(prompt: string): Promise<string | null> {
   // 2. Try Google AI Studio (Gemini API)
   const geminiClient = getGeminiClient()
   if (geminiClient) {
-    const model = process.env.GOOGLE_GENERATIVE_AI_MODEL || 'gemini-1.5-flash'
+    const model = process.env.GOOGLE_GENERATIVE_AI_MODEL || 'gemini-2.0-flash'
     try {
       const res = await geminiClient.models.generateContent({
         model,
@@ -80,6 +91,11 @@ async function callAI(prompt: string): Promise<string | null> {
     }
   }
 
+  if (!vertexClient && !geminiClient) {
+    console.error('[AI chat] No AI provider configured — set GOOGLE_VERTEX_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY). Serving the local fallback coach.')
+  } else {
+    console.error('[AI chat] All AI providers failed — serving the local fallback coach. Check the provider errors above.')
+  }
   return null
 }
 
@@ -129,6 +145,27 @@ function buildContext(
     .map(([d, amt]) => `${d}: KES ${amt.toLocaleString()}`)
     .join(' | ')
 
+  // Weekly split between habits and fixed bills, so reports don't headline
+  // a rent payment as runaway spending.
+  let weekTotal = 0
+  let weekFixed = 0
+  const last7Flex: Record<string, number> = Object.fromEntries(Object.keys(last7).map((k) => [k, 0]))
+  for (const e of expenses) {
+    if (last7[e.date] === undefined) continue
+    weekTotal += e.amount
+    if (isFixedExpense(e.category, e.item)) weekFixed += e.amount
+    else last7Flex[e.date] += e.amount
+  }
+  const weekFlexible = weekTotal - weekFixed
+  const heaviestFlexDay = Object.entries(last7Flex).sort((a, b) => b[1] - a[1])[0]
+
+  const byFlexCat: Record<string, number> = {}
+  for (const e of expenses) {
+    if (!isFixedExpense(e.category, e.item)) byFlexCat[e.category] = (byFlexCat[e.category] || 0) + e.amount
+  }
+  const topFlex = Object.entries(byFlexCat).sort((a, b) => b[1] - a[1])[0]
+  const topFlexCategory = topFlex ? { name: catOf(topFlex[0]).name, amount: Math.round(topFlex[1]) } : null
+
   // Repeat items
   const itemCount: Record<string, { n: number; amt: number }> = {}
   for (const e of expenses) {
@@ -147,6 +184,14 @@ function buildContext(
 
   return {
     user: user.name,
+    firstName: (user.name || '').trim().split(/\s+/)[0] || 'there',
+    weekTotal: Math.round(weekTotal),
+    weekFixed: Math.round(weekFixed),
+    weekFlexible: Math.round(weekFlexible),
+    heaviestFlexDay: heaviestFlexDay && heaviestFlexDay[1] > 0
+      ? { date: heaviestFlexDay[0], amount: Math.round(heaviestFlexDay[1]) }
+      : null,
+    topFlexCategory,
     budget: user.monthlyBudget,
     savingsGoal: user.savingsGoal,
     spent: Math.round(spent),
@@ -236,32 +281,91 @@ function isOffTopic(question: string): boolean {
 }
 
 // ── Local fallback coach ───────────────────────────────────────────────────────
+// Serves when no AI provider responds. Written to read like a person, not a
+// dashboard: it reacts first, weaves numbers into sentences, and never blames
+// the user for fixed bills like rent.
+function pickOne<T>(options: T[]): T {
+  return options[Math.floor(Math.random() * options.length)]
+}
+
+function weekdayOf(dateKey: string): string {
+  return new Date(dateKey + 'T12:00:00').toLocaleDateString('en-KE', { weekday: 'long' })
+}
+
 function localCoach(question: string, ctx: ReturnType<typeof buildContext>): string {
   const ql = question.toLowerCase()
-  const topCat = ctx.categoryBreakdown[0] || 'none recorded'
+  const kes = (n: number) => `KES ${Math.round(n).toLocaleString()}`
+  const flexCat = ctx.topFlexCategory
 
-  const statusLine =
+  const moodLine =
     ctx.status === 'on track'
-      ? `You're **on track**: ${ctx.spendPacePct}% of your flexible budget used, ${ctx.monthProgressPct}% of the month gone.`
+      ? pickOne([
+          `you're in good shape — only **${ctx.spendPacePct}%** of your day-to-day money is used and we're already ${ctx.monthProgressPct}% through the month`,
+          `your pace is honestly solid: **${ctx.spendPacePct}%** of flexible budget used against ${ctx.monthProgressPct}% of the month gone`,
+        ])
       : ctx.status === 'slightly ahead of pace'
-      ? `You're **slightly ahead of pace** (${ctx.spendPacePct}% of flexible budget spent vs ${ctx.monthProgressPct}% of month). Ease off for a few days.`
-      : `**Danger zone**: ${ctx.spendPacePct}% of your flexible budget is spent but only ${ctx.monthProgressPct}% of the month is done.`
+      ? pickOne([
+          `you're moving a little faster than the month is (**${ctx.spendPacePct}%** used, ${ctx.monthProgressPct}% of the month done) — not a crisis, just worth a couple of calm days`,
+          `spending is slightly ahead of the calendar (**${ctx.spendPacePct}%** vs ${ctx.monthProgressPct}%), so a quiet stretch would set you right`,
+        ])
+      : pickOne([
+          `we need to pump the brakes — **${ctx.spendPacePct}%** of your day-to-day money is gone with only ${ctx.monthProgressPct}% of the month behind you`,
+          `the pace is running hot: **${ctx.spendPacePct}%** of flexible budget used and we're just ${ctx.monthProgressPct}% in`,
+        ])
 
-  if (ql.includes('week')) {
-    const weekTotal = ctx.last7Days.split(' | ')
-      .reduce((s, d) => { const m = d.match(/KES ([\d,]+)/); return s + (m ? parseInt(m[1].replace(/,/g, '')) : 0) }, 0)
-    return `**Your week**: KES ${weekTotal.toLocaleString()} over 7 days (KES ${Math.round(weekTotal / 7).toLocaleString()}/day). Top category: **${topCat}**.\n\n${statusLine}\n\nSafe to spend today: **KES ${ctx.safeToSpendToday.toLocaleString()}**.`
+  if (ql.includes('week') || ql.includes('report')) {
+    const opener = pickOne([
+      `Alright ${ctx.firstName}, week in review.`,
+      `Let me break your week down, ${ctx.firstName}.`,
+      `Here's how your week actually went.`,
+    ])
+    const dayToDay = ctx.weekFlexible > 0
+      ? `Day to day you spent **${kes(ctx.weekFlexible)}** — roughly ${kes(ctx.weekFlexible / 7)} a day.`
+      : `You barely touched your day-to-day money — nice and quiet.`
+    const fixedNote = ctx.weekFixed > 0
+      ? ` ${kes(ctx.weekFixed)} also went out for fixed bills (rent and the like), but that's a commitment, not a habit — I don't count it against you.`
+      : ''
+    const colour = [
+      flexCat ? `Most of the flexible money went to **${flexCat.name}** (${kes(flexCat.amount)}).` : '',
+      ctx.heaviestFlexDay ? `${weekdayOf(ctx.heaviestFlexDay.date)} was your heaviest day at ${kes(ctx.heaviestFlexDay.amount)}.` : '',
+    ].filter(Boolean).join(' ')
+    return `${opener}\n\n${dayToDay}${fixedNote}${colour ? `\n\n${colour}` : ''}\n\nBig picture, ${moodLine}. If you keep today around **${kes(ctx.safeToSpendToday)}**, you stay right on plan.`
   }
+
   if (ql.includes('cut') || ql.includes('overspend') || ql.includes('stop')) {
-    return `Most of your money is in **${topCat}**. Top repeat items: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')}.\n\n${statusLine}\n\nTrim 20% from your top category = ~KES ${Math.round(ctx.spent * 0.1).toLocaleString()} freed up this month.`
+    const target = flexCat
+      ? `If you want one lever to pull, it's **${flexCat.name}** — that's where ${kes(flexCat.amount)} of your controllable money has gone. Trimming it by about 20% frees roughly ${kes(flexCat.amount * 0.2)} for the rest of the month.`
+      : `There's not much logged yet, so log a few days of spending and I'll point at the exact category to squeeze.`
+    const habits = ctx.topRepeatPurchases.length
+      ? ` Your usual suspects: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')} — small things, but they repeat.`
+      : ''
+    return `${target}${habits}\n\nFor context, ${moodLine}.`
   }
+
   if (ql.includes('track') || ql.includes('month') || ql.includes('finish')) {
-    return `${statusLine}\n\nAt this pace: **KES ${ctx.projectedMonthEnd.toLocaleString()}** by month-end vs KES ${ctx.budget.toLocaleString()} budget. Stay under **KES ${ctx.safeToSpendToday.toLocaleString()}/day** to protect your KES ${ctx.savingsGoal.toLocaleString()} savings goal.`
+    const margin = ctx.budget - ctx.projectedMonthEnd
+    const ending = margin >= ctx.savingsGoal
+      ? `at this rate you'd finish around **${kes(ctx.projectedMonthEnd)}** spent, which lands inside your ${kes(ctx.budget)} budget with your savings intact. Keep doing what you're doing.`
+      : margin >= 0
+      ? `you're projected to finish around **${kes(ctx.projectedMonthEnd)}** — inside the ${kes(ctx.budget)} budget, but it squeezes your ${kes(ctx.savingsGoal)} savings goal. A few lighter days buys that back.`
+      : `the current path lands around **${kes(ctx.projectedMonthEnd)}**, which overshoots your ${kes(ctx.budget)} budget. Holding today near ${kes(ctx.safeToSpendToday)} starts bending that curve back.`
+    return `So, ${moodLine}. Looking ahead, ${ending}`
   }
+
   if (ql.includes('tip') || ql.includes('save') || ql.includes('habit') || ql.includes('expensive')) {
-    return `Three moves:\n\n1. **KES ${ctx.safeToSpendToday.toLocaleString()} daily ceiling** — one number, easy to track.\n2. **Reduce ${topCat}** by 15% — saves ~KES ${Math.round(ctx.spent * 0.12).toLocaleString()} this month.\n3. **Log before you buy** — entering the cost first cuts impulse spending by ~30%.\n\n${statusLine}`
+    const catTip = flexCat
+      ? `your biggest controllable spend is **${flexCat.name}**, so that's where a 15% trim hurts least and saves most (about ${kes(flexCat.amount * 0.15)})`
+      : `once a few more expenses are logged I can point at the exact category worth trimming`
+    return pickOne([
+      `Honestly? Just two things. One number to live by — **${kes(ctx.safeToSpendToday)}** today — and one habit: log the expense *before* you buy, because seeing the number first kills most impulse buys. Beyond that, ${catTip}.\n\nAnd for the record, ${moodLine}.`,
+      `Keep it simple: treat **${kes(ctx.safeToSpendToday)}** as today's ceiling, and log purchases before you make them — it's the cheapest self-control trick there is. If you want a bigger win, ${catTip}.\n\nRight now, ${moodLine}.`,
+    ])
   }
-  return `Spent: **KES ${ctx.spent.toLocaleString()}** | Remaining: **KES ${ctx.remaining.toLocaleString()}** | Safe today: **KES ${ctx.safeToSpendToday.toLocaleString()}** | ${ctx.totalTransactions} transactions logged.\n\nTop category: **${topCat}**. ${statusLine}`
+
+  return pickOne([
+    `Quick pulse: you've spent **${kes(ctx.spent)}** this month and have **${kes(ctx.remaining)}** left, with about ${kes(ctx.safeToSpendToday)} comfortable to spend today. And ${moodLine}. Ask me about your week, what to cut, or whether you'll finish the month okay.`,
+    `Here's where you stand, ${ctx.firstName}: **${kes(ctx.remaining)}** still available after spending ${kes(ctx.spent)}, and today roughly ${kes(ctx.safeToSpendToday)} is safe to use. Overall, ${moodLine}. Want the weekly breakdown?`,
+  ])
 }
 
 function generateTitle(question: string): string {
@@ -342,7 +446,7 @@ export async function POST(req: NextRequest) {
 
 SCOPE RULE: Only discuss personal finances (spending, budget, savings, categories, habits). If asked anything else (health, politics, relationships, general knowledge, coding, entertainment) reply: "I can't help with that — I only discuss personal finances."
 
-STYLE: Be conversational. Vary your responses — sometimes ask a question, sometimes give advice, sometimes just react to their data. No forced structure. Keep it under 200 words. Use **bold** only for important numbers.
+STYLE: Talk like a sharp friend texting back, never like a report. React to their situation first, then weave at most 3-4 numbers naturally into sentences. NEVER answer in "Label: value" format and never dump stats line by line. Vary your responses — sometimes ask a short follow-up question, sometimes just react. Treat fixed bills (rent, internet) as commitments, not bad habits — never scold the user for them. Keep it under 200 words. Use **bold** only for the numbers that matter.
 ${compressedContext ? `\n\n${compressedContext}\n` : ''}
 ${conversationHistory ? `\n\nPrevious chat history:\n${conversationHistory}\n` : ''}
 Live data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
@@ -351,7 +455,8 @@ Spent: **KES ${ctx.spent.toLocaleString()}** | Remaining: **KES ${ctx.remaining.
 Fixed bills paid (rent, internet): KES ${ctx.fixedSpent.toLocaleString()} | Flexible spend: KES ${ctx.flexibleSpent.toLocaleString()} of KES ${ctx.flexibleBudget.toLocaleString()} flexible budget (${ctx.spendPacePct}%)
 Month: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} | Status: ${ctx.status} (pace is judged on flexible spend only — fixed bills don't count against pace)
 Safe daily spend: KES ${ctx.safeToSpendToday.toLocaleString()} | Projected end: KES ${ctx.projectedMonthEnd.toLocaleString()}
-Top spend: ${ctx.categoryBreakdown[0] || 'none yet'} | Last 7 days: ${ctx.last7Days}
+Top spend: ${ctx.categoryBreakdown[0] || 'none yet'} | Top flexible category: ${ctx.topFlexCategory ? `${ctx.topFlexCategory.name} (KES ${ctx.topFlexCategory.amount.toLocaleString()})` : 'none yet'}
+This week: KES ${ctx.weekFlexible.toLocaleString()} day-to-day + KES ${ctx.weekFixed.toLocaleString()} fixed bills | Last 7 days: ${ctx.last7Days}
 Top repeat items: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')}
 
 User: ${question}`

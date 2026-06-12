@@ -26,6 +26,7 @@ model User {
   recurringExpenses     RecurringExpense[]
   achievements          Achievement[]
   notifications         Notification[]
+  wishlistItems         WishlistItem[]
 }
 
 model Expense {
@@ -95,6 +96,17 @@ model RecurringExpense {
 
   @@index([userId, active])
   @@index([active, nextRunDate])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  price     Float
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model Achievement {
