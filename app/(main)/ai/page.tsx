@@ -207,11 +207,11 @@ function MessageRow({ msg }: { msg: Message }) {
       <div
         className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-xs font-semibold ${
           msg.who === 'ai'
-            ? '[background:var(--primary-grad)] text-white'
+            ? 'bg-transparent text-[var(--primary)]'
             : 'border border-[var(--line)] bg-[var(--card-2)] text-[var(--muted)]'
         }`}
       >
-        {msg.who === 'ai' ? <I n="sparkles" size={15} /> : 'D'}
+        {msg.who === 'ai' ? <I n="sparkles" size={24} /> : 'D'}
       </div>
       <div
         className={`whitespace-pre-wrap rounded-2xl px-[17px] py-[13px] text-[13.5px] leading-[1.75] ${
