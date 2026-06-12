@@ -107,7 +107,7 @@ export function AISkeleton() {
 
         <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
-            className="flex h-[min(720px,calc(100vh-340px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[560px] max-[1180px]:min-h-0"
+            className="flex h-[min(720px,calc(100dvh-280px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[min(560px,calc(100dvh-220px))] max-[1180px]:min-h-[420px]"
             {...stagger(2)}
           >
             <div className="flex items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">

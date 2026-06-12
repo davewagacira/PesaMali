@@ -311,6 +311,9 @@ export default function AIPage() {
         text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
       },
     ])
+    requestAnimationFrame(() => {
+      if (logRef.current) logRef.current.scrollTop = 0
+    })
   }
 
   const loadConversation = async (convId: string) => {
@@ -559,12 +562,12 @@ export default function AIPage() {
 
         <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
-            className="flex h-[calc(100vh-280px)] min-h-[600px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[calc(100vh-320px)] max-[1180px]:min-h-0"
+            className="flex h-[min(720px,calc(100dvh-280px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[min(560px,calc(100dvh-220px))] max-[1180px]:min-h-[420px]"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
           >
-            <div className="flex items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
+            <div className="flex shrink-0 items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
               <Orb small />
               <div>
                 <b className="text-sm font-bold">PesaMali AI</b>
@@ -582,18 +585,18 @@ export default function AIPage() {
               </button>
             </div>
 
-            <div ref={logRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-[22px] scroll-smooth">
-              <AnimatePresence initial={false}>
+            <div ref={logRef} className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-[22px] scroll-smooth">
+              <AnimatePresence initial={false} mode="popLayout">
                 {displayedMessages.map((item, i) => {
                   if ('isCompressed' in item && item.isCompressed) {
                     return (
                       <motion.button
-                        key={`compressed-${i}`}
+                        key="compressed-summary"
                         onClick={() => setExpandedCompressed(!expandedCompressed)}
                         className="my-1 rounded-xl border border-[var(--line)] bg-[var(--card-2)] px-4 py-3 text-left text-xs leading-6 text-[var(--muted)] transition hover:bg-[var(--primary-soft)]"
-                        initial={{ opacity: 0, height: 0, y: 20 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
                       >
                         <span className="mb-1 flex items-center gap-2 font-semibold">
                           <I n="book" size={14} />
@@ -604,7 +607,8 @@ export default function AIPage() {
                       </motion.button>
                     )
                   }
-                  return <MessageRow key={i} msg={item as Message} />
+                  const msg = item as Message
+                  return <MessageRow key={`${msg.who}-${i}-${msg.text.slice(0, 24)}`} msg={msg} />
                 })}
 
                   {busy && !streamingReply && (
