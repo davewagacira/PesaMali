@@ -869,8 +869,8 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  background:#05080F;
-  color:#fff;
+  background:var(--bg);
+  color:var(--text);
   position:relative;
   overflow:hidden;
   padding:24px 16px;
@@ -920,7 +920,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   font-size:16px;
   font-weight:800;
   letter-spacing:-0.2px;
-  color:#fff;
+  color:var(--text);
 }
 
 /* Content */
@@ -942,16 +942,16 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   font-size:clamp(22px,5vw,40px);
   font-weight:800;
   letter-spacing:-0.5px;
-  color:#fff;
+  color:var(--text);
   line-height:1.1;
 }
 .profiles-subtitle{
   margin-top:8px;
-  color:rgba(255,255,255,0.55);
+  color:var(--muted);
   font-size:15px;
   font-weight:400;
 }
-.profiles-subtitle strong{color:rgba(255,255,255,0.85)}
+.profiles-subtitle strong{color:var(--text)}
 
 /* Grid */
 .profiles-grid{
@@ -976,7 +976,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   width:140px;
   min-height:unset;
   position:relative;
-  color:#fff;
+  color:var(--text);
   transition:color 0.2s;
 }
 .profile-avatar-wrap{
@@ -1001,7 +1001,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   border-radius:50%;
   display:grid;
   place-items:center;
-  border:2px solid #05080F;
+  border:2px solid var(--bg);
   color:#fff;
 }
 .profile-name{
@@ -1009,7 +1009,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   margin-top:14px;
   font-size:14px;
   font-weight:650;
-  color:#fff;
+  color:var(--text);
   text-align:center;
   white-space:nowrap;
   overflow:hidden;
@@ -1020,7 +1020,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   display:block;
   margin-top:4px;
   font-size:11px;
-  color:rgba(255,255,255,0.45);
+  color:var(--muted);
   text-align:center;
 }
 .profile-glow{
@@ -1039,14 +1039,14 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   border-color:rgba(21,94,239,0.9)!important;
 }
 .profile-card-skeleton .profile-avatar-wrap{
-  background:rgba(255,255,255,0.08);
-  border:2px solid rgba(255,255,255,0.06);
+  background:var(--card-2);
+  border:2px solid var(--line);
   animation:pulse 1.5s ease-in-out infinite;
 }
 .skeleton-pulse{animation:pulse 1.5s ease-in-out infinite}
 .skeleton-line{
   height:12px;border-radius:6px;
-  background:rgba(255,255,255,0.1);
+  background:var(--card-2);
   animation:pulse 1.5s ease-in-out infinite;
 }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
@@ -1056,7 +1056,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   display:flex;
   align-items:center;
   gap:10px;
-  color:rgba(255,255,255,0.6);
+  color:var(--muted);
   font-size:13px;
   font-weight:600;
 }
@@ -1072,19 +1072,19 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   display:inline-flex;
   align-items:center;
   gap:8px;
-  color:rgba(255,255,255,0.35);
+  color:var(--muted);
   font-size:12px;
   font-weight:600;
   padding:8px 16px;
   border-radius:99px;
-  border:1px solid rgba(255,255,255,0.08);
+  border:1px solid var(--line);
   min-height:unset;
   transition:color 0.2s,border-color 0.2s,background 0.2s;
 }
 .profiles-logout:hover{
-  color:rgba(255,255,255,0.65);
-  border-color:rgba(255,255,255,0.2);
-  background:rgba(255,255,255,0.05);
+  color:var(--text);
+  border-color:var(--primary);
+  background:var(--primary-soft);
 }
 
 /* ============================================================ */
@@ -1102,10 +1102,10 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
 .profile-modal{
   width:100%;
   max-width:480px;
-  background:#0C1019;
-  border:1px solid rgba(255,255,255,0.1);
+  background:var(--card);
+  border:1px solid var(--line);
   border-radius:20px;
-  box-shadow:0 32px 80px rgba(0,0,0,0.6);
+  box-shadow:var(--shadow-lg);
   max-height:90vh;
   overflow-y:auto;
 }
@@ -1120,26 +1120,26 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
 .profile-modal-head h2{
   font-size:18px;
   font-weight:750;
-  color:#fff;
+  color:var(--text);
   line-height:1.2;
 }
 .profile-modal-head p{
   margin-top:4px;
   font-size:12px;
-  color:rgba(255,255,255,0.45);
+  color:var(--muted);
 }
 .profile-modal-close{
   width:32px;height:32px;
   border-radius:8px;
   display:grid;place-items:center;
-  color:rgba(255,255,255,0.4);
+  color:var(--muted);
   min-height:unset;
   transition:background 0.15s,color 0.15s;
   flex-shrink:0;
 }
 .profile-modal-close:hover{
-  background:rgba(255,255,255,0.08);
-  color:#fff;
+  background:var(--card-2);
+  color:var(--text);
 }
 
 /* Type grid */
@@ -1151,8 +1151,8 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   margin-bottom:20px;
 }
 .profile-type-btn{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.1);
+  background:var(--card-2);
+  border:1px solid var(--line);
   border-radius:12px;
   padding:16px 12px;
   display:flex;
@@ -1161,13 +1161,13 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   gap:4px;
   text-align:left;
   min-height:unset;
-  color:rgba(255,255,255,0.7);
+  color:var(--text);
   transition:background 0.15s,border-color 0.15s,color 0.15s;
   cursor:pointer;
 }
 .profile-type-btn:hover{
-  background:rgba(255,255,255,0.08);
-  color:#fff;
+  background:var(--card);
+  color:var(--text);
 }
 .profile-type-btn.sel{
   background:rgba(21,94,239,0.15);
@@ -1176,8 +1176,8 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
 }
 .profile-type-icon{font-size:24px;margin-bottom:6px}
 .profile-type-btn b{font-size:13px;font-weight:700;display:block}
-.profile-type-btn p{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.4;margin:0}
-.profile-type-btn.sel p{color:rgba(255,255,255,0.55)}
+.profile-type-btn p{font-size:11px;color:var(--muted);line-height:1.4;margin:0}
+.profile-type-btn.sel p{color:var(--text)}
 
 /* Profile modal action */
 .profile-modal-action{
@@ -1206,9 +1206,9 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   gap:16px;
   padding:0 24px;
   margin-bottom:20px;
-  background:rgba(255,255,255,0.03);
-  border-top:1px solid rgba(255,255,255,0.06);
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:var(--card-2);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
   padding-top:16px;
   padding-bottom:16px;
 }
@@ -1228,17 +1228,17 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   display:block;
   font-size:11px;
   font-weight:700;
-  color:rgba(255,255,255,0.4);
+  color:var(--muted);
   text-transform:uppercase;
   letter-spacing:0.5px;
   margin-bottom:8px;
 }
 .profile-field input{
   width:100%;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
+  background:var(--card-2);
+  border:1px solid var(--line);
   border-radius:10px;
-  color:#fff;
+  color:var(--text);
   padding:12px 14px;
   font-size:14px;
   font-family:inherit;
@@ -1268,7 +1268,7 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   transition:background 0.12s,border-color 0.12s,transform 0.1s;
   cursor:pointer;
 }
-.profile-avatar-opt:hover{background:rgba(255,255,255,0.08);transform:scale(1.1)}
+.profile-avatar-opt:hover{background:var(--card-2);transform:scale(1.1)}
 .profile-avatar-opt.sel{border-color:rgba(21,94,239,0.7);transform:scale(1.15)}
 
 /* Color row */
@@ -1283,10 +1283,10 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   min-height:unset;
   transition:transform 0.15s,box-shadow 0.15s;
   cursor:pointer;
-  border:2px solid rgba(255,255,255,0.1);
+  border:2px solid var(--line);
 }
 .profile-color-swatch:hover{transform:scale(1.15)}
-.profile-color-swatch.sel{transform:scale(1.2);border-color:rgba(255,255,255,0.5)}
+.profile-color-swatch.sel{transform:scale(1.2);border-color:var(--text)}
 
 /* Field row */
 .profile-field-row{
@@ -1315,16 +1315,16 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
 }
 .profile-modal-back{
   display:flex;align-items:center;gap:6px;
-  color:rgba(255,255,255,0.4);
+  color:var(--muted);
   font-size:13px;font-weight:600;
   padding:12px 14px;
   border-radius:10px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.08);
+  background:var(--card-2);
+  border:1px solid var(--line);
   min-height:unset;
   transition:color 0.15s,background 0.15s;
 }
-.profile-modal-back:hover{color:#fff;background:rgba(255,255,255,0.09)}
+.profile-modal-back:hover{color:var(--text);background:var(--line)}
 
 /* Override action width in flex */
 .profile-modal-actions .profile-modal-action{

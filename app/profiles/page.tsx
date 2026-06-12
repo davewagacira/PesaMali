@@ -312,7 +312,10 @@ export default function ProfilesPage() {
       fetch('/api/user').then(r => r.json()),
     ]).then(([profs, user]) => {
       setProfiles(Array.isArray(profs) ? profs : [])
-      if (user.name) setUserName(user.name)
+      if (user?.name) setUserName(user.name)
+      setLoading(false)
+    }).catch(err => {
+      console.error('Error loading profiles:', err)
       setLoading(false)
     })
   }, [])
