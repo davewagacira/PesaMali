@@ -48,14 +48,20 @@ async function runMigration() {
     `
     
     for (const user of users) {
-      const firstName = user.name.split(' ')[0]
-      const profileId = `prof_${user.id}`
+      const studentProfileId = `prof_${user.id}_student`
       await prisma.$executeRawUnsafe(`
         INSERT INTO "Profile" ("id", "userId", "name", "avatar", "color", "type", "monthlyBudget", "savingsGoal", "createdAt")
-        VALUES ($1, $2, $3, '🎓', '#155EEF', 'budget', $4, $5, NOW())
+        VALUES ($1, $2, 'Student Life', '🎓', '#155EEF', 'budget', $3, $4, NOW())
         ON CONFLICT DO NOTHING
-      `, profileId, user.id, `${firstName}'s Budget`, Number(user.budget), Number(user.savings))
-      console.log(`  ✅ Created profile for ${user.name}`)
+      `, studentProfileId, user.id, Number(user.budget), Number(user.savings))
+      
+      const devProfileId = `prof_${user.id}_dev`
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "Profile" ("id", "userId", "name", "avatar", "color", "type", "monthlyBudget", "savingsGoal", "createdAt")
+        VALUES ($1, $2, 'Developer', '💻', '#7A5AF8', 'business', 0, 0, NOW())
+        ON CONFLICT DO NOTHING
+      `, devProfileId, user.id)
+      console.log(`  ✅ Created profiles for ${user.name}`)
     }
 
     // Step 4: Add profileId columns to all tables
@@ -75,7 +81,7 @@ async function runMigration() {
         const result = await prisma.$executeRawUnsafe(`
           UPDATE "${table}" t
           SET "profileId" = (
-            SELECT p."id" FROM "Profile" p WHERE p."userId" = t."userId" LIMIT 1
+            SELECT p."id" FROM "Profile" p WHERE p."userId" = t."userId" AND p."name" = 'Student Life' LIMIT 1
           )
           WHERE t."userId" IS NOT NULL AND t."profileId" IS NULL
         `)
