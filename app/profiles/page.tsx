@@ -434,7 +434,10 @@ export default function ProfilesPage() {
 
         <button
           className="profiles-logout"
-          onClick={() => { fetch('/api/auth/logout', { method: 'POST' }); router.replace('/') }}
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' })
+            window.location.href = '/auth'
+          }}
         >
           <I n="logout" size={14} /> Sign out
         </button>
