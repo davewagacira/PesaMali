@@ -177,8 +177,8 @@ export default function DashboardPage() {
   const budgetUsed = Math.min(100, m.spendPace * 100)
   const runway = Math.max(0, Math.floor((m.remaining - goal) / Math.max(m.dailyAllowance, 1)))
   const weekTotal = m.last7.reduce((sum, d) => sum + d.amt, 0)
-  const topCategory = m.byCat[0]
-  // Advice targets a category the user can actually trim, never a fixed bill.
+  // Top category highlights spending the user can actually act on, so fixed
+  // bills (rent, internet) are excluded — they'd dominate every month.
   const topFlexCategory = m.byFlexCat[0]
   const avgDaily = m.spent / Math.max(1, now.getDate())
   const availableAfterGoal = m.remaining - goal
@@ -311,7 +311,7 @@ export default function DashboardPage() {
           },
           { icon: 'calendar', label: 'Runway', value: `${runway} days`, meta: 'Estimated budget runway', trend: runway - m.daysLeft },
           { icon: 'barChart', label: '7-day spend', value: moneyText(weekTotal), meta: `${moneyText(avgDaily)} avg per day`, trend: -4 },
-          { icon: 'chart', label: 'Top category', value: topCategory?.name || 'No data', meta: topCategory ? moneyText(topCategory.amt) : 'Start logging expenses', trend: topCategory ? 12 : 0 },
+          { icon: 'chart', label: 'Top flexible category', value: topFlexCategory?.name || 'No data', meta: topFlexCategory ? `${moneyText(topFlexCategory.amt)} · excludes fixed bills` : 'Start logging expenses', trend: topFlexCategory ? 12 : 0 },
         ].map((k) => (
           <motion.div className="pro-kpi" variants={listItem} key={k.label}>
             <div className="pro-kpi-top">
