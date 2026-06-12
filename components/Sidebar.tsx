@@ -44,6 +44,7 @@ function SidebarContent({
   const router = useRouter()
   const pathname = usePathname()
   const isLoading = !userName
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleSwitchProfile = () => {
     onNav()
@@ -131,10 +132,52 @@ function SidebarContent({
         </button>
       </div>
 
-      <button className="nav-item" onClick={() => { fetch('/api/auth/logout', { method: 'POST' }); try { localStorage.clear() } catch {}; router.replace('/'); router.refresh(); }}>
+      <button className="nav-item" onClick={() => setShowLogoutConfirm(true)}>
         <I n="logout" />
         <span className="txt">Log out</span>
       </button>
+
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            className="fixed inset-0 z-[200] grid place-items-center bg-black/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowLogoutConfirm(false)}
+          >
+            <motion.div
+              className="w-full max-w-sm rounded-[20px] border border-[var(--line)] bg-[var(--card)] p-8 shadow-[var(--shadow-lg)] mx-4"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="mb-2 text-lg font-bold text-[var(--text)]">Log out?</h2>
+              <p className="mb-6 text-sm text-[var(--muted)]">Are you sure you want to log out of PesaMali?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 rounded-[11px] border border-[var(--line)] bg-[var(--card-2)] py-2.5 font-semibold text-[var(--muted)] transition hover:bg-[var(--bg)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' })
+                    try { localStorage.clear() } catch {}
+                    window.location.href = '/'
+                  }}
+                  className="flex-1 rounded-[11px] bg-[var(--red)] py-2.5 font-semibold text-white transition active:scale-95"
+                >
+                  Log out
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
