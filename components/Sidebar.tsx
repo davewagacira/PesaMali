@@ -16,6 +16,7 @@ interface SidebarProps {
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
   { id: 'log', label: 'Log expense', icon: 'plusCircle', href: '/log' },
+  { id: 'wishlist', label: 'Wishlist', icon: 'target', href: '/wishlist' },
   { id: 'analytics', label: 'Analytics', icon: 'chart', href: '/analytics' },
   { id: 'achievements', label: 'Achievements', icon: 'trophy', href: '/achievements' },
   { id: 'ai', label: 'PesaMali AI', icon: 'sparkles', href: '/ai' },
