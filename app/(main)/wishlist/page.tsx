@@ -223,8 +223,8 @@ export default function WishlistPage() {
             Something you want
           </h3>
           <div className="field">
-            <label>Item</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Headphones, sneakers" />
+            <label>Item / Service</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Headphones, gym membership" />
           </div>
           <div className="field">
             <label>Price (KES)</label>
