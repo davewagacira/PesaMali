@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       const rows = [
         ['PesaMali - Monthly Expense Report'],
         [`Month: ${queryMonth}/${queryYear}`],
-        [`User: ${profile.name} (${profile.email})`],
+        [`Profile: ${profile.name}`],
         [''],
         ['Date', 'Category', 'Item', 'Amount (KES)'],
         ...expenses.map((e) => [e.date, e.category, e.item, e.amount.toString()]),

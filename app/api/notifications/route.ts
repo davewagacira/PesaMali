@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const existing = await prisma.notification.findUnique({ where: { id } })
-    if (!existing || existing.userId !== session.userId) {
+    if (!existing || existing.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -70,7 +70,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const existing = await prisma.notification.findUnique({ where: { id } })
-    if (!existing || existing.userId !== session.userId) {
+    if (!existing || existing.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 

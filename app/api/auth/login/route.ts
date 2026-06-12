@@ -44,8 +44,6 @@ export async function POST(req: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
-      monthlyBudget: user.monthlyBudget,
-      savingsGoal: user.savingsGoal,
     })
   } catch (e) {
     console.error(e)

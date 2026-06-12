@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       include: { messages: { orderBy: { createdAt: 'asc' } } },
     })
 
-    if (!conversation || conversation.userId !== session.userId) {
+    if (!conversation || conversation.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       where: { id: params.id },
     })
 
-    if (!conversation || conversation.userId !== session.userId) {
+    if (!conversation || conversation.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       where: { id: params.id },
     })
 
-    if (!conversation || conversation.userId !== session.userId) {
+    if (!conversation || conversation.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 

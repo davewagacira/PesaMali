@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     // Warn with a 409 unless the client re-submits with force: true.
     if (body.force !== true && isFixedExpense(category, item)) {
       const sameMonth = await prisma.expense.findMany({
-        where: { userId: session.userId, date: { startsWith: date.slice(0, 7) } },
+        where: { profileId: session.profileId, date: { startsWith: date.slice(0, 7) } },
       })
       const newIsRent = category === 'rent' || isRentItem(item)
       const existing = sameMonth.find((e) =>

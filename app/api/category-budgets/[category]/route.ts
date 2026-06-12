@@ -8,7 +8,7 @@ import { cleanAmount } from '@/lib/validate'
 export async function PUT(req: NextRequest, { params }: { params: { category: string } }) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -19,7 +19,7 @@ export async function PUT(req: NextRequest, { params }: { params: { category: st
     }
 
     const budget = await prisma.categoryBudget.update({
-      where: { userId_category: { userId: session.userId, category: params.category } },
+      where: { profileId_category: { profileId: session.profileId, category: params.category } },
       data: { limit },
     })
 
@@ -33,12 +33,12 @@ export async function PUT(req: NextRequest, { params }: { params: { category: st
 export async function DELETE(req: NextRequest, { params }: { params: { category: string } }) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await prisma.categoryBudget.delete({
-      where: { userId_category: { userId: session.userId, category: params.category } },
+      where: { profileId_category: { profileId: session.profileId, category: params.category } },
     })
 
     return NextResponse.json({ success: true })

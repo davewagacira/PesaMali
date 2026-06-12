@@ -8,12 +8,12 @@ import { cleanString, cleanAmount, cleanCategory, cleanInt } from '@/lib/validat
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const existing = await prisma.recurringExpense.findUnique({ where: { id: params.id } })
-    if (!existing || existing.userId !== session.userId) {
+    if (!existing || existing.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
@@ -71,12 +71,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.userId) {
+    if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const existing = await prisma.recurringExpense.findUnique({ where: { id: params.id } })
-    if (!existing || existing.userId !== session.userId) {
+    if (!existing || existing.profileId !== session.profileId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
