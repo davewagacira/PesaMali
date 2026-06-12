@@ -377,13 +377,11 @@ export default function SettingsPage() {
             <I n="wallet" size={14} />
             Budget & Goals
           </h3>
-          <p className="text-sm text-[var(--muted)] mb-4">
-            Set your default budget, or a different budget for a specific month — it doesn&apos;t have to be the same every month
-          </p>
+          <p className="text-sm text-[var(--muted)] mb-4">Budget can change month to month</p>
 
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-[var(--muted)] uppercase mb-2">Applies To</label>
+              <label className="block text-xs font-semibold text-[var(--muted)] uppercase mb-2">Month</label>
               <select
                 value={budgetMonth}
                 onChange={(e) => selectBudgetMonth(e.target.value)}
@@ -395,12 +393,8 @@ export default function SettingsPage() {
                   </option>
                 ))}
               </select>
-              {budgetMonth !== 'default' && (
-                <p className="text-xs text-[var(--muted)] mt-1">
-                  {budgetIsOverride
-                    ? 'This month has its own budget'
-                    : 'This month is currently using your default budget'}
-                </p>
+              {budgetMonth !== 'default' && !budgetIsOverride && (
+                <p className="text-xs text-[var(--muted)] mt-1">Using default budget</p>
               )}
             </div>
             <div>
@@ -412,7 +406,6 @@ export default function SettingsPage() {
                 placeholder="e.g., 50000"
                 className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
               />
-              <p className="text-xs text-[var(--muted)] mt-1">Your total spending limit for the month</p>
             </div>
 
             <div>
@@ -424,7 +417,6 @@ export default function SettingsPage() {
                 placeholder="e.g., 10000"
                 className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--primary)]"
               />
-              <p className="text-xs text-[var(--muted)] mt-1">Amount you want to save each month</p>
             </div>
 
             <button
@@ -432,14 +424,14 @@ export default function SettingsPage() {
               disabled={!monthlyBudget && !savingsGoal}
               className="w-full rounded-lg [background:var(--primary-grad)] px-4 py-2 font-semibold text-white transition active:scale-95 disabled:opacity-50"
             >
-              {budgetMonth === 'default' ? 'Save Default Budget & Goals' : 'Save Budget for This Month'}
+              {budgetMonth === 'default' ? 'Save' : 'Save for This Month'}
             </button>
             {budgetMonth !== 'default' && budgetIsOverride && (
               <button
                 onClick={resetMonthBudget}
                 className="w-full rounded-lg border border-[var(--line)] bg-[var(--card-2)] px-4 py-2 font-semibold text-[var(--text)] transition hover:border-[var(--primary)] active:scale-95"
               >
-                Revert This Month to Default
+                Use Default
               </button>
             )}
           </div>
@@ -720,10 +712,8 @@ export default function SettingsPage() {
                 className="mt-1"
               />
               <span>
-                Fixed commitment
-                <span className="block text-xs text-[var(--muted)]">
-                  Big committed bills (rent, internet) are excluded from spending analytics so they don&apos;t skew your charts. Leave unchecked for small subscriptions like Netflix.
-                </span>
+                Fixed bill
+                <span className="block text-xs text-[var(--muted)]">Exclude from spending analytics (e.g. rent, internet)</span>
               </span>
             </label>
             <button
