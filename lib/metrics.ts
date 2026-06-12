@@ -20,7 +20,8 @@ export const CATS = [
 export const FIXED_CATEGORY_IDS = new Set(['rent', 'internet'])
 const FIXED_ITEM_RE = /\brent\b/i
 export const isFixedCat = (id: string) => FIXED_CATEGORY_IDS.has(id)
-export const isFixedExpense = (cat: string, item: string) => isFixedCat(cat) || FIXED_ITEM_RE.test(item)
+export const isRentItem = (item: string) => FIXED_ITEM_RE.test(item)
+export const isFixedExpense = (cat: string, item: string) => isFixedCat(cat) || isRentItem(item)
 
 export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

@@ -181,6 +181,7 @@ export default function LogPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [modalVariant, setModalVariant] = useState<'success' | 'warning'>('success')
   const [confirmDelete, setConfirmDelete] = useState<MetricExpense | null>(null)
+  const [dupBill, setDupBill] = useState<{ date: string; item: string; amount: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
 
@@ -209,7 +210,7 @@ export default function LogPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
-  const add = async () => {
+  const add = async (force?: boolean) => {
     if (isAdding) return
     const a = parseFloat(amt)
     if (!item.trim()) return ping('Add a name for the expense')
@@ -219,10 +220,12 @@ export default function LogPage() {
       const res = await fetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, category: cat, item: item.trim(), amount: a }),
+        body: JSON.stringify({ date, category: cat, item: item.trim(), amount: a, force: force === true }),
       })
       const data = await res.json()
-      if (res.ok) {
+      if (res.status === 409 && data.duplicateBill) {
+        setDupBill(data.existing)
+      } else if (res.ok) {
         setExpenses((ex) => [
           ...ex,
           { id: data.id, date: data.date, cat: data.category, item: data.item, amt: data.amount },
@@ -326,6 +329,12 @@ export default function LogPage() {
               </motion.button>
             ))}
           </div>
+          {(cat === 'rent' || cat === 'internet') && (
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 10px' }}>
+              Tip: {cat === 'rent' ? 'rent' : 'internet'} can log itself every month — set it up under
+              Settings → Recurring expenses, and you won&apos;t need to enter it here.
+            </p>
+          )}
           <div className="field">
             <label>Expense name</label>
             <input
@@ -349,7 +358,7 @@ export default function LogPage() {
             <label>Date</label>
             <DatePicker value={date} onChange={setDate} />
           </div>
-          <motion.button className="btn btn-primary" whileTap={{ scale: 0.97 }} onClick={add} disabled={isAdding}>
+          <motion.button className="btn btn-primary" whileTap={{ scale: 0.97 }} onClick={() => add()} disabled={isAdding}>
             <I n="plusCircle" size={16} />
             {isAdding ? 'Adding...' : 'Add expense'}
           </motion.button>
@@ -410,6 +419,22 @@ export default function LogPage() {
         message={successMessage}
         variant={modalVariant}
         onClose={() => setShowSuccessModal(false)}
+      />
+
+      <ConfirmModal
+        isOpen={!!dupBill}
+        title="Already logged this month?"
+        message={
+          dupBill
+            ? `"${dupBill.item}" (${fmt(dupBill.amount)}) was already logged on ${dupBill.date} — possibly automatically from your recurring expenses. Logging this would count the bill twice.`
+            : ''
+        }
+        confirmLabel="Log anyway"
+        onConfirm={() => {
+          setDupBill(null)
+          add(true)
+        }}
+        onCancel={() => setDupBill(null)}
       />
 
       <ConfirmModal

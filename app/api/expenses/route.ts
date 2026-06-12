@@ -7,6 +7,7 @@ import { publishExpenseEvent } from '@/lib/ably'
 import { checkAndAwardAchievements, createNotification } from '@/lib/achievements'
 import { processDueRecurringExpenses } from '@/lib/recurring'
 import { cleanString, cleanAmount, cleanDateKey, cleanCategory } from '@/lib/validate'
+import { isFixedExpense, isRentItem } from '@/lib/metrics'
 
 function nairobiDateParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -66,6 +67,31 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({ where: { id: session.userId } })
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Fixed bills (rent, internet) usually auto-log from a recurring template,
+    // so a second one in the same month is almost always a double entry.
+    // Warn with a 409 unless the client re-submits with force: true.
+    if (body.force !== true && isFixedExpense(category, item)) {
+      const sameMonth = await prisma.expense.findMany({
+        where: { userId: session.userId, date: { startsWith: date.slice(0, 7) } },
+      })
+      const newIsRent = category === 'rent' || isRentItem(item)
+      const existing = sameMonth.find((e) =>
+        newIsRent
+          ? e.category === 'rent' || isRentItem(e.item)
+          : e.category === category
+      )
+      if (existing) {
+        return NextResponse.json(
+          {
+            error: 'This bill appears to be logged already this month',
+            duplicateBill: true,
+            existing: { date: existing.date, item: existing.item, amount: existing.amount },
+          },
+          { status: 409 }
+        )
+      }
     }
 
     const expense = await prisma.expense.create({
