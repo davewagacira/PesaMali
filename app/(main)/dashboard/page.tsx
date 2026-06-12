@@ -5,7 +5,6 @@ import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
 import { useMetrics, fmt, fmtN, catOf, iso, MetricExpense } from '@/lib/metrics'
 import { DashboardSkeleton } from '@/components/DashboardSkeleton'
-import { AchievementsBadge } from '@/components/AchievementsBadge'
 import { useAblyExpenses } from '@/lib/useAbly'
 import { listContainer, listItem } from '@/lib/motion'
 
@@ -247,7 +246,6 @@ export default function DashboardPage() {
           <p>Your month is {Math.round(m.monthPace * 100)}% complete with {moneyText(m.remaining)} still available.</p>
         </div>
         <div className="pro-hero-actions">
-          <AchievementsBadge />
           <span className={`pro-status ${m.status}`}>
             <span />
             {statusText}
