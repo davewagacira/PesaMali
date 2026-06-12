@@ -50,6 +50,27 @@ const SPACED_PINNED_CONVERSATIONS_KEY = 'pesa-mali:pinned-ai-conversations'
 const PREVIOUS_PINNED_CONVERSATIONS_KEY = ['pes', 'arly:pinned-ai-conversations'].join('')
 const LEGACY_PINNED_CONVERSATIONS_KEY = ['aki', 'ba:pinned-ai-conversations'].join('')
 
+const GEMINI_LOGO_URL =
+  'https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_logo_2025.svg.png'
+
+function PoweredByGemini({ size = 'sm' }: { size?: 'sm' | 'md' }) {
+  const logoClass = size === 'md' ? 'h-[18px]' : 'h-3.5'
+  const textClass = size === 'md' ? 'text-[11px]' : 'text-[10px]'
+
+  return (
+    <div className={`inline-flex items-center gap-1.5 ${textClass} font-medium text-[var(--muted)]`}>
+      <span>Powered by</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={GEMINI_LOGO_URL} alt="" className={`${logoClass} w-auto object-contain`} aria-hidden />
+    </div>
+  )
+}
+
+function greetingFor(name: string): string {
+  const first = name.trim().split(/\s+/)[0]
+  return first ? `Hello ${first}.` : 'Hello.'
+}
+
 function buildWelcomeMessage({
   name,
   spent,
@@ -63,7 +84,7 @@ function buildWelcomeMessage({
   category?: string
   fresh?: boolean
 }): string {
-  const first = name.trim().split(/\s+/)[0] || name || 'there'
+  const hello = greetingFor(name)
 
   const categoryBit = category
     ? ` Most of your flexible spending has been going to **${category}**.`
@@ -71,13 +92,13 @@ function buildWelcomeMessage({
 
   if (fresh) {
     return (
-      `Habari ${first}. I've pulled up your numbers again. You've spent **${fmt(spent)}** this month and you've got **${fmt(remaining)}** left.${categoryBit}\n\n` +
+      `${hello} I've pulled up your numbers again. You've spent **${fmt(spent)}** this month and you've got **${fmt(remaining)}** left.${categoryBit}\n\n` +
       `What's on your mind? We can talk through your week, where you might want to pull back, or whether you're on track. Just type away, or tap a suggestion if you'd rather start there.`
     )
   }
 
   return (
-    `Habari ${first}. I've been looking at how your month is going. You've spent **${fmt(spent)}** so far and you still have **${fmt(remaining)}** to work with.${categoryBit}\n\n` +
+    `${hello} I've been looking at how your month is going. You've spent **${fmt(spent)}** so far and you still have **${fmt(remaining)}** to work with.${categoryBit}\n\n` +
     `If you'd like, we can walk through how your week went, where you might ease off, or whether you're on track for the rest of the month. Ask me anything, or tap a suggestion below.`
   )
 }
@@ -214,7 +235,7 @@ export default function AIPage() {
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
   const [budget, setBudget] = useState(15000)
   const [goal, setGoal] = useState(2000)
-  const [userName, setUserName] = useState('there')
+  const [userName, setUserName] = useState('')
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [memoryEnabled, setMemoryEnabled] = useState(true)
@@ -559,13 +580,16 @@ export default function AIPage() {
           title="PesaMali AI"
           subtitle="Personal financial intelligence built from your real spending behavior."
         >
-          <button
-            onClick={toggleMemory}
-            className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
-          >
-            <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
-            Memory {memoryEnabled ? 'on' : 'off'}
-          </button>
+          <div className="flex flex-col items-end gap-3">
+            <button
+              onClick={toggleMemory}
+              className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+            >
+              <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
+              Memory {memoryEnabled ? 'on' : 'off'}
+            </button>
+            <PoweredByGemini size="md" />
+          </div>
         </PageHeroCard>
 
         <motion.div
@@ -617,10 +641,13 @@ export default function AIPage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
                   {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}
                 </div>
+                <div className="mt-1.5">
+                  <PoweredByGemini />
+                </div>
               </div>
               <button
                 onClick={startNewChat}
-                className="ml-auto flex items-center gap-1.5 text-xs text-[var(--faint)] transition hover:text-[var(--red)]"
+                className="ml-auto flex shrink-0 items-center gap-1.5 self-start text-xs text-[var(--faint)] transition hover:text-[var(--red)]"
               >
                 <I n="plusCircle" size={13} />
                 New chat
