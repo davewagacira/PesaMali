@@ -106,8 +106,9 @@ function ProfileCard({ profile, onClick, onEdit, selected }: { profile: Profile;
         )}
       </AnimatePresence>
       <span className="profile-name">{profile.name}</span>
-      <span className="profile-type-label">
-        {PROFILE_TYPES.find(t => t.id === profile.type)?.icon} {PROFILE_TYPES.find(t => t.id === profile.type)?.label || profile.type}
+      <span className="profile-type-label" style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+        <I n={PROFILE_TYPES.find(t => t.id === profile.type)?.icon || 'user'} size={12} />
+        {PROFILE_TYPES.find(t => t.id === profile.type)?.label || profile.type}
       </span>
     </motion.button>
   )
