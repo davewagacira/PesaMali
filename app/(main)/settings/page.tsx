@@ -284,15 +284,14 @@ export default function SettingsPage() {
                 <p className="text-xs text-[var(--muted)] mt-1">Receive alerts about budget and achievements</p>
               </div>
               <button
+                className={'switch' + (notificationsEnabled ? ' on' : '')}
                 onClick={toggleNotifications}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                  notificationsEnabled ? 'bg-[var(--green)]' : 'bg-[var(--line)]'
-                }`}
+                aria-label="Toggle in-app notifications"
               >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                <motion.span
+                  className="knob"
+                  animate={{ x: notificationsEnabled ? 18 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 32 }}
                 />
               </button>
             </div>
@@ -303,15 +302,14 @@ export default function SettingsPage() {
                 <p className="text-xs text-[var(--muted)] mt-1">Browser notifications for urgent alerts</p>
               </div>
               <button
+                className={'switch' + (pushNotificationsEnabled ? ' on' : '')}
                 onClick={togglePushNotifications}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                  pushNotificationsEnabled ? 'bg-[var(--green)]' : 'bg-[var(--line)]'
-                }`}
+                aria-label="Toggle push notifications"
               >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    pushNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                <motion.span
+                  className="knob"
+                  animate={{ x: pushNotificationsEnabled ? 18 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 32 }}
                 />
               </button>
             </div>
