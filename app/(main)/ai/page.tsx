@@ -211,7 +211,7 @@ function MessageRow({ msg }: { msg: Message }) {
             : 'border border-[var(--line)] bg-[var(--card-2)] text-[var(--muted)]'
         }`}
       >
-        {msg.who === 'ai' ? <I n="sparkles" size={24} /> : 'D'}
+        {msg.who === 'ai' ? <I n="bot" size={24} /> : 'D'}
       </div>
       <div
         className={`whitespace-pre-wrap rounded-2xl px-[17px] py-[13px] text-[13.5px] leading-[1.75] ${
@@ -652,7 +652,9 @@ export default function AIPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <img src="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png" alt="Gemini" className="h-8 w-8 shrink-0 rounded-[10px]" />
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-transparent text-[var(--primary)]">
+                      <I n="bot" size={24} />
+                    </div>
                     <div className="rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px]">
                       <TypingDots />
                     </div>
@@ -666,7 +668,9 @@ export default function AIPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <img src="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png" alt="Gemini" className="h-8 w-8 shrink-0 rounded-[10px]" />
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-transparent text-[var(--primary)]">
+                      <I n="bot" size={24} />
+                    </div>
                     <div className="whitespace-pre-wrap rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px] text-[13.5px] leading-[1.75] [&_b]:font-semibold [&_b]:text-[var(--primary)]">
                       {render(streamingReply)}
                       <motion.span
