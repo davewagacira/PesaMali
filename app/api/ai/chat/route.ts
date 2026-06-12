@@ -6,6 +6,7 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import { SessionData, sessionOptions } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { isFixedCat } from '@/lib/metrics'
 
 // ── Vertex AI (primary) ────────────────────────────────────────────────────────
 function getVertexClient(): GoogleGenAI | null {
@@ -94,9 +95,14 @@ function buildContext(
   const spent = expenses.reduce((s, e) => s + e.amount, 0)
   const remaining = user.monthlyBudget - spent
   const monthPace = dayOfMonth / daysInMonth
-  const spendPace = spent / Math.max(user.monthlyBudget, 1)
+  // Mirror the dashboard's pace model: fixed bills (rent, internet) are
+  // excluded so a lump-sum payment doesn't read as runaway spending.
+  const fixedSpent = expenses.filter((e) => isFixedCat(e.category)).reduce((s, e) => s + e.amount, 0)
+  const flexibleSpent = spent - fixedSpent
+  const flexibleBudget = Math.max(user.monthlyBudget - fixedSpent, 0)
+  const spendPace = flexibleSpent / Math.max(flexibleBudget, 1)
   const safe = daysLeft > 0 ? (remaining - user.savingsGoal) / daysLeft : 0
-  const projected = dayOfMonth > 0 ? (spent / dayOfMonth) * daysInMonth : 0
+  const projected = dayOfMonth > 0 ? fixedSpent + (flexibleSpent / dayOfMonth) * daysInMonth : 0
 
   const status =
     spendPace <= monthPace ? 'on track' :
@@ -149,6 +155,9 @@ function buildContext(
     daysLeft,
     monthProgressPct: Math.round(monthPace * 100),
     spendPacePct: Math.round(spendPace * 100),
+    fixedSpent: Math.round(fixedSpent),
+    flexibleSpent: Math.round(flexibleSpent),
+    flexibleBudget: Math.round(flexibleBudget),
     status,
     safeToSpendToday: Math.round(safe),
     projectedMonthEnd: Math.round(projected),
@@ -232,10 +241,10 @@ function localCoach(question: string, ctx: ReturnType<typeof buildContext>): str
 
   const statusLine =
     ctx.status === 'on track'
-      ? `You're **on track**: ${ctx.spendPacePct}% of budget used, ${ctx.monthProgressPct}% of the month gone.`
+      ? `You're **on track**: ${ctx.spendPacePct}% of your flexible budget used, ${ctx.monthProgressPct}% of the month gone.`
       : ctx.status === 'slightly ahead of pace'
-      ? `You're **slightly ahead of pace** (${ctx.spendPacePct}% spent vs ${ctx.monthProgressPct}% of month). Ease off for a few days.`
-      : `**Danger zone**: ${ctx.spendPacePct}% of budget spent but only ${ctx.monthProgressPct}% of the month is done.`
+      ? `You're **slightly ahead of pace** (${ctx.spendPacePct}% of flexible budget spent vs ${ctx.monthProgressPct}% of month). Ease off for a few days.`
+      : `**Danger zone**: ${ctx.spendPacePct}% of your flexible budget is spent but only ${ctx.monthProgressPct}% of the month is done.`
 
   if (ql.includes('week')) {
     const weekTotal = ctx.last7Days.split(' | ')
@@ -333,8 +342,9 @@ ${compressedContext ? `\n\n${compressedContext}\n` : ''}
 ${conversationHistory ? `\n\nPrevious chat history:\n${conversationHistory}\n` : ''}
 Live data for ${ctx.user} — ${now.toLocaleString('en-US', { month: 'long', year: 'numeric' })}:
 Budget: KES ${ctx.budget.toLocaleString()} | Savings goal: KES ${ctx.savingsGoal.toLocaleString()}
-Spent: **KES ${ctx.spent.toLocaleString()}** (${ctx.spendPacePct}% of budget) | Remaining: **KES ${ctx.remaining.toLocaleString()}**
-Month: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} | Status: ${ctx.status}
+Spent: **KES ${ctx.spent.toLocaleString()}** | Remaining: **KES ${ctx.remaining.toLocaleString()}**
+Fixed bills paid (rent, internet): KES ${ctx.fixedSpent.toLocaleString()} | Flexible spend: KES ${ctx.flexibleSpent.toLocaleString()} of KES ${ctx.flexibleBudget.toLocaleString()} flexible budget (${ctx.spendPacePct}%)
+Month: Day ${ctx.dayOfMonth}/${ctx.daysInMonth} | Status: ${ctx.status} (pace is judged on flexible spend only — fixed bills don't count against pace)
 Safe daily spend: KES ${ctx.safeToSpendToday.toLocaleString()} | Projected end: KES ${ctx.projectedMonthEnd.toLocaleString()}
 Top spend: ${ctx.categoryBreakdown[0] || 'none yet'} | Last 7 days: ${ctx.last7Days}
 Top repeat items: ${ctx.topRepeatPurchases.slice(0, 3).join(', ')}

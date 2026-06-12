@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
-import { useMetrics, fmt, fmtN, catOf, iso, MetricExpense } from '@/lib/metrics'
+import { useMetrics, fmt, fmtN, catOf, iso, isFixedCat, MetricExpense } from '@/lib/metrics'
 import { DashboardSkeleton } from '@/components/DashboardSkeleton'
 import { AchievementsBadge } from '@/components/AchievementsBadge'
 import { useAblyExpenses } from '@/lib/useAbly'
@@ -167,6 +167,8 @@ export default function DashboardPage() {
   const runway = Math.max(0, Math.floor((m.remaining - goal) / Math.max(m.dailyAllowance, 1)))
   const weekTotal = m.last7.reduce((sum, d) => sum + d.amt, 0)
   const topCategory = m.byCat[0]
+  // Advice targets a category the user can actually trim, never a fixed bill.
+  const topFlexCategory = m.byCat.find((c) => !isFixedCat(c.id))
   const avgDaily = m.spent / Math.max(1, now.getDate())
   const availableAfterGoal = m.remaining - goal
   const moneyText = useCallback((value: number) => fmt(value), [])
@@ -235,16 +237,22 @@ export default function DashboardPage() {
         </div>
         <div className="dash-budget-meter">
           <div className="dash-meter-head">
-            <span>Budget utilization</span>
+            <span>Flexible budget utilization</span>
             <b>{percentText(budgetUsed)}</b>
           </div>
           <div className="dash-meter">
             <span className={`fill f-${m.status}`} style={{ width: `${budgetUsed}%` }} />
           </div>
           <div className="dash-meter-foot">
-            <span>{moneyText(m.spent)} spent</span>
-            <span>{moneyText(budget)} budget</span>
+            <span>{moneyText(m.flexibleSpent)} flexible spent</span>
+            <span>{moneyText(m.flexibleBudget)} flexible budget</span>
           </div>
+          {m.fixedSpent > 0 && (
+            <div className="dash-meter-foot">
+              <span>Fixed bills paid (rent, internet)</span>
+              <span>{moneyText(m.fixedSpent)}</span>
+            </div>
+          )}
         </div>
       </motion.section>
 
@@ -278,11 +286,11 @@ export default function DashboardPage() {
           <div className="pro-panel-head">
             <div>
               <span className="pro-eyebrow">Spend pace</span>
-              <h2>Actual spend vs monthly plan</h2>
+              <h2>Flexible spend vs monthly plan</h2>
             </div>
             <span className="pro-chip">Day {now.getDate()} of {daysInMonth}</span>
           </div>
-          <AreaChart cum={m.cum} budget={budget} status={m.status} daysInMonth={daysInMonth} />
+          <AreaChart cum={m.cum} budget={m.flexibleBudget} status={m.status} daysInMonth={daysInMonth} />
         </motion.div>
 
         <motion.div className="pro-panel" variants={listItem}>
@@ -355,8 +363,8 @@ export default function DashboardPage() {
                   : 'Spending has moved beyond plan. Freeze non-essential categories today.'}
             </b>
             <p>
-              {topCategory
-                ? `${topCategory.name} is leading spend at ${moneyText(topCategory.amt)}. Target that category first for the fastest correction.`
+              {topFlexCategory
+                ? `${topFlexCategory.name} is leading flexible spend at ${moneyText(topFlexCategory.amt)}. Target that category first for the fastest correction.`
                 : 'Start with three logged expenses so PesaMali can identify your strongest spending pattern.'}
             </p>
           </div>
