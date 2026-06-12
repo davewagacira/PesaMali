@@ -102,7 +102,9 @@ export function useMetrics(expenses: MetricExpense[], budget: number, goal: numb
       const k = iso(dt)
       last7.push({
         label: DOW[dt.getDay()],
-        amt: expenses.filter((e) => e.date === k).reduce((s, e) => s + e.amt, 0),
+        amt: expenses
+          .filter((e) => e.date === k && !isFixedExpense(e.cat, e.item))
+          .reduce((s, e) => s + e.amt, 0),
         today: i === 0,
       })
     }
