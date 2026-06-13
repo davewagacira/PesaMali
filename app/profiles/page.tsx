@@ -46,7 +46,7 @@ interface Profile {
   savingsGoal: number
 }
 
-function ProfileCard({ profile, onClick, onEdit, selected }: { profile: Profile; onClick: () => void; onEdit?: () => void; selected?: boolean }) {
+function ProfileCard({ profile, onClick, onEdit }: { profile: Profile; onClick: () => void; onEdit?: () => void }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -54,6 +54,7 @@ function ProfileCard({ profile, onClick, onEdit, selected }: { profile: Profile;
       id={`profile-card-${profile.id}`}
       className="profile-card group relative"
       onClick={onClick}
+      onTouchEnd={(e) => { e.preventDefault(); onClick(); }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       whileHover={{ y: -8, scale: 1.03 }}
@@ -110,6 +111,7 @@ function AddProfileCard({ onClick }: { onClick: () => void }) {
       id="add-profile-btn"
       className="profile-card profile-card-add"
       onClick={onClick}
+      onTouchEnd={(e) => { e.preventDefault(); onClick(); }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       whileHover={{ y: -8, scale: 1.03 }}
@@ -337,6 +339,7 @@ export default function ProfilesPage() {
   }, [])
 
   const handleSelect = async (profileId: string) => {
+    if (selecting) return
     setSelecting(profileId)
     try {
       const res = await fetch('/api/profiles/select', {
@@ -347,10 +350,12 @@ export default function ProfilesPage() {
       if (res.ok) {
         await new Promise(r => setTimeout(r, 400)) // let animation play
         window.location.href = '/dashboard'
+        return
       }
-    } finally {
-      setSelecting(null)
+    } catch {
+      // fall through to clear selecting
     }
+    setSelecting(null)
   }
 
   const handleProfileCreated = (profile: Profile) => {
@@ -421,7 +426,6 @@ export default function ProfilesPage() {
                     profile={profile}
                     onClick={() => handleSelect(profile.id)}
                     onEdit={() => setEditingProfile(profile)}
-                    selected={selecting === profile.id}
                   />
                 </motion.div>
               ))}

@@ -6,7 +6,8 @@ export const PATHS: Record<string, React.ReactNode> = {
   chart: <g><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 14l4-4 3 3 5-6"/></g>,
   barChart: <g><path d="M4 20V10M10 20V4M16 20v-7"/><path d="M2 20h20"/></g>,
   trophy: <g><path d="M8 21h8M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0z"/><path d="M7 6H4a2 2 0 0 0 2 4h1M17 6h3a2 2 0 0 1-2 4h-1"/></g>,
-  sparkles: (
+  sparkles: <g><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4M19 17v4M3 5h4M17 19h4"/></g>,
+  gemini: (
     <g>
       <image
         href="https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_icon_2025.svg.png"
@@ -78,6 +79,8 @@ export const PATHS: Record<string, React.ReactNode> = {
   medal: <g><circle cx="12" cy="8" r="6"/><path d="m8.21 13.89-2.83 5 3.54-1.06L10.5 21l2.83-5"/><path d="m15.79 13.89 2.83 5-3.54-1.06L13.5 21l-2.83-5"/></g>,
   barChart2: <g><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></g>,
   listChecks: <g><path d="M11 6h9M11 12h9M11 18h9"/><path d="m3 6 1 1 2-2"/><path d="m3 12 1 1 2-2"/><path d="m3 18 1 1 2-2"/></g>,
+  menu: <g><path d="M3 6h18M3 12h18M3 18h18"/></g>,
+  messageSquare: <g><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></g>,
 }
 
 interface IProps {

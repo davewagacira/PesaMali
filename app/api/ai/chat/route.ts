@@ -479,13 +479,26 @@ User: ${question}`
     const aiText = await callAI(systemPrompt)
     const text = aiText ?? localCoach(question, ctx)
 
+    // Generate title — use AI when available, heuristic as fallback
+    let conversationTitle = generateTitle(question)
+    if (memoryEnabled && !conversationId && aiText) {
+      try {
+        const titlePrompt = `Give a short 3-5 word title for this personal finance question. Return only the title, no punctuation at the end, no explanation:\n"${question.slice(0, 200)}"`
+        const aiTitle = await callAI(titlePrompt)
+        if (aiTitle) {
+          const clean = aiTitle.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/[.!?]+$/, '').slice(0, 60)
+          if (clean.length >= 4) conversationTitle = clean
+        }
+      } catch { /* keep heuristic fallback */ }
+    }
+
     // Save to conversation if memory enabled
     if (memoryEnabled && !conversationId) {
       // Create new conversation
       const newConv = await prisma.conversation.create({
         data: {
           profileId: session.profileId,
-          title: generateTitle(question),
+          title: conversationTitle,
         },
       })
       conversation = newConv

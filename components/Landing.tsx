@@ -76,7 +76,7 @@ export default function Landing() {
             <button className="lp-btn lp-btn-ghost lp-btn-lg" onClick={login}>Log in</button>
           </div>
           <div className="lp-trust">
-            <I n="check" size={14} /> No card required · Built for Kenyan students
+            <I n="check" size={14} /> No card required · Built for Kenyans
           </div>
         </motion.div>
       </section>

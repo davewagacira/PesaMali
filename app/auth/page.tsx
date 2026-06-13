@@ -23,15 +23,22 @@ export default function AuthPage() {
 
   const enter = async () => {
     setError('')
+    const email = emailRef.current?.value.trim() ?? ''
+    const password = passwordRef.current?.value ?? ''
+    const name = nameRef.current?.value.trim() ?? ''
+    const budgetRaw = parseFloat(budgetRef.current?.value || '15000')
+
+    if (signup && !name) return setError('Please enter your full name')
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError('Please enter a valid email address')
+    if (password.length < 8) return setError('Password must be at least 8 characters')
+    if (signup && (!Number.isFinite(budgetRaw) || budgetRaw < 1)) return setError('Monthly budget must be at least KES 1')
+
     setLoading(true)
     try {
-      const body: Record<string, unknown> = {
-        email: emailRef.current?.value,
-        password: passwordRef.current?.value,
-      }
+      const body: Record<string, unknown> = { email, password }
       if (signup) {
-        body.name = nameRef.current?.value
-        body.monthlyBudget = parseFloat(budgetRef.current?.value || '15000')
+        body.name = name
+        body.monthlyBudget = budgetRaw
       }
       const res = await fetch(signup ? '/api/auth/signup' : '/api/auth/login', {
         method: 'POST',
@@ -118,7 +125,7 @@ export default function AuthPage() {
           {signup && (
             <div className="field">
               <label>Full name</label>
-              <input ref={nameRef} placeholder="Dave" />
+              <input ref={nameRef} placeholder="Full name" autoComplete="name" />
             </div>
           )}
           <div className="field">

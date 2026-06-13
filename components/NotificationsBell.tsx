@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { useAblyNotifications } from '@/lib/useAbly'
@@ -18,6 +18,18 @@ export function NotificationsBell({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unread, setUnread] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    const close = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    window.addEventListener('click', close)
+    return () => window.removeEventListener('click', close)
+  }, [isOpen])
 
   useEffect(() => {
     fetch('/api/notifications')
@@ -75,7 +87,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
   const cleanTitle = (title: string) => title.replace(/^\s*⏰\s*/, '')
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex items-center justify-center h-10 w-10 rounded-full border border-[var(--line)] bg-[var(--card)] text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
@@ -93,7 +105,6 @@ export function NotificationsBell({ userId }: { userId: string }) {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="border-b border-[var(--line)] p-4">
               <h3 className="font-semibold text-[var(--text)]">Notifications</h3>
@@ -153,9 +164,6 @@ export function NotificationsBell({ userId }: { userId: string }) {
         )}
       </AnimatePresence>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-      )}
     </div>
   )
 }

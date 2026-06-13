@@ -50,6 +50,7 @@ function budgetMonthOptions() {
 export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true)
+  const [aiMemoryEnabled, setAiMemoryEnabled] = useState(true)
   const [monthlyBudget, setMonthlyBudget] = useState('')
   const [savingsGoal, setSavingsGoal] = useState('')
   const [budgetMonth, setBudgetMonth] = useState('default')
@@ -97,6 +98,7 @@ export default function SettingsPage() {
       .then(([userData, profileData, budgets, recurring]) => {
         if (userData.notificationsEnabled !== undefined) setNotificationsEnabled(userData.notificationsEnabled)
         if (userData.pushNotificationsEnabled !== undefined) setPushNotificationsEnabled(userData.pushNotificationsEnabled)
+        if (userData.aiMemoryEnabled !== undefined) setAiMemoryEnabled(userData.aiMemoryEnabled)
         if (profileData.id) setProfileId(profileData.id)
         const initBudget = profileData.defaultMonthlyBudget ?? profileData.monthlyBudget
         const initGoal = profileData.defaultSavingsGoal ?? profileData.savingsGoal
@@ -133,6 +135,21 @@ export default function SettingsPage() {
       })
       setPushNotificationsEnabled(!pushNotificationsEnabled)
       setSuccessMessage(pushNotificationsEnabled ? 'Push notifications disabled' : 'Push notifications enabled')
+      setShowSuccess(true)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const toggleAiMemory = async () => {
+    try {
+      await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aiMemoryEnabled: !aiMemoryEnabled }),
+      })
+      setAiMemoryEnabled(!aiMemoryEnabled)
+      setSuccessMessage(aiMemoryEnabled ? 'AI memory disabled' : 'AI memory enabled')
       setShowSuccess(true)
     } catch (e) {
       console.error(e)
@@ -477,6 +494,24 @@ export default function SettingsPage() {
                 <motion.span
                   className="knob"
                   animate={{ x: pushNotificationsEnabled ? 18 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold text-sm">AI Memory</h4>
+                <p className="text-xs text-[var(--muted)] mt-1">Allow the AI coach to remember past conversations</p>
+              </div>
+              <button
+                className={'switch' + (aiMemoryEnabled ? ' on' : '')}
+                onClick={toggleAiMemory}
+                aria-label="Toggle AI memory"
+              >
+                <motion.span
+                  className="knob"
+                  animate={{ x: aiMemoryEnabled ? 18 : 0 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 32 }}
                 />
               </button>

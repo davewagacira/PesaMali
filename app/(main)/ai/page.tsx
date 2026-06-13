@@ -7,7 +7,7 @@ import { I } from '@/components/Icons'
 import { SuccessModal } from '@/components/SuccessModal'
 import { PageHeroCard } from '@/components/PageHeroCard'
 import { compressMessages, getCompressedContext } from '@/lib/messageCompression'
-import { MetricExpense, fmt, fmtN, useMetrics } from '@/lib/metrics'
+import { MetricExpense, fmt, useMetrics } from '@/lib/metrics'
 
 interface Message {
   who: 'user' | 'ai'
@@ -31,11 +31,6 @@ interface Conversation {
 
 type DisplayMessage = (Message & { isCompressed?: false }) | CompressedSection
 
-const statusMeta = {
-  ok: { label: 'On track', icon: 'check', tone: 'ok' },
-  warn: { label: 'Slow down', icon: 'alert', tone: 'warn' },
-  danger: { label: 'Danger zone', icon: 'flame', tone: 'danger' },
-} as const
 
 const suggestions: [string, string, string][] = [
   ['barChart', 'How was my week?', 'How was my week? Give me a full weekly report.'],
@@ -49,6 +44,21 @@ const PINNED_CONVERSATIONS_KEY = 'pesamali:pinned-ai-conversations'
 const SPACED_PINNED_CONVERSATIONS_KEY = 'pesa-mali:pinned-ai-conversations'
 const PREVIOUS_PINNED_CONVERSATIONS_KEY = ['pes', 'arly:pinned-ai-conversations'].join('')
 const LEGACY_PINNED_CONVERSATIONS_KEY = ['aki', 'ba:pinned-ai-conversations'].join('')
+
+const GEMINI_LOGO_URL =
+  'https://curlgvbgasphosyhfncx.supabase.co/storage/v1/object/public/images/images/logos/Google_Gemini_logo_2025.svg.png'
+
+function PoweredByGemini({ size = 'sm' }: { size?: 'sm' | 'md' }) {
+  const logoClass = size === 'md' ? 'h-[18px]' : 'h-3.5'
+  const textClass = size === 'md' ? 'text-[11px]' : 'text-[10px]'
+  return (
+    <div className={`inline-flex items-center gap-1.5 ${textClass} font-medium text-[var(--muted)]`}>
+      <span>Powered by</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={GEMINI_LOGO_URL} alt="" className={`${logoClass} w-auto object-contain`} aria-hidden />
+    </div>
+  )
+}
 
 function render(t: string) {
   return t.split(/(\*\*[^*]+\*\*)/g).map((s, i) =>
@@ -71,76 +81,6 @@ function TypingDots() {
   )
 }
 
-function Orb({ thinking = false, small = false }: { thinking?: boolean; small?: boolean }) {
-  if (small) {
-    return (
-      <div className="relative h-[30px] w-[30px] shrink-0 rounded-full bg-[conic-gradient(from_0deg,#4F46E5,#7C3AED,#06B6D4,#4F46E5)] animate-spin">
-        <div className="absolute inset-[7px] rounded-full bg-[var(--card)]" />
-      </div>
-    )
-  }
-
-  return (
-    <div className="relative h-[92px] w-[92px] shrink-0">
-      <div className="absolute -inset-[9px] rounded-full border border-dashed border-[var(--line)] [animation:spin_24s_linear_infinite_reverse]" />
-      <div
-        className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#4F46E5,#7C3AED,#06B6D4,#4F46E5)] saturate-125 animate-spin"
-        style={{ animationDuration: thinking ? '1.1s' : '6s' }}
-      >
-        <div className="absolute inset-[5px] rounded-full bg-[var(--bg)]" />
-      </div>
-      <motion.div
-        className="absolute inset-[18px] grid place-items-center rounded-full [background:var(--primary-grad)] text-white shadow-[var(--shadow-lg)]"
-        animate={{ scale: thinking ? [1, 1.08, 1] : [1, 1.06, 1] }}
-        transition={{ duration: thinking ? 0.9 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <I n="sparkles" size={24} />
-      </motion.div>
-    </div>
-  )
-}
-
-function InsightCard({
-  icon,
-  tone,
-  label,
-  value,
-  delay,
-}: {
-  icon: string
-  tone: 'p' | 'ok' | 'warn' | 'danger'
-  label: string
-  value: string
-  delay: number
-}) {
-  const toneClass =
-    tone === 'ok'
-      ? 'bg-[var(--green-soft)] text-[var(--green)]'
-      : tone === 'warn'
-        ? 'bg-[var(--amber-soft)] text-[var(--amber)]'
-        : tone === 'danger'
-          ? 'bg-[var(--red-soft)] text-[var(--red)]'
-          : 'bg-[var(--primary-soft)] text-[var(--primary)]'
-
-  return (
-    <motion.div
-      className="flex items-center gap-[13px] rounded-2xl border border-[var(--line)] bg-[var(--card)] px-[18px] py-4 shadow-[var(--shadow)]"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay }}
-    >
-      <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClass}`}>
-        <I n={icon} size={18} />
-      </div>
-      <div className="min-w-0">
-        <small className="mb-0.5 block text-[10.5px] font-semibold uppercase tracking-[1px] text-[var(--muted)]">
-          {label}
-        </small>
-        <b className="mono block truncate text-base font-semibold">{value}</b>
-      </div>
-    </motion.div>
-  )
-}
 
 function MessageRow({ msg }: { msg: Message }) {
   return (
@@ -158,10 +98,10 @@ function MessageRow({ msg }: { msg: Message }) {
             : 'border border-[var(--line)] bg-[var(--card-2)] text-[var(--muted)]'
         }`}
       >
-        {msg.who === 'ai' ? <I n="sparkles" size={15} /> : 'D'}
+        {msg.who === 'ai' ? <I n="bot" size={15} /> : 'D'}
       </div>
       <div
-        className={`whitespace-pre-wrap rounded-2xl px-[17px] py-[13px] text-[13.5px] leading-[1.75] ${
+        className={`min-w-0 whitespace-pre-wrap break-words rounded-2xl px-[17px] py-[13px] text-[13.5px] leading-[1.75] ${
           msg.who === 'ai'
             ? 'rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] [&_b]:font-semibold [&_b]:text-[var(--primary)]'
             : 'rounded-tr-[5px] [background:var(--primary-grad)] text-white [&_b]:font-semibold [&_b]:text-white'
@@ -185,7 +125,6 @@ export default function AIPage() {
   const [userName, setUserName] = useState('there')
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
-  const [memoryEnabled, setMemoryEnabled] = useState(true)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   const [openConversationMenuId, setOpenConversationMenuId] = useState<string | null>(null)
   const [pinnedConversationIds, setPinnedConversationIds] = useState<string[]>([])
@@ -194,14 +133,11 @@ export default function AIPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [expandedCompressed, setExpandedCompressed] = useState(false)
+  const [showConversationsDrawer, setShowConversationsDrawer] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
   const initializedWelcome = useRef(false)
 
   const metrics = useMetrics(expenses, budget, goal)
-  const now = useMemo(() => new Date(), [])
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-  const dayOfMonth = now.getDate()
-  const status = statusMeta[metrics.status]
   const topCategory = metrics.byFlexCat[0]
   const secondCategory = metrics.byFlexCat[1]
   const topItem = metrics.topItems[0]
@@ -228,7 +164,6 @@ export default function AIPage() {
         if (userData.name) setUserName(userData.name)
         if (profileData.monthlyBudget !== undefined) setBudget(profileData.monthlyBudget)
         if (profileData.savingsGoal !== undefined) setGoal(profileData.savingsGoal)
-        setMemoryEnabled(userData.aiMemoryEnabled !== false)
         if (Array.isArray(expenseData)) {
           setExpenses(
             expenseData.map((e: { id: string; date: string; category: string; item: string; amount: number; fixed?: boolean | null }) => ({
@@ -286,7 +221,7 @@ export default function AIPage() {
     setMsgs([
       {
         who: 'ai',
-        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining, biggest category **${category}**. Ask me anything, or tap a suggestion below.`,
+        text: `Habari ${userName}. I'm **AI Coach** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining, biggest category **${category}**. Ask me anything, or tap a suggestion below.`,
       },
     ])
   }, [isLoading, metrics.remaining, metrics.spent, topCategory?.name, userName])
@@ -308,7 +243,7 @@ export default function AIPage() {
     setMsgs([
       {
         who: 'ai',
-        text: `Habari ${userName}. I'm **PesaMali AI** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
+        text: `Habari ${userName}. I'm **AI Coach** - and I've read your month: **${fmt(metrics.spent)}** spent, **${fmt(metrics.remaining)}** remaining. Ask how your week went, where you're overspending, or what to do next.`,
       },
     ])
   }
@@ -382,21 +317,6 @@ export default function AIPage() {
     }
   }
 
-  const toggleMemory = async () => {
-    try {
-      await fetch('/api/user', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ aiMemoryEnabled: !memoryEnabled }),
-      })
-      setMemoryEnabled(!memoryEnabled)
-      setSuccessMessage(memoryEnabled ? "Memory disabled. Conversations won't be saved." : 'Memory enabled. Conversations will be saved.')
-      setShowSuccessModal(true)
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   const ask = async (q?: string) => {
     const question = (q ?? input).trim()
     if (!question || busy) return
@@ -462,7 +382,7 @@ export default function AIPage() {
       tone: 'bg-[var(--primary-soft)] text-[var(--primary)]',
       text: topCategory
         ? `${topCategory.name} is your biggest flexible category - ${fmt(topCategory.amt)} (${Math.round((topCategory.amt / Math.max(metrics.flexibleSpent, 1)) * 100)}% of flexible spending).`
-        : 'Start logging expenses and PesaMali AI will identify your biggest spending category.',
+        : 'Start logging expenses and AI Coach will identify your biggest spending category.',
       ask: 'Where am I overspending and what should I stop?',
     },
     {
@@ -483,7 +403,7 @@ export default function AIPage() {
 
   return (
     <div
-      className="relative -m-2 overflow-hidden px-2 pb-10"
+      className="relative overflow-hidden pb-10"
       style={{
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
@@ -509,77 +429,50 @@ export default function AIPage() {
 
       <div className="mx-auto max-w-[1180px]">
         <PageHeroCard
-          icon="sparkles"
+          icon="gemini"
           badge="AI insights"
-          title="PesaMali AI"
+          title="AI Coach"
           subtitle="Personal financial intelligence built from your real spending behavior."
-        >
-          <button
-            onClick={toggleMemory}
-            className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--card)] px-[15px] py-[9px] text-[12.5px] font-medium text-[var(--muted)] shadow-[var(--shadow)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
-          >
-            <I n={memoryEnabled ? 'check' : 'lock'} size={14} />
-            Memory {memoryEnabled ? 'on' : 'off'}
-          </button>
-        </PageHeroCard>
+          subtitleExtra={<PoweredByGemini size="md" />}
+        />
 
-        <motion.div
-          className="mb-[26px] flex items-center gap-[26px] max-[1180px]:flex-col max-[1180px]:items-start max-[1180px]:gap-[18px]"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-        >
-          <Orb thinking={busy} />
-          <div>
-            <h1 className="text-[30px] font-extrabold leading-[1.2] tracking-normal max-[1180px]:text-2xl">
-              Your money,{' '}
-              <span className="bg-gradient-to-r from-[var(--primary)] via-[#7C3AED] to-[#06B6D4] bg-clip-text text-transparent">
-                understood.
-              </span>
-            </h1>
-            <p className="mt-1.5 max-w-xl text-[13.5px] leading-[1.7] text-[var(--muted)]">
-              PesaMali AI reads your live spending data, every shilling, every category, every day, and
-              answers like a coach who actually knows you. Ask anything about your month.
-            </p>
-          </div>
-        </motion.div>
-
-        <div className="mb-6 grid grid-cols-4 gap-3.5 max-[1180px]:grid-cols-2 max-[560px]:grid-cols-1">
-          <InsightCard icon="target" tone="p" label="Safe to spend today" value={fmt(metrics.safe)} delay={0} />
-          <InsightCard icon="wallet" tone="p" label="Remaining" value={fmt(metrics.remaining)} delay={0.07} />
-          <InsightCard
-            icon="trendUp"
-            tone="p"
-            label="Pace"
-            value={`${Math.round(metrics.spendPace * 100)}% / ${Math.round(metrics.monthPace * 100)}%`}
-            delay={0.14}
-          />
-          <InsightCard icon={status.icon} tone={status.tone} label="Status" value={status.label} delay={0.21} />
-        </div>
-
-        <div className="grid grid-cols-[1fr_300px] gap-[18px] max-[1180px]:grid-cols-1">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_300px] gap-[18px] max-[1180px]:grid-cols-1">
           <motion.section
-            className="flex h-[calc(100vh-280px)] min-h-[600px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[calc(100vh-320px)] max-[1180px]:min-h-0"
+            className="flex min-w-0 h-[min(720px,calc(100dvh-280px))] min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow)] max-[1180px]:h-[min(560px,calc(100dvh-220px))] max-[1180px]:min-h-[420px]"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.15, ease: 'easeOut' }}
           >
-            <div className="flex items-center gap-[11px] border-b border-[var(--line)] px-5 py-4">
-              <Orb small />
-              <div>
-                <b className="text-sm font-bold">PesaMali AI</b>
+            <div className="flex items-center gap-2 sm:gap-[11px] border-b border-[var(--line)] px-3.5 py-3.5 sm:px-5 sm:py-4">
+              <div className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full [background:var(--primary-grad)] text-white">
+                <I n="bot" size={15} />
+              </div>
+              <div className="min-w-0">
+                <b className="text-sm font-bold">AI Coach</b>
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
-                  {busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--green)]" />
+                  <span className="truncate">{busy ? 'Reading your spending data...' : currentConversationId ? 'Conversation with memory' : 'Connected to your live data'}</span>
                 </div>
               </div>
-              <button
-                onClick={startNewChat}
-                className="ml-auto flex items-center gap-1.5 text-xs text-[var(--faint)] transition hover:text-[var(--red)]"
-              >
-                <I n="plusCircle" size={13} />
-                New chat
-              </button>
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                {conversations.length > 0 && (
+                  <button
+                    onClick={() => setShowConversationsDrawer(true)}
+                    className="min-[1180px]:hidden flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--card-2)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--muted)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                    aria-label="Recent chats"
+                  >
+                    <I n="messageSquare" size={13} />
+                    <span className="hidden min-[400px]:inline">Chats</span>
+                  </button>
+                )}
+                <button
+                  onClick={startNewChat}
+                  className="flex shrink-0 items-center gap-1.5 text-xs text-[var(--faint)] transition hover:text-[var(--red)]"
+                >
+                  <I n="plusCircle" size={13} />
+                  <span className="hidden min-[400px]:inline">New chat</span>
+                </button>
+              </div>
             </div>
 
             <div ref={logRef} className="flex flex-1 flex-col gap-4 overflow-y-auto p-[22px] scroll-smooth">
@@ -633,7 +526,7 @@ export default function AIPage() {
                     <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] [background:var(--primary-grad)] text-white">
                       <I n="sparkles" size={15} />
                     </div>
-                    <div className="whitespace-pre-wrap rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px] text-[13.5px] leading-[1.75] [&_b]:font-semibold [&_b]:text-[var(--primary)]">
+                    <div className="min-w-0 whitespace-pre-wrap break-words rounded-2xl rounded-tl-[5px] border border-[var(--line)] bg-[var(--card-2)] px-[17px] py-[13px] text-[13.5px] leading-[1.75] [&_b]:font-semibold [&_b]:text-[var(--primary)]">
                       {render(streamingReply)}
                       <motion.span
                         className="ml-0.5 inline-block h-[15px] w-[7px] translate-y-0.5 rounded-sm bg-[var(--primary)]"
@@ -656,7 +549,7 @@ export default function AIPage() {
                     className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--card-2)] px-3 py-1.5 text-[10px] font-medium text-[var(--muted)] transition hover:-translate-y-px hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-60"
                   >
                     <I n={icon} size={12} />
-                    <span className="hidden sm:inline">{label}</span>
+                    <span>{label}</span>
                   </button>
                 ))}
               </div>
@@ -965,6 +858,135 @@ export default function AIPage() {
         message={successMessage}
         onClose={() => setShowSuccessModal(false)}
       />
+
+      <AnimatePresence>
+        {showConversationsDrawer && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[97] bg-black/40 backdrop-blur-sm min-[1180px]:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setShowConversationsDrawer(false); setOpenConversationMenuId(null) }}
+            />
+            <motion.div
+              className="fixed bottom-0 left-0 right-0 z-[98] flex flex-col rounded-t-[24px] border-t border-[var(--line)] bg-[var(--card)] shadow-[var(--shadow-lg)] min-[1180px]:hidden"
+              style={{ maxHeight: '78dvh' }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center pt-3 pb-1 shrink-0">
+                <div className="h-1 w-10 rounded-full bg-[var(--line)]" />
+              </div>
+
+              <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--line)] shrink-0">
+                <h3 className="flex items-center gap-2 text-sm font-bold">
+                  <I n="book" size={15} />
+                  Recent Chats
+                </h3>
+                <button
+                  onClick={() => { startNewChat(); setShowConversationsDrawer(false); setOpenConversationMenuId(null) }}
+                  className="flex items-center gap-1.5 rounded-full bg-[var(--primary-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--primary)] transition active:scale-95"
+                >
+                  <I n="plusCircle" size={13} />
+                  New chat
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-1.5">
+                {sortedConversations.map((conv) => {
+                  const isPinned = pinnedConversationIds.includes(conv.id)
+                  const isActive = currentConversationId === conv.id
+                  const menuOpen = openConversationMenuId === conv.id
+                  return (
+                    <div key={conv.id}>
+                      <div
+                        className={`flex items-center gap-1.5 rounded-xl transition ${
+                          isActive
+                            ? 'bg-[var(--primary-soft)] text-[var(--primary)]'
+                            : 'bg-[var(--card-2)] text-[var(--muted)]'
+                        } ${menuOpen ? 'rounded-b-none' : ''}`}
+                      >
+                        <button
+                          onClick={() => {
+                            loadConversation(conv.id)
+                            setShowConversationsDrawer(false)
+                            setOpenConversationMenuId(null)
+                          }}
+                          className="min-w-0 flex-1 px-3 py-3 text-left text-sm font-semibold"
+                        >
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            {isPinned && <I n="flag" size={11} />}
+                            <span className="truncate">{conv.title}</span>
+                          </span>
+                        </button>
+                        <button
+                          aria-label="Conversation actions"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenConversationMenuId(menuOpen ? null : conv.id)
+                          }}
+                          className={`mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition ${
+                            menuOpen ? 'bg-[var(--primary-soft)] text-[var(--primary)]' : 'text-[var(--muted)]'
+                          }`}
+                        >
+                          <I n="moreVertical" size={16} />
+                        </button>
+                      </div>
+
+                      <AnimatePresence>
+                        {menuOpen && (
+                          <motion.div
+                            className="flex gap-1.5 rounded-b-xl bg-[var(--card-2)] px-2 pb-2 pt-1.5"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.16 }}
+                          >
+                            <button
+                              onClick={() => togglePinnedConversation(conv.id)}
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] py-2.5 text-xs font-semibold text-[var(--muted)] active:scale-95 transition"
+                            >
+                              <I n="flag" size={13} />
+                              {isPinned ? 'Unpin' : 'Pin'}
+                            </button>
+                            <button
+                              onClick={() => { openRenameConversation(conv); setShowConversationsDrawer(false) }}
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--card)] py-2.5 text-xs font-semibold text-[var(--muted)] active:scale-95 transition"
+                            >
+                              <I n="receipt" size={13} />
+                              Rename
+                            </button>
+                            <button
+                              onClick={() => { setShowDeleteConfirm(conv.id); setOpenConversationMenuId(null); setShowConversationsDrawer(false) }}
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--red-soft)] py-2.5 text-xs font-semibold text-[var(--red)] active:scale-95 transition"
+                            >
+                              <I n="flame" size={13} />
+                              Delete
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="shrink-0 border-t border-[var(--line)] px-4 pb-8 pt-3">
+                <button
+                  onClick={() => { setShowConversationsDrawer(false); setOpenConversationMenuId(null) }}
+                  className="w-full rounded-[12px] border border-[var(--line)] bg-[var(--card-2)] py-3 text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--text)]"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

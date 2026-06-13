@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { AreaChart } from '@/components/Charts'
@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [userId, setUserId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const isLoadingRef = useRef(true)
   const [now, setNow] = useState(() => new Date())
   const [hideMoney, setHideMoney] = useState(false)
 
@@ -87,14 +88,14 @@ export default function DashboardPage() {
           if (d.name) setUserName(d.name)
           if (d.id) setUserId(d.id)
         })
-        .catch(() => { failed = true }),
+        .catch((e) => { console.error('[dashboard] /api/user failed', e); failed = true }),
       fetch('/api/profiles/current')
         .then(guard)
         .then((p) => {
           if (p.monthlyBudget !== undefined) setBudget(p.monthlyBudget)
           if (p.savingsGoal !== undefined) setGoal(p.savingsGoal)
         })
-        .catch(() => { failed = true }),
+        .catch((e) => { console.error('[dashboard] /api/profiles/current failed', e); failed = true }),
       fetch('/api/expenses')
         .then(guard)
         .then((d) => {
@@ -110,16 +111,19 @@ export default function DashboardPage() {
             )
           }
         })
-        .catch(() => { failed = true }),
+        .catch((e) => { console.error('[dashboard] /api/expenses failed', e); failed = true }),
       fetch('/api/category-budgets')
         .then(guard)
         .then((d) => {
           if (Array.isArray(d)) setCatBudgets(d)
         })
-        .catch(() => { failed = true }),
+        .catch((e) => { console.error('[dashboard] /api/category-budgets failed', e); failed = true }),
     ]).finally(() => {
       setLoadError(failed)
-      if (showLoading) setIsLoading(false)
+      if (showLoading) {
+        isLoadingRef.current = false
+        setIsLoading(false)
+      }
     })
   }, [])
 
@@ -167,8 +171,8 @@ export default function DashboardPage() {
   const todayKey = iso(now)
 
   useEffect(() => {
-    if (!isLoading) refreshData()
-  }, [todayKey, isLoading, refreshData])
+    if (!isLoadingRef.current) refreshData()
+  }, [todayKey, refreshData])
 
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   const m = useMetrics(expenses, budget, goal, now)

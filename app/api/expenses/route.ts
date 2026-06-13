@@ -33,7 +33,7 @@ export async function GET() {
     if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    if (session.profileId) await processDueRecurringExpenses(session.profileId)
+    if (session.profileId) await processDueRecurringExpenses(session.profileId).catch((e) => console.error('[recurring]', e))
     const prefix = nairobiDateParts().monthKey
     const expenses = await prisma.expense.findMany({
       where: {

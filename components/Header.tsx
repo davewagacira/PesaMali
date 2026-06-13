@@ -48,14 +48,18 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg)] w-full">
         <div className="flex h-12 md:h-16 w-full items-center justify-between px-3 md:px-6">
-          {/* Hamburger — moile ly */}
-          <button
-            className="flex md:hidden items-center justify-center rounded-lg p-1 text-[var(--muted)] hover:bg-[var(--bg)] hover:text-[var(--text)] min-h-[44px] min-w-[44px]"
-            onClick={onMenuClick}
-            aria-label="Open menu"
-          >
-            <I n="menu" size={22} />
-          </button>
+          {/* Hamburger + logo — mobile only */}
+          <div className="flex md:hidden items-center gap-2">
+            <button
+              className="flex items-center justify-center rounded-lg p-1 text-[var(--muted)] hover:bg-[var(--bg)] hover:text-[var(--text)] min-h-[44px] min-w-[44px]"
+              onClick={onMenuClick}
+              aria-label="Open menu"
+            >
+              <I n="menu" size={22} />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="PesaMali" onClick={() => router.push('/dashboard')} style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', cursor: 'pointer' }} />
+          </div>
           {/* Right: Notifications + profile avatar (always visible) */}
           <div className="flex items-center gap-3 ml-auto">
             {streak > 0 && (

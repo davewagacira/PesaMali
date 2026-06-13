@@ -477,7 +477,7 @@ header.sticky{background:rgba(247,248,250,.86)!important;backdrop-filter:blur(16
 .pro-panel{padding:20px;min-width:0}
 .pro-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
 .pro-panel-head h2{margin-top:5px;font-size:17px;font-weight:780;letter-spacing:0;color:var(--text)}
-.pro-chip{border:1px solid var(--line);background:var(--card-2);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:12px;font-weight:700}
+.pro-chip{border:1px solid var(--line);background:var(--card-2);border-radius:999px;padding:7px 12px;color:var(--muted);font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
 .dash-envelope-list{display:flex;flex-direction:column;gap:14px}
 .dash-envelope>div:first-child{display:flex;align-items:center;gap:9px}
 .dash-envelope b{font-size:13px}
@@ -529,7 +529,10 @@ header.sticky{background:rgba(247,248,250,.86)!important;backdrop-filter:blur(16
   .lp-hero p{font-size:15px}
   .lp-feature-grid,.lp-steps,.pro-kpis{grid-template-columns:1fr}
   .lp-chip{display:none}
-  .lp-footer{flex-direction:column;align-items:flex-start;gap:16px}
+  .auth-points{display:none}
+  .auth-left{display:none}
+  input,select,textarea{font-size:16px}
+  .lp-footer{flex-direction:column;align-items:center;text-align:center;gap:16px}
   .main{padding:16px}
   .pro-hero{align-items:flex-start;flex-direction:column}
   .pro-hero h1{font-size:27px}
@@ -854,7 +857,10 @@ header.sticky{background:rgba(247,248,250,.88)!important;backdrop-filter:blur(16
   .lp-hero-copy p{font-size:15px!important}
   .lp-feature-grid,.lp-steps{grid-template-columns:1fr!important}
   .lp-chip{display:none!important}
-  .lp-footer{flex-direction:column!important;align-items:flex-start!important}
+  .auth-points{display:none!important}
+  .auth-left{display:none!important}
+  input,select,textarea{font-size:16px!important}
+  .lp-footer{flex-direction:column!important;align-items:center!important;text-align:center!important}
   .page-hero-pro-inner{align-items:flex-start;flex-direction:column}
   .page-hero-pro h1{font-size:26px}
   .donut-wrap{grid-template-columns:1fr;gap:18px}

@@ -118,8 +118,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next()
     }
 
-    // If logged in but no profile selected, redirect to profiles page
+    // If logged in but no profile selected, redirect to profiles page (or 401 for API)
     if (!session.profileId) {
+      if (isApi) return NextResponse.json({ error: 'No profile selected' }, { status: 401 })
       return NextResponse.redirect(new URL('/profiles', request.url))
     }
 

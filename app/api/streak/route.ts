@@ -64,28 +64,3 @@ export async function POST() {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-
-// POST /api/streak/reset — sets streakResetAt to today (Nairobi)
-export async function POST() {
-  try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
-    if (!session.isLoggedIn || !session.profileId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const today = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Africa/Nairobi',
-      year: 'numeric', month: '2-digit', day: '2-digit',
-    }).format(new Date())
-
-    await prisma.profile.update({
-      where: { id: session.profileId },
-      data: { streakResetAt: today },
-    })
-
-    return NextResponse.json({ ok: true, resetAt: today })
-  } catch (e) {
-    console.error(e)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
-  }
-}
