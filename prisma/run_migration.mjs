@@ -42,7 +42,7 @@ async function runMigration() {
     // Step 3: Create default profiles for all existing users
     console.log('\n👤 Step 3: Creating default profiles for existing users...')
     const users = await prisma.$queryRaw`
-      SELECT u.id, u.name, COALESCE(u."monthlyBudget", 15000) as budget, COALESCE(u."savingsGoal", 2000) as savings
+      SELECT u.id, u.name, 15000 as budget, 2000 as savings
       FROM "User" u
       WHERE NOT EXISTS (SELECT 1 FROM "Profile" p WHERE p."userId" = u.id)
     `
