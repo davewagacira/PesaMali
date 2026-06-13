@@ -40,6 +40,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d.dates)) {
+          // First-time migration: if no reset date set yet, reset now so old
+          // historical expenses don't inflate the streak
+          if (d.resetAt === null) {
+            fetch('/api/streak', { method: 'POST' }).catch(() => {})
+          }
           setStreak(computeStreak(d.dates))
           setStreakAtRisk(isStreakAtRisk(d.dates))
           setStreakHoursLeft(hoursUntilMidnightNairobi())
