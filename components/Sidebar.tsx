@@ -173,7 +173,6 @@ function SidebarContent({
                       cover.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff'
                       document.body.appendChild(cover)
                       await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-                      try { localStorage.clear() } catch {}
                       window.location.href = '/'
                     }}
                     className="flex-1 rounded-[11px] bg-[var(--red)] py-2.5 font-semibold text-white transition active:scale-95"

@@ -38,7 +38,6 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
     cover.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff'
     document.body.appendChild(cover)
     await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-    try { localStorage.clear() } catch {}
     window.location.href = '/'
   }
 
