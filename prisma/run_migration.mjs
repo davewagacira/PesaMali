@@ -187,6 +187,12 @@ async function runMigration() {
       console.log('  ✅ Fixed-bill columns ready')
     } catch (e) { console.log(`  ⚠️  ${e.message?.split('\n')[0]}`) }
 
+    console.log('\n📌 Step 11: Adding streakResetAt to Profile...')
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "streakResetAt" TEXT`)
+      console.log('  ✅ streakResetAt column ready')
+    } catch (e) { console.log(`  ⚠️  ${e.message?.split('\n')[0]}`) }
+
     // Verify
     console.log('\n🎉 Migration complete! Verifying...')
     const profileCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Profile"`
