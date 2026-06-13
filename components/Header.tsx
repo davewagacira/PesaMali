@@ -13,6 +13,7 @@ interface HeaderProps {
   profileAvatar?: string
   profileColor?: string
   profileName?: string
+  streak?: number
 }
 
 // Helper to map old emojis from DB to new Lucide icons if they exist
@@ -28,7 +29,7 @@ const mapLegacyAvatar = (avatar: string) => {
   return map[avatar] || avatar
 }
 
-export default function Header({ userName, userId, onMenuClick, profileAvatar, profileColor, profileName }: HeaderProps) {
+export default function Header({ userName, userId, onMenuClick, profileAvatar, profileColor, profileName, streak = 0 }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const router = useRouter()
@@ -55,6 +56,17 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
           </button>
           {/* Right: Notifications + profile avatar (always visible) */}
           <div className="flex items-center gap-3 ml-auto">
+            {streak > 0 && (
+              <a
+                href="/achievements"
+                className="flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-bold transition hover:bg-[var(--card-2)]"
+                style={{ color: '#f97316' }}
+                title={`${streak}-day streak`}
+              >
+                <span>{streak}</span>
+                <span>🔥</span>
+              </a>
+            )}
             {userId && <NotificationsBell userId={userId} />}
 
             {userName ? (
