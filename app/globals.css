@@ -531,6 +531,8 @@ header.sticky{background:rgba(247,248,250,.86)!important;backdrop-filter:blur(16
   .lp-chip{display:none}
   .auth-points{display:none}
   .auth-left{display:none}
+  .auth-right{display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .auth-card{max-width:380px}
   input,select,textarea{font-size:16px}
   .lp-footer{flex-direction:column;align-items:center;text-align:center;gap:16px}
   .main{padding:16px}
