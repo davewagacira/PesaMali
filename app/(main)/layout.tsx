@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
+import { computeStreak } from '@/lib/streak'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState('light')
@@ -13,12 +14,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [profileColor, setProfileColor] = useState('#155EEF')
   const [profileType, setProfileType] = useState('personal')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [streak, setStreak] = useState(0)
   const pathname = usePathname()
 
   useEffect(() => {
     fetch('/api/user')
       .then((r) => r.json())
-      .then((d) => { 
+      .then((d) => {
         if (d.name) setUserName(d.name)
         if (d.id) setUserId(d.id)
       })
@@ -31,6 +33,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         if (d.color) setProfileColor(d.color)
         if (d.type) setProfileType(d.type)
       })
+      .catch(() => {})
+    fetch('/api/streak')
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d.dates)) setStreak(computeStreak(d.dates)) })
       .catch(() => {})
   }, [pathname])
 
@@ -56,13 +62,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         profileType={profileType}
       />
       <div className="flex flex-col flex-1">
-        <Header 
-          userName={userName} 
-          userId={userId} 
-          onMenuClick={() => setDrawerOpen(true)} 
+        <Header
+          userName={userName}
+          userId={userId}
+          onMenuClick={() => setDrawerOpen(true)}
           profileAvatar={profileAvatar}
           profileColor={profileColor}
           profileName={profileName}
+          streak={streak}
         />
         <main className="main flex-1 overflow-auto">
           {children}
