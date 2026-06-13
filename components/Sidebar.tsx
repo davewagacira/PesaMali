@@ -168,11 +168,11 @@ function SidebarContent({
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const cover = document.createElement('div')
                       cover.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#fff'
                       document.body.appendChild(cover)
-                      fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+                      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
                       try { localStorage.clear() } catch {}
                       window.location.href = '/'
                     }}
