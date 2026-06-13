@@ -59,7 +59,7 @@ export function computeStreak(dates: string[]): number {
 export function computeLongestStreak(dates: string[]): number {
   if (!dates.length) return 0
 
-  const sorted = [...new Set(dates)].sort()
+  const sorted = Array.from(new Set(dates)).sort()
   let longest = 1
   let current = 1
 
