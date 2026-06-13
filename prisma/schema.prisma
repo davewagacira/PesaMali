@@ -32,6 +32,7 @@ model Profile {
   type              String             @default("personal") // "budget" | "personal" | "business" | "savings"
   monthlyBudget     Float              @default(15000)
   savingsGoal       Float              @default(2000)
+  streakResetAt     String?            // YYYY-MM-DD; only count streak dates >= this
   createdAt         DateTime           @default(now())
   expenses          Expense[]
   conversations     Conversation[]
