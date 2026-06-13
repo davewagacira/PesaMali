@@ -54,8 +54,38 @@ export function computeStreak(dates: string[]): number {
 }
 
 /**
- * Returns the longest streak ever achieved across all recorded dates.
+ * True when the streak is alive but at risk — logged yesterday, not yet today.
+ * The user has until midnight Nairobi time to extend it.
  */
+export function isStreakAtRisk(dates: string[]): boolean {
+  if (!dates.length) return false
+  const set = new Set(dates)
+  const today = nairobiToday()
+  const yesterday = addDays(today, -1)
+  return !set.has(today) && set.has(yesterday)
+}
+
+/**
+ * Returns hours (floored) remaining until midnight Nairobi time.
+ */
+export function hoursUntilMidnightNairobi(): number {
+  const now = new Date()
+  // Get current Nairobi time components
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Nairobi',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+  }).formatToParts(now)
+  const get = (t: string) => parseInt(parts.find((p) => p.type === t)?.value || '0')
+  const h = get('hour')
+  const m = get('minute')
+  const s = get('second')
+  const secondsElapsed = h * 3600 + m * 60 + s
+  const secondsLeft = 86400 - secondsElapsed
+  return Math.floor(secondsLeft / 3600)
+}
 export function computeLongestStreak(dates: string[]): number {
   if (!dates.length) return 0
 

@@ -14,6 +14,8 @@ interface HeaderProps {
   profileColor?: string
   profileName?: string
   streak?: number
+  streakAtRisk?: boolean
+  streakHoursLeft?: number
 }
 
 // Helper to map old emojis from DB to new Lucide icons if they exist
@@ -29,7 +31,7 @@ const mapLegacyAvatar = (avatar: string) => {
   return map[avatar] || avatar
 }
 
-export default function Header({ userName, userId, onMenuClick, profileAvatar, profileColor, profileName, streak = 0 }: HeaderProps) {
+export default function Header({ userName, userId, onMenuClick, profileAvatar, profileColor, profileName, streak = 0, streakAtRisk = false, streakHoursLeft = 0 }: HeaderProps) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const router = useRouter()
@@ -60,11 +62,14 @@ export default function Header({ userName, userId, onMenuClick, profileAvatar, p
               <a
                 href="/achievements"
                 className="flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-bold transition hover:bg-[var(--card-2)]"
-                style={{ color: '#f97316' }}
-                title={`${streak}-day streak`}
+                style={{ color: streakAtRisk ? '#eab308' : '#f97316' }}
+                title={streakAtRisk ? `Log an expense to keep your streak! ${streakHoursLeft}h left` : `${streak}-day streak`}
               >
                 <span>{streak}</span>
                 <span>🔥</span>
+                {streakAtRisk && (
+                  <span title={`Expires in ${streakHoursLeft}h`}>⏳</span>
+                )}
               </a>
             )}
             {userId && <NotificationsBell userId={userId} />}
