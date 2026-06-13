@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
-import { computeStreak } from '@/lib/streak'
+import { computeStreak, isStreakAtRisk, hoursUntilMidnightNairobi } from '@/lib/streak'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState('light')
@@ -15,6 +15,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [profileType, setProfileType] = useState('personal')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [streak, setStreak] = useState(0)
+  const [streakAtRisk, setStreakAtRisk] = useState(false)
+  const [streakHoursLeft, setStreakHoursLeft] = useState(0)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -36,7 +38,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       .catch(() => {})
     fetch('/api/streak')
       .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d.dates)) setStreak(computeStreak(d.dates)) })
+      .then((d) => {
+        if (Array.isArray(d.dates)) {
+          setStreak(computeStreak(d.dates))
+          setStreakAtRisk(isStreakAtRisk(d.dates))
+          setStreakHoursLeft(hoursUntilMidnightNairobi())
+        }
+      })
       .catch(() => {})
   }, [pathname])
 
@@ -70,6 +78,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           profileColor={profileColor}
           profileName={profileName}
           streak={streak}
+          streakAtRisk={streakAtRisk}
+          streakHoursLeft={streakHoursLeft}
         />
         <main className="main flex-1 overflow-auto">
           {children}
