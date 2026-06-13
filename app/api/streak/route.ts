@@ -33,7 +33,7 @@ export async function GET() {
     })
 
     const dates = rows.map((r) => r.date)
-    return NextResponse.json({ dates })
+    return NextResponse.json({ dates, resetAt: profile?.streakResetAt ?? null })
   } catch (e) {
     console.error(e)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
