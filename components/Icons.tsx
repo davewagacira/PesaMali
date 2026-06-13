@@ -71,6 +71,13 @@ export const PATHS: Record<string, React.ReactNode> = {
   x: <g><path d="M18 6L6 18M6 6l12 12"/></g>,
   refreshCw: <g><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></g>,
   plus: <path d="M12 5v14M5 12h14"/>,
+  star: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>,
+  layers: <g><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></g>,
+  percent: <g><circle cx="9" cy="9" r="2"/><circle cx="15" cy="15" r="2"/><path d="M5 19 19 5"/></g>,
+  leaf: <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>,
+  medal: <g><circle cx="12" cy="8" r="6"/><path d="m8.21 13.89-2.83 5 3.54-1.06L10.5 21l2.83-5"/><path d="m15.79 13.89 2.83 5-3.54-1.06L13.5 21l-2.83-5"/></g>,
+  barChart2: <g><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></g>,
+  listChecks: <g><path d="M11 6h9M11 12h9M11 18h9"/><path d="m3 6 1 1 2-2"/><path d="m3 12 1 1 2-2"/><path d="m3 18 1 1 2-2"/></g>,
 }
 
 interface IProps {
