@@ -11,9 +11,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Fetch only distinct dates — no full expense data needed
+    // Only count days where the user manually logged at least one expense.
+    // Fixed/recurring entries are auto-generated and should not build a streak.
     const rows = await prisma.expense.findMany({
-      where: { profileId: session.profileId },
+      where: {
+        profileId: session.profileId,
+        OR: [{ fixed: false }, { fixed: null }],
+      },
       select: { date: true },
       distinct: ['date'],
       orderBy: { date: 'asc' },
