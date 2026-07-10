@@ -54,6 +54,12 @@ export default function DashboardPage() {
   const [hideMoney, setHideMoney] = useState(false)
 
   const handleExpenseChange = useCallback((event: string, expense: any) => {
+    // The dashboard is a current-month command center. Ignore Ably events for
+    // expenses that belong to a different month (e.g. a past-month backlog entry
+    // logged from the Log page) so they never pollute current-month metrics.
+    const currentMonthPrefix = iso(new Date()).substring(0, 7) // "YYYY-MM"
+    if (expense?.date && !String(expense.date).startsWith(currentMonthPrefix)) return
+
     if (event === 'add') {
       setExpenses((prev) => [
         { id: expense.id, date: expense.date, cat: expense.category, item: expense.item, amt: expense.amount, fixed: expense.fixed },

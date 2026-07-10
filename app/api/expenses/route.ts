@@ -27,14 +27,23 @@ function nairobiDateParts(date = new Date()) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions)
     if (!session.isLoggedIn || !session.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     if (session.profileId) await processDueRecurringExpenses(session.profileId).catch((e) => console.error('[recurring]', e))
-    const prefix = nairobiDateParts().monthKey
+
+    // Accept an optional ?month=YYYY-MM query param so callers can fetch any
+    // past month. Falls back to the current Nairobi month when omitted so all
+    // existing callers (dashboard, real-time, etc.) stay unaffected.
+    const params = req.nextUrl.searchParams
+    const monthParam = params.get('month') // e.g. "2026-06"
+    const prefix = monthParam && /^\d{4}-\d{2}$/.test(monthParam)
+      ? monthParam
+      : nairobiDateParts().monthKey
+
     const expenses = await prisma.expense.findMany({
       where: {
         profileId: session.profileId,

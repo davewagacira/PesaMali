@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { I } from '@/components/Icons'
 import { PageHeroCard } from '@/components/PageHeroCard'
@@ -9,6 +9,7 @@ import { ConfirmModal } from '@/components/ConfirmModal'
 import { DatePicker } from '@/components/DatePicker'
 import { LogSkeleton } from '@/components/LogSkeleton'
 import { listContainer, listItem } from '@/lib/motion'
+import { MonthPicker, currentNairobiMonth } from '@/components/MonthPicker'
 
 interface ExpenseDraft {
   item: string
@@ -228,6 +229,7 @@ export default function LogPage() {
   const [amt, setAmt] = useState('')
   const [date, setDate] = useState(iso(new Date()))
   const [expenses, setExpenses] = useState<MetricExpense[]>([])
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentNairobiMonth)
   const [toast, setToast] = useState<string | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
@@ -239,13 +241,20 @@ export default function LogPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
 
+  const currentMonth = currentNairobiMonth()
+  const isViewingCurrentMonth = selectedMonth === currentMonth
+
   const ping = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2800)
   }
 
-  useEffect(() => {
-    fetch('/api/expenses')
+  const fetchExpenses = useCallback((month: string) => {
+    setIsLoading(true)
+    const url = month === currentNairobiMonth()
+      ? '/api/expenses'
+      : `/api/expenses?month=${month}`
+    fetch(url)
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d)) {
@@ -264,6 +273,10 @@ export default function LogPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
+  useEffect(() => {
+    fetchExpenses(selectedMonth)
+  }, [selectedMonth, fetchExpenses])
+
   const add = async (force?: boolean) => {
     if (isAdding) return
     const a = parseFloat(amt)
@@ -280,10 +293,20 @@ export default function LogPage() {
       if (res.status === 409 && data.duplicateBill) {
         setDupBill(data.existing)
       } else if (res.ok) {
-        setExpenses((ex) => [
-          ...ex,
-          { id: data.id, date: data.date, cat: data.category, item: data.item, amt: data.amount },
-        ])
+        // Only add the new expense to the displayed list if its date falls
+        // within the currently viewed month — prevents a past-month entry from
+        // appearing in the wrong month view (and fixes budget contamination).
+        const expenseMonth = data.date.substring(0, 7)
+        if (expenseMonth === selectedMonth) {
+          setExpenses((ex) => [
+            ...ex,
+            { id: data.id, date: data.date, cat: data.category, item: data.item, amt: data.amount },
+          ])
+        } else {
+          // Switch view to the month the expense was logged in so the user can
+          // immediately see it there.
+          setSelectedMonth(expenseMonth)
+        }
         setItem('')
         setAmt('')
         const env = data.envelope as { limit: number; spent: number; remaining: number } | null
@@ -383,8 +406,9 @@ export default function LogPage() {
   }
 
   const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
+  const monthTotal = sorted.reduce((s, e) => s + e.amt, 0)
 
-  if (isLoading) return <LogSkeleton />
+  if (isLoading && expenses.length === 0 && selectedMonth === currentMonth) return <LogSkeleton />
 
   return (
     <motion.div variants={listContainer} initial="hidden" animate="show">
@@ -441,10 +465,11 @@ export default function LogPage() {
             {isAdding ? 'Adding...' : 'Add expense'}
           </motion.button>
         </motion.div>
+
         <motion.div className="card" variants={listItem}>
           <h3>
             <I n="receipt" size={14} />
-            All expenses this month
+            Expenses
             <span
               className="mono"
               style={{
@@ -457,23 +482,69 @@ export default function LogPage() {
               {sorted.length} logged
             </span>
           </h3>
-          <div className="scroll">
-            <AnimatePresence initial={false}>
-              {sorted.map((e) => (
-                <TxRow
-                  key={e.id}
-                  e={e}
-                  onSave={saveExpense}
-                  onDelete={() => setConfirmDelete(e)}
-                />
-              ))}
-            </AnimatePresence>
-            {!sorted.length && (
-              <p style={{ color: 'var(--muted)', fontSize: 13, padding: '18px 0' }}>
-                No expenses yet. Log your first one to get started.
-              </p>
-            )}
+
+          {/* Month navigation */}
+          <div style={{ marginBottom: 12 }}>
+            <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
           </div>
+
+          {/* Past month info banner */}
+          {!isViewingCurrentMonth && (
+            <motion.div
+              className="month-info-banner"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 12px',
+                borderRadius: 10,
+                background: 'rgba(79, 70, 229, 0.08)',
+                border: '1px solid rgba(79, 70, 229, 0.2)',
+                marginBottom: 12,
+                fontSize: 12,
+                color: 'var(--muted)',
+              }}
+            >
+              <I n="helpCircle" size={14} style={{ color: '#4F46E5', flexShrink: 0 }} />
+              <span>
+                Viewing past month. Dashboard budget figures always reflect the current month only.
+                {monthTotal > 0 && (
+                  <> Total spent: <b style={{ color: 'var(--text)' }}>{fmt(monthTotal)}</b></>
+                )}
+              </span>
+            </motion.div>
+          )}
+
+          {/* Loading spinner when switching months */}
+          {isLoading && (
+            <div style={{ padding: '18px 0', color: 'var(--muted)', fontSize: 13, textAlign: 'center' }}>
+              Loading…
+            </div>
+          )}
+
+          {!isLoading && (
+            <div className="scroll">
+              <AnimatePresence initial={false}>
+                {sorted.map((e) => (
+                  <TxRow
+                    key={e.id}
+                    e={e}
+                    onSave={saveExpense}
+                    onDelete={() => setConfirmDelete(e)}
+                  />
+                ))}
+              </AnimatePresence>
+              {!sorted.length && (
+                <p style={{ color: 'var(--muted)', fontSize: 13, padding: '18px 0' }}>
+                  {isViewingCurrentMonth
+                    ? 'No expenses yet. Log your first one to get started.'
+                    : 'No expenses recorded for this month.'}
+                </p>
+              )}
+            </div>
+          )}
         </motion.div>
       </motion.div>
 

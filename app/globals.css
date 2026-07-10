@@ -207,6 +207,15 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;strok
 .quick button:active{color:var(--primary);border-color:var(--primary)}
 .scroll{max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
+/* month picker */
+.month-picker{display:flex;align-items:center;gap:8px}
+.month-arrow{background:var(--card-2);border:1px solid var(--line);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.month-arrow:hover:not(:disabled){background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.month-arrow:disabled{cursor:not-allowed}
+.month-label{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;flex:1;justify-content:center;text-align:center}
+.month-current-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:99px;background:var(--primary-soft);color:var(--primary);border:1px solid rgba(79,70,229,.2)}
+
+
 /* charts */
 .bar-chart{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:6px}
 .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
@@ -531,7 +540,7 @@ header.sticky{background:rgba(247,248,250,.86)!important;backdrop-filter:blur(16
   .lp-chip{display:none}
   .auth-points{display:none}
   .auth-left{display:none}
-  .auth{height:100dvh}
+  .auth{height:100vh;height:-webkit-fill-available;height:100dvh}
   .auth-right{flex:1;height:100%;display:flex;align-items:center;justify-content:center;overflow-y:auto}
   .auth-card{max-width:380px}
   input,select,textarea{font-size:16px}
